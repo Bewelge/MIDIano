@@ -1,0 +1,40 @@
+body {
+
+}
+input[type=file] {
+	background-color: black;
+	width:10%;
+	position:flex;
+}
+.trackB {
+	color:black;
+	border-radius: 5px;
+	background-color: rgba(150,150,150,1); 
+	text-align: center;
+}
+.outerTrack {
+	margin-top:5px;
+	margin-bottom:5px;
+	overflow: scroll;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	text-align: center;
+}
+.innerTrack {
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	background-color: rgba(140,140,140,1) !important;
+}
+.innerTrack:hover {
+	background-color: rgba(190,190,190,1) !important;
+}
+.trackTitle {
+	color:white;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+.trackB:hover{
+	background-color:rgba(250,250,250,0.5);
+}
