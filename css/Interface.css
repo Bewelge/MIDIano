@@ -15,7 +15,7 @@ input[type=file] {
 .outerTrack {
 	margin-top:5px;
 	margin-bottom:5px;
-	overflow: scroll;
+	overflow: auto;
 	border-bottom-left-radius: 5px;
 	border-bottom-right-radius: 5px;
 border-top-left-radius: 5px;
@@ -23,7 +23,8 @@ border-top-left-radius: 5px;
 	text-align: center;
 }
 #tracks {
-	overflow: scroll;
+	overflow-y: auto;
+	overflow-x:hidden;
 }
 .innerTrack {
 	border-bottom-left-radius: 5px;

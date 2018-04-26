@@ -124,7 +124,7 @@
 			source.gainNode.value = gain;
 			source.gainNode.connect(ctx.destination);
 			//source.gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
-			source.gainNode.gain.setTargetAtTime(gain, ctx.currentTime + 0.5, 0.5);
+			source.gainNode.gain.setTargetAtTime(Math.min(1.0, Math.max(-1.0, gain)), ctx.currentTime + 0.1, 0.1);
 			source.connect(source.gainNode);
 			///
 			if (useStreamingBuffer) {

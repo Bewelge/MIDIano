@@ -153,6 +153,7 @@ MIDI.Player = MIDI.Player || {};
 				waitForEnd();
 			} else { // needs to be requested
 				console.log("Requesting "+ instrumentId+" . . .");
+				console.log()
 				sendRequest(instruments[i], audioFormat, function(evt, progress) {
 					var fileProgress = progress / length;
 					var queueProgress = (length - pending) / length;
@@ -162,8 +163,8 @@ MIDI.Player = MIDI.Player || {};
 				}, function() {
 					console.log("waitt");
 					waitForEnd();
-				}, function(){
-					console.log(123);
+				}, function(e){
+					console.log(e);
 				});
 			}
 		};
