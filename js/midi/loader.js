@@ -130,6 +130,7 @@ MIDI.Player = MIDI.Player || {};
 	};
 
 	var requestQueue = function(opts, context) {
+		console.log(opts)
 		var audioFormat = opts.format;
 		var instruments = opts.instruments;
 		var onprogress = opts.onprogress;
@@ -140,6 +141,7 @@ MIDI.Player = MIDI.Player || {};
 		var waitForEnd = function() {
 			if (!--pending) {
 				onprogress && onprogress('load', 1.0);
+				console.log("waiting");
 				root[context].connect(opts);
 			}
 		};
@@ -147,15 +149,22 @@ MIDI.Player = MIDI.Player || {};
 		for (var i = 0; i < length; i ++) {
 			var instrumentId = instruments[i];
 			if (MIDI.Soundfont[instrumentId]) { // already loaded
+				console.log("already Loaded "+ instrumentId);
 				waitForEnd();
 			} else { // needs to be requested
+				console.log("Requesting "+ instrumentId+" . . .");
 				sendRequest(instruments[i], audioFormat, function(evt, progress) {
 					var fileProgress = progress / length;
 					var queueProgress = (length - pending) / length;
+					console.log(fileProgress);
+					console.log(queueProgress);
 					onprogress && onprogress('load', fileProgress + queueProgress, instrumentId);
 				}, function() {
+					console.log("waitt");
 					waitForEnd();
-				}, onerror);
+				}, function(){
+					console.log(123);
+				});
 			}
 		};
 	};

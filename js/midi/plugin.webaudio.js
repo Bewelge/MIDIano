@@ -15,21 +15,44 @@
 		var ctx; // audio context
 		var sources = {};
 		var effects = {};
-		var masterVolume = 127;
+		//var masterVolume = 127;
 		var audioBuffers = {};
 		///
 		midi.audioBuffers = audioBuffers;
 		midi.send = function(data, delay) { };
-		midi.setController = function(channelId, type, value, delay) { };
+		midi.setController = function(channelId, type, value, delay) {
+			if(type == 7) root.setVolume(channelId, value, delay);
+		};
 
 		midi.setVolume = function(channelId, volume, delay) {
-			if (delay) {
-				setTimeout(function() {
-					masterVolume = volume;
-				}, delay * 1000);
-			} else {
-				masterVolume = volume;
-			}
+//			if (delay) {
+//				setTimeout(function() {
+//					var channel = root.channels[channelId];
+//					channel.volume = volume;
+//				}, delay * 1000);
+//			} else {
+				var channel = root.channels[channelId];
+				channel.volume = volume;
+//			}
+		};
+		midi.getVolume = function(channelId) {
+				var channel = root.channels[channelId];
+				return channel.volume
+		};
+		midi.setVolumeControl = function(channelId, volume, delay) {
+//			if (delay) {
+//				setTimeout(function() {
+//					var channel = root.channels[channelId];
+//					channel.volume = volume;
+//				}, delay * 1000);
+//			} else {
+				var channel = root.channels[channelId];
+				channel.volumeControl = volume;
+//			}
+		};
+		midi.getVolumeControl = function(channelId) {
+				var channel = root.channels[channelId];
+				return channel.volumeControl
 		};
 
 		midi.programChange = function(channelId, program, delay) {
@@ -56,7 +79,7 @@
 // 			}
 		};
 
-		midi.noteOn = function(channelId, noteId, velocity, delay) {
+		midi.noteOn = function(channelId, noteId, velocity, delay, trackId) {
 			delay = delay || 0;
 
 			/// check whether the note exists
@@ -92,12 +115,16 @@
 			}
 
 			/// add gain + pitchShift
-			var gain = (velocity / 127) * (masterVolume / 127) * 2 - 1;
+			//var gain = (velocity / 127) * (masterVolume / 127) * 2 - 1;
+			var channel = root.channels[channelId];
+			var gain = ((velocity / 127) * (channel.volume * (trackVolumes[trackId]/50) / 127) * 2) - 1;
 			source.connect(ctx.destination);
-			source.playbackRate.value = 1; // pitch shift 
+			//source.playbackRate.value = 1; // pitch shift 
 			source.gainNode = ctx.createGain(); // gain
+			source.gainNode.value = gain;
 			source.gainNode.connect(ctx.destination);
-			source.gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
+			//source.gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
+			source.gainNode.gain.setTargetAtTime(gain, ctx.currentTime + 0.5, 0.5);
 			source.connect(source.gainNode);
 			///
 			if (useStreamingBuffer) {
@@ -166,10 +193,10 @@
 			}
 		};
 
-		midi.chordOn = function(channel, chord, velocity, delay) {
+		midi.chordOn = function(channel, chord, velocity, delay, track) {
 			var res = {};
 			for (var n = 0, note, len = chord.length; n < len; n++) {
-				res[note = chord[n]] = midi.noteOn(channel, note, velocity, delay);
+				res[note = chord[n]] = midi.noteOn(channel, note, velocity, delay, track);
 			}
 			return res;
 		};
@@ -235,7 +262,7 @@
 			var notes = root.keyToNote;
 			for (var key in notes) urls.push(key);
 			///
-			var waitForEnd = function(instrument) {
+			var waitForEnd = function() {
 				for (var key in bufferPending) { // has pending items
 					if (bufferPending[key]) return;
 				}
@@ -259,7 +286,7 @@
 							var percent = index / 87;
 // 							console.log(MIDI.GM.byId[instrumentId], 'processing: ', percent);
 							soundfont.isLoaded = true;
-							waitForEnd(instrument);
+							waitForEnd();
 						}
 					}, function(err) {
 		// 				console.log(err);

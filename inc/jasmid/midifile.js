@@ -185,12 +185,12 @@ function MidiFile(data) {
 					return event;
 				default:
 					throw "Unrecognised MIDI event type: " + eventType
-					/* 
+					 
 					console.log("Unrecognised MIDI event type: " + eventType);
 					stream.readInt8();
 					event.subtype = 'unknown';
 					return event;
-					*/
+					
 			}
 		}
 	}
@@ -226,6 +226,7 @@ function MidiFile(data) {
 		var trackStream = Stream(trackChunk.data);
 		while (!trackStream.eof()) {
 			var event = readEvent(trackStream);
+			event.track = i;
 			tracks[i].push(event);
 			//console.log(event);
 		}

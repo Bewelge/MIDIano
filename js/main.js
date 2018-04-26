@@ -39,20 +39,24 @@ var mode = "piano";
 var particles=false;
 var tracks=[];
 var tracksCollapsed = true;
+var loading = false;
+var trackVolumes=[];
 window.onload = function() {
 
 	///
 	//MIDI.loader = new sketch.ui.Timer;
+	initCanvas();
+	loading = true;
 	MIDI.loadPlugin({
-		soundfontUrl: "http://gleitz.github.io/midi-js-soundfonts/MusyngKite/", //"./soundfont/",//
 		onprogress: function(state, progress) {
 			//MIDI.loader.setValue(progress * 100);
 		},
 		onsuccess: function() {
 			/// this is the language we are running in
 			var title = document.getElementById("title");
+			loading=false;
 
-			initCanvas();
+			
 			/// this sets up the MIDI.Player and gets things going...
 			player = MIDI.Player;
 			player.timeWarp = 1; // speed the song is played back
@@ -71,7 +75,7 @@ window.onload = function() {
 				for (let i = 0; i < midiFile.header.trackCount; i++) {
 					colors.push(getColor(i));
 				}
-				player.currentTime = -2000;
+				player.currentTime = 000;
 				//player.startDelay=2000;
 
 				
@@ -80,7 +84,7 @@ window.onload = function() {
 				});
 				fillTracks();
 
-			});
+			},function(state,prog){console.log(state,prog)});
 
 
 		}
@@ -102,7 +106,15 @@ function initCanvas() {
 	ctx = canvas.getContext("2d");
 	document.body.appendChild(canvas);
 
-	
+	window.addEventListener("keydown",function(e){
+		if (e.code == "Space") {
+			if (player.playing) {
+				player.pause();
+			} else {
+				player.resume();
+			}
+		}
+	})
 
 		canvasLines = document.createElement("canvas");
 		canvasLines.width = width;
@@ -160,7 +172,7 @@ function initCanvas() {
 
 		drawPiano();
 		drawBGLines();
-		document.body.addEventListener("mousewheel", myMouseWheel);
+		canvas.addEventListener("mousewheel", myMouseWheel);
 		
 	
 	
@@ -189,7 +201,7 @@ function fillTracks() {
 		tr = document.createElement("div");
 		tr.id = "tracks";
 		tr.className = "tracks";
-		tr.style.height = height*0.9 + "px";
+		tr.style.height = height*0.7 + "px";
 		tr.style.position = "absolute";
 		tr.style.left = "5px";
 		tr.style.top = "5%";
@@ -212,9 +224,30 @@ function fillTracks() {
 			$(trackList).slideUp();
 		}
 	})
-	
+	trackVolumes=[];
+	let offset=0;
 	for (let i = 0; i < midiFile.tracks.length;i++) {
-		$(trackList).append(createTrackDiv(i));
+		let bool = false;
+		let name = "";
+		for (let j =0;j<midiFile.tracks[i].length;j++) {
+			if (midiFile.tracks[i][j].subtype == "noteOn") {
+				bool=true;
+				break;
+			} else if (midiFile.tracks[i][j].subtype == "trackName") {
+				if (name.split("").length>0) {
+					name+= "</br>";
+				}
+				name += midiFile.tracks[i][j].text 
+			}
+		}
+		trackVolumes.push(50);
+		if (bool) {
+			console.log(name);
+			$(trackList).append(createTrackDiv(i,offset,name));
+		} else {
+			offset++
+
+		}
 	}
 	if (tracksCollapsed) {
 		$(trackList).slideUp();
@@ -225,37 +258,62 @@ function fillTracks() {
 
 	//$("body").append(tr);
 }
-function createTrackDiv(i) {
+function createTrackDiv(i,offset,name) {
 	let outer = createDiv("outerTrack"+i,"outerTrack")
 	
 	outer.style.backgroundColor = "rgba("+colors[i][0]+","+colors[i][1]+","+colors[i][2]+","+1+")";
 	outer.style.width = width * 0.1 + "px";
 
-	let inner = createDiv("innerTrack"+i,"innerTrack");
-	inner.innerHTML = "Hide";
+	let inner = createDiv("innerTrack"+(i-offset),"innerTrack");
+	//inner.innerHTML = "Hide";
 	//inner.style.backgroundColor = "white";
-	inner.style.width = width * 0.1 + "px";
+	inner.style.width = "100%";
 
-	/*let vol = document.createElement("input");
+	let hideBut = createDiv("hideBut"+(i-offset),"hideBut");
+	hideBut.innerHTML = "Hide";
+	hideBut.style.backgroundColor="rgba(150,150,150,1)";
+
+	//hideBut.style.width = width * 0.1 + "px";
+
+	let vol = document.createElement("input");
 	vol.type = "range";
-	vol.min = "0";
+	vol.min = 0;
 	vol.max = 100;
+	vol.value = MIDI.getVolumeControl(i);
 	vol.label = "Volume";
 	vol.addEventListener("change",function(val) {
-		console.log(vol.value);
+		let bool=false;
+		if (player.playing) bool=true;
+		player.pause();
+		trackVolumes[i]=parseInt(val.srcElement.value);
+		//MIDI.setChannelVolume(i,parseInt(val.srcElement.value),0);
+		//MIDI.WebAudio.setVolumeControl(i,parseInt(val.srcElement.value),0);
+
+
+		if (bool) player.resume();
+		
 	})
-	inner.appendChild(vol);*/
+	vol.style.padding = "0px";
+	vol.style.margin = "0px";
+	vol.style.width ="100%";
 
-	let outerTitle = createDiv("trackTitle"+i,"trackTitle");
-	outerTitle.innerHTML = "Track " + i;
+	inner.appendChild(hideBut);
+	inner.appendChild(vol);
 
-	inner.addEventListener("click",function(ev) {
+	let outerTitle = createDiv("trackTitle"+i-offset,"trackTitle");
+	if (name.split("").length>0) {
+		outerTitle.innerHTML = name;
+	} else {
+		outerTitle.innerHTML = "Track " + (i-offset);
+	}
+
+	hideBut.addEventListener("click",function(ev) {
 
 		if (tracks[i].hidden) {
-			$(inner).html("Hide");
+			$(hideBut).html("Hide");
 			tracks[i].hidden = false;
 		} else {
-			$(inner).html("Show");
+			$(hideBut).html("Show");
 			tracks[i].hidden = true;
 		}
 	}, i)
@@ -264,126 +322,7 @@ function createTrackDiv(i) {
 	outer.appendChild(inner);
 	return outer;
 }
-function aj(url) {
-	$.ajax({
-	  url:"file:///Users/benni/GitHub/website/MIDI.js-master/examples/MIDIPlayer.html",
-	  type: 'GET',
-	  dataType: 'jsonp',
-	  success : function(data){
-	console.log(data)
-	    //data is a variable containing the returned data
-	  }
-	});
 
-}
-var frames = [];
-/*var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
-var worker;
-function convertStreams(videoBlob) {
-    var vab;
-    var buffersReady;
-    var workerReady;
-    var posted = false;
-
-    var fileReader1 = new FileReader();
-    fileReader1.onload = function() {
-        vab = this.result;
-
-        buffersReady = true;
-
-        if (buffersReady && workerReady && !posted) postMessage();
-    };
-    
-    fileReader1.readAsArrayBuffer(videoBlob);
-
-    if (!worker) {
-        worker = processInWebWorker();
-    }
-
-    worker.onmessage = function(event) {
-        var message = event.data;
-        if (message.type == "ready") {
-            log('<a href="'+ workerPath +'" download="ffmpeg-asm.js">ffmpeg-asm.js</a> file has been loaded.');
-            workerReady = true;
-            if (buffersReady)
-                postMessage();
-        } else if (message.type == "stdout") {
-            log(message.data);
-        } else if (message.type == "start") {
-            log('<a href="'+ workerPath +'" download="ffmpeg-asm.js">ffmpeg-asm.js</a> file received ffmpeg command.');
-        } else if (message.type == "done") {
-            log(JSON.stringify(message));
-
-            var result = message.data[0];
-            log(JSON.stringify(result));
-
-            var blob = new Blob([result.data], {
-                type: 'video/mp4'
-            });
-
-            log(JSON.stringify(blob));
-
-            PostBlob(blob);
-        }
-    };
-    var postMessage = function() {
-        posted = true;
-		
-		worker.postMessage({
-            type: 'command',
-            arguments: [
-                '-i', 'video.webm',
-                '-i', 'audio.wav',
-                '-c:v', 'mpeg4',
-                '-c:a', 'vorbis', // or aac
-                '-b:v', '6400k',  // or 1450k
-                '-b:a', '4800k',  // or 96k
-                '-strict', 'experimental', 'output.mp4'
-            ],
-            files: [
-                {
-                    data: new Uint8Array(vab),
-                    name: 'video.webm'
-                },
-                
-            ]
-        });
-    };
-}
-function log(message) {
-    //h2.innerHTML = message;
-    console.log(message);
-}
-function processInWebWorker() {
-    var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: 268435456};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
-        type: 'application/javascript'
-    }));
-
-    var worker = new Worker(blob);
-    URL.revokeObjectURL(blob);
-    return worker;
-}
-function playAndRecordNoSound() {
-	videoTime+=0.05;
-	draw2(videoTime);
-	//createFrame();
-	window.requestAnimationFrame(playAndRecordNoSound);
-	//capturer.capture(canvas);
-}*/
-
-function createFrame() {
-	let frame = document.createElement("canvas");
-	frame.width = width;
-	frame.height = height;
-	let ct = frame.getContext("2d");
-	ct.drawImage(canvasLines, 0, 0);
-	ct.drawImage(pCanvas, 0, height * 0.9);
-	ct.drawImage(canvas, 0, 0);
-	ct.drawImage(pCanvas2, 0, height * 0.9);
-	ct.drawImage(canvasFg, 0, height * 0.9);
-	frames.push(frame.toDataURL('image/webp', 1));
-
-}
 
 function drawBGLines() {
 	ctxLines.fillStyle="rgba(50,50,50,1)";
@@ -732,7 +671,7 @@ function roundRect(ctx, x, y, width, height, radius) {
 	ctx.closePath();
 
 }
-
+var mousePulse=0;
 function tick() {
 	var now = window.performance.now(); // current time in ms
 
@@ -740,6 +679,24 @@ function tick() {
 
 	lastTick = now;
 
+	if (loading) {
+		ctx.clearRect(0,0,width,height);
+		let str = "Loading . . . . . .";
+		let wd = ctx.measureText(str).width;
+		str = "Loading";
+
+		mousePulse=(mousePulse+1)%30;
+		ctx.fillStyle="grey";
+		ctx.fillRect(width/2-wd/2-10,height/2-13,wd+20,26);
+		ctx.fillStyle="black";
+		ctx.fillRect(width/2-wd/2-5,height/2-8,wd+10,16);
+
+		ctx.fillStyle="white";
+		for (let k=0;k<mousePulse/5;k++) {
+			str+=" .";
+		}
+		ctx.fillText(str,width/2-wd/2,height/2+3);
+	}
 
 	ticker += deltaTime;
 
@@ -750,7 +707,6 @@ function tick() {
 //Create array with one entry for each second in song. with all notes for each second within.
 function createNoteArray() {
 	allNotes = [];
-	console.log(midiFile);
 	/*loop0:
 	for (let h = 0; h < midiFile.tracks.length; h++) {
 		let dt = midiFile.tracks[h];*/
@@ -892,7 +848,13 @@ function getKeyDim(key) {
 }
 
 function loadSong(theSong) {
+	loading=true;
+	player.clearAnimation();
+	player.stop();
+	player.removeListener();
+	ctx.clearRect(0,0,width,height);
 	player.loadFile(theSong, function() {
+
 		myDt = player.data.slice(0);
 		midiFile = MidiFile(player.currentData);
 		speed = player.BPM * midiFile.header.ticksPerBeat / 60000;
@@ -908,10 +870,14 @@ function loadSong(theSong) {
 		for (let i = 0; i < midiFile.header.trackCount; i++) {
 			colors.push(getColor(i));
 		}
-		player.currentTime = -2000;
+		player.currentTime = 00;
 		curInd = 0;
 		fillTracks();
-	});
+		loading=false;
+		player.setAnimation(function(data) {
+					draw2(data.now);
+				});
+	},function(state,prog){console.log(state,prog)});
 
 }
 var pausePlayStop = function(stop) {
@@ -963,7 +929,7 @@ function myMouseWheel(event) {
 	let evDel = (event.wheelDelta + 1) / (Math.abs(event.wheelDelta) + 1) * Math.min(500, Math.abs(event.wheelDelta));
 	var wheel = (evDel) / Math.abs(evDel) * 500; //n or -n
 
-	player.currentTime = Math.min(player.endTime, Math.max(-2000, player.currentTime + wheel));
+	player.currentTime = Math.min(player.endTime, Math.max(000, player.currentTime + wheel));
 	if (bool) {
 		player.resume();
 
@@ -983,7 +949,6 @@ function handleFileSelect(evt) {
 		let reader = new FileReader();
 		/*let reader2 = new FileReader();*/
 		reader.onload = function(theFile) {
-			console.log(reader.result);
 			song.push(reader.result)
 			loadSong(song[song.length - 1]);
 
@@ -1131,11 +1096,9 @@ function split(abuffer) {
 		count = Math.ceil(duration / segmentLen),
 		offset = 0,
 		block = 10 * rate;
-	console.log(count);
 	while (count > 0) {
 		count--;
 		let obj = bufferToWave(abuffer, offset, block);
-		console.log(obj);
 		var url = URL.createObjectURL(obj);
 		var audio = new Audio(url);
 		audio.controls = true;

@@ -49,9 +49,36 @@
 		'Synth Effects': ['97 FX 1 (rain)', '98 FX 2 (soundtrack)', '99 FX 3 (crystal)', '100 FX 4 (atmosphere)', '101 FX 5 (brightness)', '102 FX 6 (goblins)', '103 FX 7 (echoes)', '104 FX 8 (sci-fi)'],
 		'Ethnic': ['105 Sitar', '106 Banjo', '107 Shamisen', '108 Koto', '109 Kalimba', '110 Bagpipe', '111 Fiddle', '112 Shanai'],
 		'Percussive': ['113 Tinkle Bell', '114 Agogo', '115 Steel Drums', '116 Woodblock', '117 Taiko Drum', '118 Melodic Tom', '119 Synth Drum'],
-		'Sound effects': ['120 Reverse Cymbal', '121 Guitar Fret Noise', '122 Breath Noise', '123 Seashore', '124 Bird Tweet', '125 Telephone Ring', '126 Helicopter', '127 Applause', '128 Gunshot']
+		//'Sound effects': ['120 Reverse Cymbal', '121 Guitar Fret Noise', '122 Breath Noise', '123 Seashore', '124 Bird Tweet', '125 Telephone Ring', '126 Helicopter', '127 Applause', '128 Gunshot']
+		'Sound effects': ['120 Reverse Cymbal', '121 Guitar Fret Noise', '122 Breath Noise', '123 Seashore', '124 Bird Tweet', '125 Telephone Ring', '126 Helicopter', '127 Applause', '128 Gunshot'],
+		'Percussion': ['0 Percussion'] // not really GM but convenient hack
 	});
+	/* get/setChannelVolume
+	--------------------------------------------------- */
+	root.getChannelVolume = function(channelId) {
+		var channel = root.channels[channelId];
+		return channel && channel.volume;
+	};
 
+	root.getVolumeControl = function(channelId) {
+		var channel = root.channels[channelId];
+		return channel.volumeControl;
+	};
+	root.setChannelVolume = function(channelId, truthy) {
+		var channel = root.channels[channelId];
+		
+		channel.volumeControl = Math.min(100,Math.max(0,truthy));
+		
+	};
+	root.setChannelVolume = function(channelId, truthy) {
+		var channel = root.channels[channelId];
+		channel.volume = truthy;
+		
+	};
+	root.setVolume = function(channelId, truthy) {
+		var channel = root.channels[channelId];
+		channel.volume = truthy;
+	};
 	/* get/setInstrument
 	--------------------------------------------------- */
 	root.getInstrument = function(channelId) {
@@ -132,12 +159,15 @@
 			channels[i] = { // default values
 				instrument: i,
 				pitchBend: 0,
+				volume: 127,
+				volumeControl:50,
 				mute: false,
 				mono: false,
 				omni: false,
 				solo: false
 			};
 		}
+		channels[9].instrument = -1; // channel 10 is percussion
 		return channels;
 	})();
 
