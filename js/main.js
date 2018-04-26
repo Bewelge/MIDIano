@@ -48,6 +48,7 @@ window.onload = function() {
 	initCanvas();
 	loading = true;
 	MIDI.loadPlugin({
+		soundfontUrl: "http://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/", //"./soundfont/",//
 		onprogress: function(state, progress) {
 			//MIDI.loader.setValue(progress * 100);
 		},
