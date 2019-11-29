@@ -1,5 +1,11 @@
 body {
-
+background-color: black;
+width:100%;
+height:100%;
+overflow-y: hidden;
+}
+canvas {
+	z-index: -5;
 }
 input[type=file] {
 	background-color: black;

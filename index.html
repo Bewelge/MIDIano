@@ -1,52 +1,29 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
-
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- +This part and parts of main.js are directly copied from+ -->
-	<!-- ++++++++++https://github.com/mudcube/MIDI.js/+ -->
-	<!-- +++++++++++++Music Player Example+++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- from here -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title>MIDIano</title>
-	<!-- midi.js css -->
 	<style type="text/css">
 	 	
 	</style>
 	<link rel="stylesheet" type="text/css" href='./css/Interface.css'></link>
-	<!-- shim -->
+
+
 	<script src="inc/shim/Base64.js" type="text/javascript"></script>
 	<script src="inc/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="inc/shim/WebAudioAPI.js" type="text/javascript"></script>
-	<script src="inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
-	<!-- jasmid package -->
-	<script src="inc/jasmid/stream.js"></script>
-	<script src="inc/jasmid/midifile.js"></script>
-	<script src="inc/jasmid/replayer.js"></script>
-	<!-- midi.js package -->
-	<script src="js/midi/audioDetect.js" type="text/javascript"></script>
-	<script src="js/midi/gm.js" type="text/javascript"></script>
-	<script src="js/midi/loader.js" type="text/javascript"></script>
-	<script src="js/midi/plugin.audiotag.js" type="text/javascript"></script>
-	<script src="js/midi/plugin.webaudio.js" type="text/javascript"></script>
-	<script src="js/midi/plugin.webmidi.js" type="text/javascript"></script>
-	<script src="js/midi/player.js" type="text/javascript"></script>
-	<!-- utils -->
-	<script src="js/util/dom_request_xhr.js" type="text/javascript"></script>
-	<script src="js/util/dom_request_script.js" type="text/javascript"></script>
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- Until Here -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	<!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<script src="lib/midi-parser.js"></script>
+	<script src="js/MidiLoader.js"></script>
+	<script src="js/SoundfontLoader.js"></script>
+	<script src="js/Song.js"></script>
+	<script src="js/CONST.js"></script>
+	<script src="js/Player.js"></script>
+	<script src="js/Render.js"></script>
+	<script src="js/Timer.js"></script>
+	<script src="js/Audioplayer.js"></script>
+
 	
-	<script type="text/javascript" src="js/jquery-3.3.1.js"></script>
-	<script src="js/song.js" type="text/javascript"></script>
+	<script src="js/songExample.js" type="text/javascript"></script>
 	<script src="js/main.js" type="text/javascript"></script>
 
 </head>
