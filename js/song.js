@@ -9,11 +9,13 @@ class Song {
         this.duration = 0
         this.speed = 1
         this.notesBySeconds = {}
+        this.bpm = midiData.bpm
 
         this.header = midiData.header
         this.tracks = midiData.tracks
         this.otherTracks = []
         this.activeTracks = []
+        this.microSecondsPerBeat=10;
 
         this.processEvents(midiData)
         console.log(this)
@@ -22,6 +24,10 @@ class Song {
 
 
     }
+    getMicrosecondsPerBeat()  {
+        return this.microSecondsPerBeat;
+    }
+    
     getNotes(from, to) {
         let secondStart = Math.floor(from)
         let secondEnd = Math.floor(to)
