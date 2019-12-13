@@ -1,33 +1,124 @@
 class Song {
-    constructor(midiData) {
+    constructor(midiData, fileName) {
         console.log(midiData)
+        this.fileName = fileName
         this.name = ""
         this.text = []
         this.timeSignature
         this.keySignarture
-        this.end = 0
         this.duration = 0
         this.speed = 1
         this.notesBySeconds = {}
-        this.bpm = midiData.bpm
+        this.controlEvents = []
+        this.bpms = midiData.bpms
+       
 
         this.header = midiData.header
         this.tracks = midiData.tracks
         this.otherTracks = []
         this.activeTracks = []
-        this.microSecondsPerBeat=10;
+        this.microSecondsPerBeat = 10;
+        
 
         this.processEvents(midiData)
         console.log(this)
-        console.log(this.getNoteSequence());
+        console.log(this.getNoteSequence())
+
 
 
 
     }
-    getMicrosecondsPerBeat()  {
+    getStart() {
+        return this.getNoteSequence()[0].timestamp
+    }
+    getEnd() {
+        if (!this.end) {
+            let noteSequence = this.getNoteSequence().sort((a,b) => a.offTime - b.offTime)
+            let lastNote = noteSequence[noteSequence.length - 1]
+            this.end = lastNote.offTime//timestamp + lastNote.duration
+        }
+        return this.end
+    }
+    getOffset() {
+        if (!this.smpteOffset) {
+            return 0
+        } else {
+            return (((this.smpteOffset.hour * 60 + this.smpteOffset.min) * 60 ) + this.smpteOffset.sec ) * 1000
+        }
+    }
+    setTempoLines() {
+        let timeSignature = this.timeSignature
+        let numerator = timeSignature.numerator || 4
+        let denominator = timeSignature.denominator || 4
+        let thirtySecond = timeSignature.thirtyseconds || 8
+
+
+        let bpms = this.bpms.slice(0)
+
+        let timestamp = 0// -this.getOffset()
+        let timeInBeat = 0
+        let beatsDone = 0
+        let timeSig = numerator / denominator
+        console.log(numerator,denominator,timeSig)
+        let tempoLines = {}
+        let bpm = 120
+        let bps = 2
+        let milisecondsPerBeat = 1000 / bps  * timeSig
+        while (bpms.length) {
+            bpm = bpms[0].bpm
+            bps = bpm / 60
+            milisecondsPerBeat = 1000 / bps   * timeSig
+            timestamp++
+            timeInBeat++
+           
+            if (timeInBeat >= milisecondsPerBeat) {
+                beatsDone++;
+                timeInBeat -=milisecondsPerBeat
+                let second = Math.floor(timestamp / 1000)
+                if (!tempoLines.hasOwnProperty(second)) {
+                    tempoLines[second] = []
+                }
+
+                tempoLines[second].push(timestamp - timeInBeat)
+            }
+            if (timestamp > bpms[0].timestamp) {
+                bpms.splice(0, 1)
+            }
+        }
+        while (timestamp < this.getEnd()) {
+            timestamp++
+            timeInBeat++
+            if (timeInBeat >= milisecondsPerBeat) {
+                beatsDone++;
+                timeInBeat -=milisecondsPerBeat
+                let second = Math.floor(timestamp / 1000)
+                if (!tempoLines.hasOwnProperty(second)) {
+                    tempoLines[second] = []
+                }
+
+                tempoLines[second].push(timestamp)
+            }
+        }
+        console.log(tempoLines)
+        this.tempoLines = tempoLines
+    }
+    getTempoLines() {
+        if (!this.tempoLines) {
+            this.setTempoLines()
+        }
+        return this.tempoLines;
+    }
+    getMicrosecondsPerBeat() {
         return this.microSecondsPerBeat;
     }
-    
+    getBPM(time) {
+        for (let i = this.bpms.length - 1; i >= 0; i--) {
+            if (this.bpms[i].timestamp < time) {
+                return this.bpms[i].bpm
+            }
+        }
+    }
+
     getNotes(from, to) {
         let secondStart = Math.floor(from)
         let secondEnd = Math.floor(to)
@@ -50,29 +141,37 @@ class Song {
     getAllInstruments() {
 
         let instruments = {}
-        let programs = {};
+        let programs = {}
+        this.controlEvents = {}
         this.tracks.forEach(track => {
             track.forEach(event => {
-                let channel = event.channel;
+                let channel = event.channel
 
                 if (event.type == 'programChange') {
-                    programs[channel] = event.programNumber;
+                    programs[channel] = event.programNumber
+                }
+
+                if (event.type == "controller" && event.controllerType == 7) {
+                    if (!this.controlEvents.hasOwnProperty(Math.floor(event.timestamp/1000))) {
+                        this.controlEvents[Math.floor(event.timestamp / 1000)] = []
+                    }
+                    this.controlEvents[Math.floor(event.timestamp / 1000)].push(event)
                 } 
-                
+
                 if (event.type == 'noteOn') {
-                    let program = programs[channel];
-                    let instrument = CONST.INSTRUMENTS.BY_ID[isFinite(program) ? program : channel];
-                    instruments[instrument.id] = true
-                    event.instrument = instrument.id
+                    if (channel != 9) {
+                        let program = programs[channel];
+                        let instrument = CONST.INSTRUMENTS.BY_ID[isFinite(program) ? program : channel];
+                        instruments[instrument.id] = true
+                        event.instrument = instrument.id
+                    } else {
+                        instruments['percussion'] = true
+                        event.instrument = 'percussion'
+                    }
                 }
             })
         })
         return Object.keys(instruments)
-
-      /*   let key = CONST.NOTE_TO_KEY[note.noteNumber]
-        let channel = this.channels[note.channel]
-        let instrumentNum = channel['instrument']
-        let instrument = CONST.INSTRUMENTS.BY_ID[instrumentNum].id */
     }
     processEvents(midiData) {
 
@@ -93,7 +192,7 @@ class Song {
             }
         })
 
-        this.activeTracks.forEach((track,trackIndex) => {
+        this.activeTracks.forEach((track, trackIndex) => {
             track.notesBySeconds = {};
             Song.processNotes(track.notes);
             track.notes = track.notes.slice(0).filter(note => note.type == "noteOn")
@@ -116,10 +215,13 @@ class Song {
                 this.text.push(event.text);
             }
             else if (event.type == "timeSignature") {
-                newTrack.timeSignature = event;
+                this.timeSignature = event;
             }
             else if (event.type == "keySignature") {
                 newTrack.keySignarture = event;
+            }
+            else if (event.type == "smpteOffset") {
+                this.smpteOffset = event;
             }
             else {
                 newTrack.meta.push(event);
@@ -137,9 +239,6 @@ class Song {
                 track.notesBySeconds[second] = [note];
             }
         });
-    }
-    findLastNote() {
-
     }
     getNoteSequence() {
         if (!this.notesSequence) {
@@ -170,7 +269,7 @@ class Song {
                 onNote.noteNumber == notes[i].noteNumber) {
                 onNote.offTime = notes[i].timestamp
                 onNote.duration = onNote.offTime - onNote.timestamp
-                
+
                 break;
             }
         }

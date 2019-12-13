@@ -7,41 +7,47 @@
 	 	
 	</style>
 	<link rel="stylesheet" type="text/css" href='./css/Interface.css'></link>
+	<link rel="stylesheet" type="text/css" href='./css/Slider.css'></link>
 
-
-	<script src="inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="inc/shim/Base64binary.js" type="text/javascript"></script>
-
+	<!-- lib -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/> <!-- 'nano' theme -->
+	<link rel="stylesheet" type="text/css" href='./css/bootstrap.min.css'></link>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	
+	<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.es5.min.js"></script>
+	<script src="lib/Base64.js" type="text/javascript"></script>
+	<script src="lib/Base64binary.js" type="text/javascript"></script>
+	
 	<script src="lib/midi-parser.js"></script>
 	<script src="js/MidiLoader.js"></script>
 	<script src="js/SoundfontLoader.js"></script>
+	<script src="js/DomHelper.js"></script>
 	<script src="js/Song.js"></script>
 	<script src="js/CONST.js"></script>
+	<script src="js/UI.js"></script>
 	<script src="js/Player.js"></script>
 	<script src="js/Render.js"></script>
 	<script src="js/Timer.js"></script>
 	<script src="js/Audioplayer.js"></script>
-
+	
 	
 	<script src="js/songExample.js" type="text/javascript"></script>
 	<script src="js/main.js" type="text/javascript"></script>
-
+	
 </head>
 <body>
-	<input type="file" id="files" name="files[]" multiple />
-	
-	
-	<div style="z-index: 2;">
-		<div class="player" style="height: 42px;">
-			<div style="margin: 0 auto; width: 160px; float: right;">
-				<input type="image" src="./images/play.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
-				<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
-			</div>
+	<div style="position:absolute;top:0;left:0;z-index:5">
+
+
 			
+			<!-- <input type="image" src="./images/play.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop"> -->
+			<!-- <input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)"> -->
 		</div>
 		
-	</div>
-
-
+		
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> -->
+		<script src="js/bootstrap.min.js" type="text/javascript"></script>
+	<!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script> -->
 </body>
 </html>

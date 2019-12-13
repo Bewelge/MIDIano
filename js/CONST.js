@@ -1,4 +1,5 @@
 var CONST = {
+  TRACK_COLORS: [{ white: "rgb(40,50,90)", black: "Blue" }, { white: "rgb(50,90,60)", black: "rgb(20,85,40)" }, { white: "rgb(40,50,90)", black: "Blue" }, { white: "rgb(50,90,60)", black: "rgb(20,85,40)" }],
     INSTRUMENTS: {
         BY_ID: {
             "0": {

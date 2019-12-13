@@ -8,8 +8,11 @@ class SoundfontLoader {
     * 
     * @param {String} instrument 
     */
-    static async loadInstrument(instrument) {
-        return fetch('http://gleitz.github.io/midi-js-soundfonts/MusyngKite/' + instrument + '-ogg.js')
+    static async loadInstrument(instrument,soundfontName) {
+        if (instrument == "percussion") {
+            soundfontName = "FluidR3_GM"
+        }
+        return fetch('http://gleitz.github.io/midi-js-soundfonts/'+soundfontName+'/' + instrument + '-ogg.js')
             .then((response) => {
                 if (response.ok) {
                     return response.text()
@@ -36,7 +39,6 @@ class SoundfontLoader {
         let sortedBuffers = null;
         let unsortedBuffers = await SoundfontLoader.createBuffers(ctx).then(unsortedBuffers => {
             let buffers = {};
-            console.log(1,unsortedBuffers)
             for (let b in unsortedBuffers) {
                 let buffer = unsortedBuffers[b]
                 if (!buffers.hasOwnProperty(buffer.instrument)) {
@@ -46,7 +48,6 @@ class SoundfontLoader {
             }
             sortedBuffers = buffers;
         })
-        console.log(unsortedBuffers)
         return sortedBuffers
     }
     static async createBuffers(ctx) {
