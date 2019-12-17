@@ -2,6 +2,8 @@ class UI {
     constructor(player) {
         this.player = player
         player.newSongCallbacks.push(this.newSongCallback.bind(this))
+        player.onloadStartCallbacks.push(this.startLoad.bind(this))
+        player.onloadStopCallbacks.push(this.stopLoad.bind(this))
         this.resize()
         this.createControlMenu()
     }
@@ -136,6 +138,24 @@ class UI {
             }.bind(this);
             reader.readAsDataURL(f);
         }
+    }
+    startLoad() {
+        this.getLoadingDiv().style.display = "block"
+    }
+    stopLoad() {
+        this.getLoadingDiv().style.display = "none"
+
+    }
+    getLoadingDiv()  {
+        if (!this.loadingDiv) {
+            this.loadingDiv = DomHelper.createDivWithClass("fullscreen")
+            
+            let spinner = DomHelper.createSpinner()
+            this.loadingDiv.appendChild(spinner)
+            document.body.appendChild(this.loadingDiv)
+        }
+        return this.loadingDiv
+
     }
     getSpeedDiv() {
         if (!this.speedDiv) {

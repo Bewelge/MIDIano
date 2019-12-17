@@ -22,6 +22,8 @@ class Player {
         this.mutedAtVolume = 100
 
         this.newSongCallbacks = []
+        this.onloadStartCallbacks = []
+        this.onloadStopCallbacks = []
 
         this.playbackSpeed = 1
     }
@@ -86,6 +88,7 @@ class Player {
         return await SoundfontLoader.getBuffers(this.context).then((buffers) => {
             console.log("Buffers loaded")
             player.setBuffers(buffers);
+            this.onloadStopCallbacks.forEach(callback => callback())
             this.loading = false
         })
     }
@@ -93,6 +96,8 @@ class Player {
         if (this.context.state == 'running') {
             this.context.suspend()
         }
+        this.onloadStartCallbacks.forEach(callback => callback())
+        
         this.playing = false
         this.progress = 0
         this.scrollOffset = 0
@@ -113,10 +118,7 @@ class Player {
         await Promise.all(neededInstruments)
 
         this.setupTracks()
-
-        for (let callback in this.newSongCallbacks) {
-            this.newSongCallbacks[callback]()
-        }
+        this.newSongCallbacks.forEach(callback => callback())
 
         return player.getBuffers()
     }

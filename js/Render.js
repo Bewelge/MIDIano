@@ -316,20 +316,6 @@ class Render {
         return this.player.tracks[trackIndex].color
     }
     /**
-     * Assigns a color to each track of current song. Has to be called once each time a new song is loaded.
-     * #Moved to Player.js
-     */
-    // setupTracks() {
-    //     this.tracks = {}
-    //     let song = this.player.getSong()
-    //     for (let t in song.activeTracks) {
-    //         if (!this.tracks.hasOwnProperty(t)) {
-    //             this.tracks[t] = {draw:true}
-    //         }
-    //         this.tracks[t].color = this.colors[t % 4]
-    //     }
-    // }
-    /**
      * 
      * @param {Number} noteNumber 
      */

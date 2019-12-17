@@ -5,6 +5,9 @@ class DomHelper {
             height:height
         })
     }
+    static createSpinner() {
+        return DomHelper.createDivWithIdAndClass("loadSpinner","loader")
+    }
     static setCanvasSize(cnv, width, height) {
         cnv.width = width
         cnv.height = height

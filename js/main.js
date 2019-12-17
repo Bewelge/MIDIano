@@ -17,7 +17,7 @@ var player
 window.onload = async function () {
 	await init();
 	loading = true;
-	loadSongFromURL("http://www.piano-midi.de/midis/brahms/brahms_opus1_1_format0.mid")
+//	loadSongFromURL("http://www.piano-midi.de/midis/brahms/brahms_opus1_1_format0.mid")
 }
 
 async function init() {
