@@ -13,7 +13,14 @@ class DomHelper {
         cnv.height = height
     }
     static replaceGlyph(element,oldIcon,newIcon) {
-        element.className = element.className.replace('glyphicon-' +oldIcon,'glyphicon-' + newIcon)
+        element.children.forEach(childNode => {
+            if (childNode.classList.contains('glyphicon-'+oldIcon)) {
+                childNode.className = childNode.className.replace('glyphicon-' +oldIcon,'glyphicon-' + newIcon)
+            }
+        })
+    }
+    static removeClass(className,element) {
+        element.className = element.className.replace(className,'')
     }
     static createSliderWithLabel(id,label,val,min,max,onChange) {
         let cont = DomHelper.createElement('div',{},{id: id + 'container', className:'sliderContainer'})
@@ -90,7 +97,9 @@ class DomHelper {
         elements.forEach(element=>DomHelper.addClassToElement(className, element))
     }
     static addClassToElement(className,element) {
-        element.className += ' ' + className
+        if (!element.classList.contains(className)) {
+            element.className += ' ' + className
+        }
     }
     static createFlexContainer() {
         return DomHelper.createElement("div", {}, {className:'flexContainer'})
@@ -124,12 +133,17 @@ class DomHelper {
         return DomHelper.createElement('div',{},{className:"divider"})
     }
     static createButton(id,onClick) {
-        return DomHelper.createElement('button',{},{
+        let bt = DomHelper.createElement('button',{},{
             id:id,
             type:'button',
             className:'btn btn-default',
             onclick: onClick
         })
+        bt.appendChild(DomHelper.getButtonSelectLine())
+        return bt
+    }
+    static getButtonSelectLine() {
+        return DomHelper.createDivWithClass('btn-select-line')
     }
     static createElement(tag,styles,attributes) {
         tag = tag || 'div'

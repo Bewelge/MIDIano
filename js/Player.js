@@ -16,7 +16,7 @@ class Player {
         this.paused = true
         this.playing = false
         this.scrolling = 0
-        this.loadedSongs=new Set()
+        this.loadedSongs = new Set()
         this.muted = false
         this.volume = 100
         this.mutedAtVolume = 100
@@ -51,10 +51,16 @@ class Player {
     getContext() {
         return this.context
     }
+    getTimeWithScrollOffset(scrollOffset) {
+        return this.progress - this.startDelay - scrollOffset
+    }
     getTime() {
         // let time = this.context.currentTime - this.startContextTime - this.startDelay 
         // time = isNaN(time) ? 0 : time;
         return this.progress - this.startDelay - this.scrollOffset
+    }
+    setTime(seconds) {
+        this.progress += seconds - this.getTime()
     }
     getSong() {
         return this.song
@@ -92,19 +98,22 @@ class Player {
             this.loading = false
         })
     }
-    async loadSong(theSong, fileName) {
+    async loadSong(theSong, fileName, setLoadMessage) {
+        setLoadMessage("Loading " + fileName + ".")
         if (this.context.state == 'running') {
             this.context.suspend()
         }
         this.onloadStartCallbacks.forEach(callback => callback())
-        
+
         this.playing = false
         this.progress = 0
         this.scrollOffset = 0
         this.paused = true
         this.loading = true
+        setLoadMessage("Parsing Midi File.")
         let midiFile = await MidiLoader.loadFile(theSong);
         currentSong = new Song(midiFile, fileName)
+        setLoadMessage("Loading Instruments")
 
         this.setSong(currentSong)
         this.loadedSongs.add(currentSong)
@@ -119,7 +128,7 @@ class Player {
 
         this.setupTracks()
         this.newSongCallbacks.forEach(callback => callback())
-
+        setLoadMessage("Creating Buffers")
         return player.getBuffers()
     }
     async loadNeededInstruments() {
@@ -148,9 +157,22 @@ class Player {
     handleScroll(stacksize) {
         if (this.scrolling != 0) {
             this.lastTime = this.context.currentTime
-            this.scrollOffset += 0.01 * this.scrolling
-            this.scrolling *= 0.995
-            if (Math.abs(this.scrolling) <= 0.001) {
+            let newScrollOffset =  this.scrollOffset +  0.01 * this.scrolling
+            let newTime = this.getTimeWithScrollOffset(newScrollOffset)
+            if (this.getSong()) {
+                if (newTime > 1 + this.getSong().getEnd() / 1000) {
+                    newScrollOffset = this.scrollOffset + ((1 + this.getSong().getEnd() / 1000) - this.getTime())
+                }
+            }
+            if (newTime < -this.startDelay) {
+                newScrollOffset = this.scrollOffset + (-this.startDelay - this.getTime())
+            }
+            this.scrollOffset = newScrollOffset
+            this.scrolling =
+                (Math.abs(this.scrolling)
+                    - Math.max(Math.abs(this.scrolling * 0.006), this.playbackSpeed * 0.001))
+                * (Math.abs(this.scrolling) / this.scrolling)
+            if (Math.abs(this.scrolling) <= this.playbackSpeed * 0.01) {
                 this.scrolling = 0
                 this.noteSequence = this.song.getNoteSequence()
             }
@@ -214,14 +236,14 @@ class Player {
         this.pause()
     }
     resume() {
-        console.log("Resuming  Song")
+        console.log("Resuming Song")
         this.paused = false
         this.noteSequence = this.song.getNoteSequence()
         this.context.resume()
         this.play()
     }
     pause() {
-        console.log("Pausing  Song")
+        console.log("Pausing Song")
         this.sources.forEach(source => source.stop(0))
         this.context.suspend()
         this.pauseTime = this.getTime()
@@ -265,7 +287,7 @@ class Player {
         gainNode.value = 0
         gainNode.gain.setTargetAtTime(0, contextTime, 0.1)
         gainNode.gain.setTargetAtTime(Math.min(1.0, Math.max(-1.0, gain)), contextTime + delay, 0.1);
-        gainNode.gain.setTargetAtTime(Math.min(1.0, Math.max(-1.0, gain)), contextTime + delay + note.duration / 1000, 0.1);
+        gainNode.gain.setTargetAtTime(Math.min(1.0, Math.max(-1.0, gain)), contextTime + delay + (note.duration / 1000) / this.playbackSpeed, 0.1);
         gainNode.gain.linearRampToValueAtTime(0, contextTime + delay + duration / 1000 + 0.1)
         gainNode.connect(this.context.destination);
 

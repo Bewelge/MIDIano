@@ -8,22 +8,50 @@ class Render {
 
         this.setupCanvases()
 
+        window.addEventListener('mouseup', (ev) => {
+            this.grabbedProgressBar = false
+            this.grabbedMainCanvas = false
+            this.lastYGrabbed=false
+        })
+        document.body.addEventListener('mousedown', (ev) => {
+            if (ev.target == document.body && ev.clientY < this.height - this.whiteKeyHeight) {
+                this.grabbedMainCanvas = true
+            }
+        })
+        this.mouseX = 0
+        this.mouseY = 0
+        document.body.addEventListener('mousemove', (ev) => {
+            if (this.grabbedMainCanvas) {
+                if (this.lastYGrabbed) {
+                    let alreadyScrolling = this.player.scrolling != 0
+                    let change = (this.lastYGrabbed - ev.clientY) / this.height * this.noteToHeightConst
+                    this.player.scrolling += change / 300
+                    if (!alreadyScrolling) {
+                        player.handleScroll()
+                    }
+                }
+                this.lastYGrabbed = ev.clientY
+            }
 
+            this.mouseX = ev.clientX
+            this.mouseY = ev.clientY
+        })
         window.addEventListener("resize", this.resize.bind(this))
 
     }
-    
+
     /**
      * Sets all dimensions dependent on window size
      */
     resize() {
-        this.width = Math.max(750,Math.floor(window.innerWidth))
+        this.width = Math.max(1040, Math.floor(window.innerWidth))
         this.height = Math.floor(window.innerHeight)
         this.noteToHeightConst = this.height * 3
-        this.whiteKeyWidth = Math.max(24, Math.floor(this.width / 52))
+        this.whiteKeyWidth = Math.max(20, this.width / 52)
         this.whiteKeyHeight = this.whiteKeyWidth * 4.5
         this.blackKeyWidth = Math.floor(this.whiteKeyWidth * 0.5829787234)
         this.blackKeyHeight = Math.floor(this.whiteKeyHeight * 2 / 3)
+
 
         this.keyDimensions = []
 
@@ -56,14 +84,42 @@ class Render {
                 }
             }
         }
+
+        this.drawNoteInfoBoxes()
     }
     /**
      * 
      */
     setupCanvases() {
+
+        DomHelper.setCanvasSize(this.getBgCanvas(), this.width, this.height)
+
+        this.drawBackground()
+
+        //Main Canvas to draw notes on
+
+        DomHelper.setCanvasSize(this.getMainCanvas(), this.width, this.height)
+
+        DomHelper.setCanvasSize(this.getPianoCanvasWhite(), this.width, this.whiteKeyHeight)
+        this.getPianoCanvasWhite().style.top = this.height - this.whiteKeyHeight + "px"
+
+        DomHelper.setCanvasSize(this.getPlayedKeysWhite(), this.width, this.whiteKeyHeight)
+        this.getPlayedKeysWhite().style.top = this.height - this.whiteKeyHeight + "px"
+
+        DomHelper.setCanvasSize(this.getPianoCanvasBlack(), this.width, this.whiteKeyHeight)
+        this.getPianoCanvasBlack().style.top = this.height - this.whiteKeyHeight + "px"
+
+        DomHelper.setCanvasSize(this.getPlayedKeysBlack(), this.width, this.whiteKeyHeight)
+        this.getPlayedKeysBlack().style.top = this.height - this.whiteKeyHeight + "px"
+
+        this.drawPiano(this.pianoCtxWhite, this.pianoCtxBlack);
+
+        DomHelper.setCanvasSize(this.getProgressBarCanvas(), this.width, 20)
+    }
+    getBgCanvas() {
         if (!this.cnvBG) {
             this.cnvBG = DomHelper.createCanvas(this.width, this.height, {
-                backgroundColor:'black',
+                backgroundColor: 'black',
                 position: "absolute",
                 top: "0px",
                 left: "0px"
@@ -71,23 +127,21 @@ class Render {
             document.body.appendChild(this.cnvBG)
             this.ctxBG = this.cnvBG.getContext("2d")
         }
-        DomHelper.setCanvasSize(this.cnvBG, this.width, this.height)
-
-        this.drawBackground()
-
-        //Main Canvas to draw notes on
+        return this.cnvBG
+    }
+    getMainCanvas() {
         if (!this.cnv) {
             this.cnv = DomHelper.createCanvas(this.width, this.height, {
                 position: "absolute",
                 top: "0px",
                 left: "0px",
-                background: "linear-gradient(0deg, rgba(0,0,0,0.8), transparent)"
             })
             document.body.appendChild(this.cnv)
             this.ctx = this.cnv.getContext("2d")
         }
-        DomHelper.setCanvasSize(this.cnv, this.width, this.height)
-
+        return this.cnv
+    }
+    getPianoCanvasWhite() {
         if (!this.pianoCanvasWhite) {
             this.pianoCanvasWhite = DomHelper.createCanvas(this.width, this.whiteKeyHeight, {
                 position: "absolute",
@@ -97,9 +151,9 @@ class Render {
             document.body.appendChild(this.pianoCanvasWhite)
             this.pianoCtxWhite = this.pianoCanvasWhite.getContext("2d");
         }
-        DomHelper.setCanvasSize(this.pianoCanvasWhite, this.width, this.whiteKeyHeight)
-        this.pianoCanvasWhite.style.top = this.height - this.whiteKeyHeight + "px"
-
+        return this.pianoCanvasWhite
+    }
+    getPlayedKeysWhite() {
         if (!this.playedKeysCanvasWhite) {
             this.playedKeysCanvasWhite = DomHelper.createCanvas(this.width, this.whiteKeyHeight, {
                 position: "absolute",
@@ -108,9 +162,9 @@ class Render {
             document.body.appendChild(this.playedKeysCanvasWhite)
             this.playedKeysCtxWhite = this.playedKeysCanvasWhite.getContext("2d")
         }
-        DomHelper.setCanvasSize(this.playedKeysCanvasWhite, this.width, this.whiteKeyHeight)
-        this.playedKeysCanvasWhite.style.top = this.height - this.whiteKeyHeight + "px"
-
+        return this.playedKeysCanvasWhite
+    }
+    getPianoCanvasBlack() {
         if (!this.pianoCanvasBlack) {
             this.pianoCanvasBlack = DomHelper.createCanvas(this.width, this.whiteKeyHeight, {
                 position: "absolute",
@@ -119,9 +173,9 @@ class Render {
             document.body.appendChild(this.pianoCanvasBlack)
             this.pianoCtxBlack = this.pianoCanvasBlack.getContext("2d")
         }
-        DomHelper.setCanvasSize(this.pianoCanvasBlack, this.width, this.whiteKeyHeight)
-        this.pianoCanvasBlack.style.top = this.height - this.whiteKeyHeight + "px"
-
+        return this.pianoCanvasBlack
+    }
+    getPlayedKeysBlack() {
         if (!this.playedKeysCanvasBlack) {
             this.playedKeysCanvasBlack = DomHelper.createCanvas(this.width, this.whiteKeyHeight, {
                 position: "absolute",
@@ -130,28 +184,60 @@ class Render {
             document.body.appendChild(this.playedKeysCanvasBlack)
             this.playedKeysCtxBlack = this.playedKeysCanvasBlack.getContext("2d")
         }
-        DomHelper.setCanvasSize(this.playedKeysCanvasBlack, this.width, this.whiteKeyHeight)
-        this.playedKeysCanvasBlack.style.top = this.height - this.whiteKeyHeight + "px"
-
-        this.drawPiano(this.pianoCtxWhite, this.pianoCtxBlack);
-
+        return this.playedKeysCanvasBlack
+    }
+    getProgressBarCanvas() {
         if (!this.progressBarCanvas) {
-            this.progressBarCanvas = DomHelper.createCanvas(20, this.height - this.whiteKeyHeight, {
-                position: "absolute",
-                right: "0px",
-                top: "0px"
+            this.progressBarCanvas = DomHelper.createCanvas(this.width, 20, {
             })
+            this.progressBarCanvas.id = "progressBarCanvas"
             document.body.appendChild(this.progressBarCanvas)
             this.progressBarCtx = this.progressBarCanvas.getContext("2d")
+            this.progressBarCanvas.addEventListener('mousemove', (ev) => {
+                if (this.grabbedProgressBar) {
+                    let newTime = (ev.clientX / this.width) * (this.player.getSong().getEnd() / 1000)
+                    this.player.setTime(newTime)
+                }
+            })
+            this.progressBarCanvas.addEventListener('mousedown', (ev) => {
+                if (ev.target == this.progressBarCanvas) {
+                    this.grabbedProgressBar = true
+                    let newTime = (ev.clientX / this.width) * (this.player.getSong().getEnd() / 1000)
+                    this.player.setTime(newTime)
+                }
+            })
+
+
         }
-        DomHelper.setCanvasSize(this.progressBarCanvas, 20, this.height - this.whiteKeyHeight)
+        return this.progressBarCanvas
     }
     drawProgressBar() {
         let ctx = this.progressBarCtx
         let progressPercent = this.player.getTime() / (this.player.getSong().getEnd() / 1000)
-        ctx.fillStyle = "black"
+        ctx.fillStyle = "rgba(150,150,150,0.8)"
         let ht = this.height - this.whiteKeyHeight
-        ctx.fillRect(0, ht - ht * progressPercent, 20, 20)
+        ctx.fillRect(this.width * progressPercent, 0, 4, 20)
+        ctx.fillStyle = "rgba(50,150,50,0.3)"
+        ctx.fillRect(0, 2, this.width * progressPercent, 16)
+
+        ctx.fillStyle = "rgba(0,0,0,1)"
+        let text = this.formatTime(this.player.getTime()) + "/" + this.formatTime(this.player.getSong().getEnd() / 1000)
+        let wd = ctx.measureText(text).width
+        ctx.font = "14px Arial black"
+        ctx.fillText(text, this.width / 2 - wd / 2, 15)
+    }
+    formatTime(seconds) {
+        let hm = [60, 1, 0.01]
+        let str = ""
+        for (let i in hm) {
+            let strAddition = Math.floor(seconds / hm[i]) > 0 ? Math.floor(seconds / hm[i]) + ":" : "00:"
+            if (strAddition.length == 2) {
+                strAddition = "0" + strAddition
+            }
+            str += strAddition
+            seconds -= Math.floor(seconds / hm[i]) * hm[i]
+        }
+        return str.substring(0, str.length - 1)
     }
 
     /**
@@ -161,14 +247,26 @@ class Render {
         let c = this.ctxBG
         c.strokeStyle = "rgba(255,255,255,0.6)"
         c.fillStyle = "rgba(255,255,255,0.1)"
+        let whiteKey = 0
         for (let i = 0; i < 88; i++) {
             if (!this.isBlack(i)) {
-                c.strokeStyle = i % 2 ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.3)"
-                c.lineWidth = i % 12 ? 1 : 3
+                c.strokeStyle = i % 2 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.2)"
+                c.fillStyle = (i+2) % 2 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)"
+                c.lineWidth = 1
                 //c.globalAlpha = 0.25  + (i+9)%3 / 4  + (i + 9) % 12 / 48
                 let dim = this.getKeyDimensions(i)
                 c.fillRect(dim.x, dim.y, dim.w, this.height)
                 c.strokeRect(dim.x, dim.y, dim.w, this.height)
+
+                if ((1 + (whiteKey%7)) == 3) {
+                    c.lineWidth = 5
+                    c.beginPath()
+                    c.moveTo(dim.x,0)
+                    c.lineTo(dim.x,this.height)
+                    c.stroke()
+                    c.closePath()
+                }
+                whiteKey++
             }
         }
     }
@@ -190,7 +288,7 @@ class Render {
         } else {
             ctx.save()
             ctx.beginPath()
-            ctx.rect(dim.x + 1, dim.y, dim.w - 2, dim.h)
+            ctx.rect(dim.x + 1, dim.y + 4, dim.w - 2, dim.h - 4)
             ctx.clip()
             let lgr = ctx.createLinearGradient(dim.x, dim.y + dim.h / 2, dim.x + dim.w, dim.y + dim.h / 2)
             lgr.addColorStop(0, "rgba(0,0,0,0.7)")
@@ -211,7 +309,7 @@ class Render {
      * @param {Number} time 
      */
     drawNote(note, time) {
-        if (!this.player.tracks[note.track].draw) return
+        if (!this.player.tracks[note.track] || !this.player.tracks[note.track].draw) return
 
         let ctx = this.ctx
         let currentTime = time * 1000
@@ -221,7 +319,7 @@ class Render {
         let isOn = note.timestamp < currentTime && note.offTime > currentTime ? 1 : 0;
         let noteDoneRatio = 1 - (note.offTime - currentTime) / (note.duration)
         noteDoneRatio *= isOn
-        let rad = noteDims.w / 10 * (1 -  noteDoneRatio)
+        let rad = noteDims.w / 10 * (1 - noteDoneRatio)
         let x = noteDims.x + rad + 1
         let y = noteDims.y
         let w = noteDims.w - rad * 2 - 2
@@ -230,7 +328,7 @@ class Render {
         if (isOn) {
 
             ctx.fillStyle = keyBlack ? this.getColor(note.track).black : this.getColor(note.track).white
-            ctx.globalAlpha = Math.max(0, 0.6 - noteDoneRatio)
+            ctx.globalAlpha = Math.max(0, 0.7 - noteDoneRatio)
             let wOffset = Math.pow(this.whiteKeyWidth / 2, 1 + noteDoneRatio)
             this.drawRoundRect(ctx, x - wOffset / 2, y, w + wOffset, h, rad + rad * noteDoneRatio * 4)
             ctx.fill();
@@ -251,25 +349,31 @@ class Render {
         //     ctx.stroke();
         // }
 
+        ctx.globalAlpha = Math.min(1,((y+h-120)/ (this.height - this.whiteKeyHeight-120)) / 0.2)
         this.drawRoundRect(ctx, x, y, w, h, rad)
         ctx.fill();
-        let lgr = ctx.createLinearGradient(x,y,x+w,y+h)
-        lgr.addColorStop(0,"rgba(0,0,0,0.2)")
-        lgr.addColorStop(1,"rgba(255,255,255,0)")
+        let lgr = ctx.createLinearGradient(x, y, x + w, y + h)
+        lgr.addColorStop(0, "rgba(0,0,0,0.2)")
+        lgr.addColorStop(1, "rgba(255,255,255,0)")
         ctx.fillStyle = lgr
         ctx.fill()
-        lgr = ctx.createLinearGradient(x+w,y+h,x,y)
-        lgr.addColorStop(0,"rgba(0,0,0,0)")
-        lgr.addColorStop(1,"rgba(255,255,255,0.2)")
-        ctx.fillStyle = lgr
-        ctx.fill()
-
-        lgr = ctx.createLinearGradient(x+6,y+12,x,y)
-        lgr.addColorStop(0,"rgba(0,0,0,0)")
-        lgr.addColorStop(1,"rgba(255,255,255,0.95)")
+        lgr = ctx.createLinearGradient(x + w, y + h, x, y)
+        lgr.addColorStop(0, "rgba(0,0,0,0)")
+        lgr.addColorStop(1, "rgba(255,255,255,0.2)")
         ctx.fillStyle = lgr
         ctx.fill()
 
+        lgr = ctx.createLinearGradient(x + w / 2, y + h, x + w / 2, y + h - w * 1.2)
+        lgr.addColorStop(1, "rgba(0,0,0,0)")
+        lgr.addColorStop(0, "rgba(255,255,255,0.25)")
+        ctx.fillStyle = lgr
+        ctx.fill()
+        ctx.globalAlpha = 1
+
+
+        if (this.mouseX > x && this.mouseX < x + w && this.mouseY > y && this.mouseY < y + h) {
+           this.noteInfoBoxesToDraw.push(note)
+        }
         // lgr = ctx.createLinearGradient(x,y,x+this.blackKeyWidth,y+this.blackKeyWidth)
         // lgr.addColorStop(0.7,"rgba(0,0,0,0)")
         // lgr.addColorStop(0.95,"rgba(255,255,255,0.55)")
@@ -277,8 +381,34 @@ class Render {
         // ctx.fillStyle = lgr
         // ctx.fill()
 
-        
+
         ctx.stroke();
+    }
+    drawNoteInfoBoxes() {
+        for (let i in this.noteInfoBoxesToDraw) {
+            this.drawNoteInfoBox(this.noteInfoBoxesToDraw[i])
+        }
+        this.noteInfoBoxesToDraw = []
+    }
+    drawNoteInfoBox(note) {
+        let c = this.ctx
+        c.fillStyle="white"
+        c.font = "12px Arial black"
+        c.textBaseline = 'top'
+        let lines = [
+        'Note: ' + CONST.NOTE_TO_KEY[note.noteNumber],
+        'Start: ' + this.formatTime(note.timestamp/1000),
+        'End: ' + this.formatTime(note.offTime/1000),
+        'Duration: ' + this.formatTime(note.duration/1000),
+        'Instrument: ' + note.instrument,
+        'Track: ' + note.track,
+        'Channel: ' + note.channel
+        ]
+        let left = this.mouseX  > this.width / 2 ? -160 : 60
+        let top = this.mouseY > this.height / 2 ? -10 - 14 * lines.length : 10
+        for (let l in lines) {
+            c.fillText(lines[l],this.mouseX + left,this.mouseY + top +  14 * l)
+        }
     }
     /**
      * 
@@ -443,7 +573,7 @@ class Render {
     drawPiano(ctxWhite, ctxBlack) {
         //Background
         ctxWhite.fillStyle = "rgba(0,0,0,1)";
-        ctxWhite.fillRect(0, 5, this.width, this.height * 0.1);
+        ctxWhite.fillRect(0, 5, this.width, this.whiteKeyHeight + 10);
 
         this.drawWhiteKeys(ctxWhite)
         this.drawBlackKeys(ctxBlack)

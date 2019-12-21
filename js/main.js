@@ -22,25 +22,7 @@ window.onload = async function () {
 
 async function init() {
 
-	window.addEventListener("keydown", function (e) {
-		if (e.code == "Space") {
-			e.preventDefault();
-			if (!player.paused) {
-				player.pause();
-			} else {
-				if ( player.playing) {
-					player.resume();
 
-				} else {
-					player.startPlay()
-				}
-			}
-		} else if (e.code =="ArrowUp") {
-			player.playbackSpeed +=0.05
-		} else if (e.code =="ArrowDown") {
-			player.playbackSpeed -=0.05
-		}
-	})
 
 
 
@@ -50,8 +32,8 @@ async function init() {
 	player = new Player()
 	console.log("Player created.")
 
-	render = new Render(player)
 	UI  = new UI(player)
+	render = new Render(player)
 	drawIt()
 
 }
