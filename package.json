@@ -1,0 +1,29 @@
+{
+	"name": "midiano",
+	"version": "1.0.0",
+	"description": "All the visuals are done on HTML Canvas.",
+	"main": "index.html",
+	"directories": {
+		"lib": "lib"
+	},
+	"scripts": {
+		"start": "lite-server",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Bewelge/MIDIano.git"
+	},
+	"author": "Bewelge",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Bewelge/MIDIano/issues"
+	},
+	"homepage": "https://github.com/Bewelge/MIDIano#readme",
+	"devDependencies": {
+		"eslint": "^7.3.1",
+		"eslint-config-airbnb-base": "^14.2.0",
+		"eslint-plugin-import": "^2.22.0",
+		"lite-server": "^2.5.4"
+	}
+}

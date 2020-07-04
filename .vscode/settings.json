@@ -1,3 +1,4 @@
 {
-    "editor.autoClosingBrackets": "always"
+    "editor.autoClosingBrackets": "always",
+    "editor.overviewRulerBorder": false
 }
