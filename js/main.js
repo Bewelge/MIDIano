@@ -41,7 +41,9 @@ function drawIt() {
 	window.requestAnimationFrame(drawIt)
 }
 async function loadSongFromFile() {
-	loadSongFromURL("https://github.com/Bewelge/MIDIano/blob/rework/mz_331_3.mid") // Local: "../mz_331_3.mid")
+	loadSongFromURL(
+		"https://github.com/Bewelge/MIDIano/blob/rework/mz_331_3.mid?raw=true"
+	) // Local: "../mz_331_3.mid")
 }
 async function loadSongFromURL(url) {
 	let response = fetch(url, {
