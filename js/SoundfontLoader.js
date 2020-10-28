@@ -13,7 +13,7 @@ export class SoundfontLoader {
 			soundfontName = "FluidR3_GM"
 		}
 		return fetch(
-			"http://gleitz.github.io/midi-js-soundfonts/" +
+			"https://gleitz.github.io/midi-js-soundfonts/" +
 				soundfontName +
 				"/" +
 				instrument +
