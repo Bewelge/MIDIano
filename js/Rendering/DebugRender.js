@@ -14,19 +14,30 @@ export class DebugRender {
 	addNote(note) {
 		this.noteInfoBoxesToDraw.push(note)
 	}
-	render() {
+	render(renderInfos, mouseX, mouseY) {
 		if (!this.active) return
 
-		for (let i in this.noteInfoBoxesToDraw) {
-			this.drawNoteInfoBox(this.noteInfoBoxesToDraw[i])
-		}
-		this.noteInfoBoxesToDraw = []
+		let amountOfNotesDrawn = 0
+		renderInfos.forEach(renderInfo => {
+			if (
+				mouseX > renderInfo.x &&
+				mouseX < renderInfo.x + renderInfo.w &&
+				mouseY > renderInfo.y &&
+				mouseY < renderInfo.y + renderInfo.h
+			) {
+				this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
+				amountOfNotesDrawn++
+			}
+		})
 	}
-	drawNoteInfoBox(note) {
+	drawNoteInfoBox(note, mouseX, mouseY, amountOfNotesDrawn) {
 		let c = this.ctx
 		c.fillStyle = "white"
 		c.font = "12px Arial black"
 		c.textBaseline = "top"
+		c.strokeStyle = note.fillStyle
+		c.lineWidth = 4
+
 		let lines = [
 			"Note: " + CONST.NOTE_TO_KEY[note.noteNumber],
 			"Start: " + formatTime(note.timestamp / 1000),
@@ -36,10 +47,16 @@ export class DebugRender {
 			"Track: " + note.track,
 			"Channel: " + note.channel
 		]
-		let left = this.mouseX > this.windowWidth / 2 ? -160 : 60
-		let top = this.mouseY > this.windowHeight / 2 ? -10 - 14 * lines.length : 10
+		let left = mouseX > this.windowWidth / 2 ? -160 : 60
+		let top = mouseY > this.windowHeight / 2 ? -10 - 14 * lines.length : 10
+
+		top += amountOfNotesDrawn * lines.length * 15
+		c.beginPath()
+		c.moveTo(mouseX + left - 4, mouseY + top)
+		c.lineTo(mouseX + left - 4, mouseY + top + lines.length * 14)
+		c.stroke()
 		for (let l in lines) {
-			c.fillText(lines[l], this.mouseX + left, this.mouseY + top + 14 * l)
+			c.fillText(lines[l], mouseX + left, mouseY + top + 14 * l)
 		}
 	}
 }

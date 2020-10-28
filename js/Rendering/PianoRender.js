@@ -12,6 +12,7 @@ export class PianoRender {
 		this.windowWidth = windowWidth
 		this.windowHeight = windowHeight
 
+		this.keyDimensions = {}
 		this.computeKeyDimensions()
 
 		this.setupCanvases()
@@ -265,8 +266,7 @@ export class PianoRender {
 				this.whiteKeyHeight,
 				{
 					position: "absolute",
-					left: "0px",
-					boxShadow: "0px -3px 5px 5px rgba(0,0,0,0.5)"
+					left: "0px"
 				}
 			)
 			document.body.appendChild(this.pianoCanvasWhite)
@@ -296,7 +296,8 @@ export class PianoRender {
 				this.whiteKeyHeight,
 				{
 					position: "absolute",
-					left: "0px"
+					left: "0px",
+					boxShadow: "0px -3px 15px 5px rgba(0,0,0,0.4)"
 				}
 			)
 			document.body.appendChild(this.pianoCanvasBlack)
@@ -329,7 +330,7 @@ export class PianoRender {
 			let isNoteBlack = isBlack(noteNumber)
 			let x = this.getKeyX(noteNumber, isNoteBlack)
 
-			return {
+			this.keyDimensions[noteNumber] = {
 				x: x,
 				y: 0,
 				w: isNoteBlack ? this.blackKeyWidth : this.whiteKeyWidth,

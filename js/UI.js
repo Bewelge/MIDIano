@@ -21,6 +21,13 @@ export class UI {
 		this.height = Math.floor(window.innerHeight)
 		this.menuHeight = 200
 	}
+	fireInitialListeners() {
+		//Todo: or preload glyphs somehow. . .
+		window.setTimeout(
+			() => this.onMenuHeightChange(this.getNavBar().clientHeight),
+			500
+		)
+	}
 	createControlMenu() {
 		let topGroupsContainer = DomHelper.createDivWithClass("container")
 
@@ -49,9 +56,23 @@ export class UI {
 		DomHelper.appendChildren(topGroupsContainer, [leftTop, middleTop, rightTop])
 
 		let minimizeButton = this.getMinimizeButton()
+		let zoomDiv = this.getZoomDiv()
 
 		this.getNavBar().appendChild(minimizeButton)
 		this.getNavBar().appendChild(topGroupsContainer)
+	}
+	getZoomDiv() {}
+	mouseMoved() {
+		this.getMinimizeButton().style.transition = "none"
+		this.getMinimizeButton().style.opacity = 1
+		if (!this.fadingOutMinimizeButton) {
+			this.fadingOutMinimizeButton = true
+			window.setTimeout(() => {
+				this.getMinimizeButton().style.transition = "1s all ease-out"
+				this.getMinimizeButton().style.opacity = 0
+				this.fadingOutMinimizeButton = false
+			}, 1000)
+		}
 	}
 	getMinimizeButton() {
 		if (!this.minimizeButton) {
@@ -62,38 +83,37 @@ export class UI {
 					if (!this.navMinimized) {
 						this.getNavBar().style.top =
 							"-" + this.getNavBar().clientHeight + "px"
-						this.minimizeButton.style.bottom =
-							-20 - this.minimizeButton.clientHeight + "px"
 						this.navMinimized = true
-
+						this.minimizeButton
+							.querySelector("span")
+							.classList.remove("glyphicon-chevron-up")
+						this.minimizeButton
+							.querySelector("span")
+							.classList.add("glyphicon-chevron-down")
 						this.onMenuHeightChange(0)
 					} else {
 						this.getNavBar().style.top = "0px"
-						this.minimizeButton.style.bottom = "0px"
+						// this.minimizeButton.style.bottom = "0px"
 						this.navMinimized = false
 
+						this.minimizeButton
+							.querySelector("span")
+							.classList.add("glyphicon-chevron-up")
+						this.minimizeButton
+							.querySelector("span")
+							.classList.remove("glyphicon-chevron-down")
 						this.onMenuHeightChange(this.getNavBar().clientHeight)
 					}
 				}
 			)
 			this.minimizeButton.style.padding = "0px"
+			this.minimizeButton.style.fontSize = "0.5em"
 		}
+		this.minimizeButton.style.bottom =
+			-24 - this.minimizeButton.clientHeight + "px"
 		return this.minimizeButton
 	}
 
-	minimizeControlMenu() {
-		if (!this.navMinimized) {
-			// this.getNavBar().style.maxHeight = "0px"
-			this.getNavBar().style.padding = "0"
-			minimizeButton.style.bottom = "-20px"
-			this.navMinimized = true
-			this.onMenuHeightChange()
-		} else {
-			this.getNavBar().style.maxHeight = "250px"
-			this.getNavBar().style.padding = "0.5em"
-			this.navMinimized = false
-		}
-	}
 	getSettingsButtonGroup() {
 		let settingsGrpRight = DomHelper.createButtonGroup(true)
 		DomHelper.appendChildren(settingsGrpRight, [
@@ -239,6 +259,8 @@ export class UI {
 				this.createSongDiv(song)
 			}
 		})
+		this.loadedSongsDiv.style.marginTop =
+			this.getNavBar().clientHeight + 25 + "px"
 		return this.loadedSongsDiv
 	}
 	createSongDiv(song) {
@@ -250,6 +272,7 @@ export class UI {
 				this.player.setSong(song)
 			}
 		)
+		song.div.style.float = "left"
 		this.getLoadedSongsDiv().appendChild(song.div)
 	}
 	handleFileSelect(evt) {
@@ -279,14 +302,17 @@ export class UI {
 	}
 	loadAnimation() {
 		let currentText = this.getLoadingText().innerHTML
-		currentText += "."
-		this.getLoadingText().innerHTML = currentText.replace("......", ".")
+		currentText = currentText.replace("...", " ..")
+		currentText = currentText.replace(" ..", ". .")
+		currentText = currentText.replace(". .", ".. ")
+		currentText = currentText.replace(".. ", "...")
+		this.getLoadingText().innerHTML = currentText
 		if (this.loading) {
 			window.requestAnimationFrame(this.loadAnimation.bind(this))
 		}
 	}
 	setLoadMessage(msg) {
-		this.getLoadingText().innerHTML = msg
+		this.getLoadingText().innerHTML = msg + "..."
 	}
 	getLoadingText() {
 		if (!this.loadingText) {
@@ -528,12 +554,14 @@ export class UI {
 	}
 	clickPlay(ev) {
 		if (!this.player.playing) {
-			this.player.startPlay()
+			if (this.player.startPlay()) {
+				DomHelper.addClassToElement("selected", this.playButton)
+			}
 		} else {
 			this.player.resume()
+			DomHelper.addClassToElement("selected", this.playButton)
 			DomHelper.removeClass("selected", this.getPauseButton())
 		}
-		DomHelper.addClassToElement("selected", this.playButton)
 	}
 	getPauseButton() {
 		if (!this.pauseButton) {
@@ -622,9 +650,10 @@ export class UI {
 		if (!this.trackMenuDiv) {
 			this.trackMenuDiv = DomHelper.createDivWithId("trackContainerDiv")
 			this.trackMenuDiv.style.display = "none"
-			this.trackMenuDiv.style.top = this.getNavBar().style.height
 			document.body.appendChild(this.trackMenuDiv)
 		}
+		this.trackMenuDiv.style.marginTop =
+			this.getNavBar().clientHeight + 25 + "px"
 		return this.trackMenuDiv
 	}
 	createTrackDiv(track) {

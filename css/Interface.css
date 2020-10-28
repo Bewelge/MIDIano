@@ -32,7 +32,10 @@ body {
 #minimizeMenu {
 	position: absolute;
 	bottom: 0;
-	left: 45%;
+	left: 5px;
+	transition: all 1s ease-out;
+	transition-property: bottom;
+	cursor: pointer;
 }
 canvas {
 	z-index: -5;
@@ -40,13 +43,15 @@ canvas {
 #progressBarCanvas {
 	transition: all 0.4s ease-out;
 	background-color: white;
-	right: 0px;
-	top: 0px;
+	box-sizing: border-box;
+	left: 0px;
+	top: 150px;
 	width: 100%;
 	position: absolute;
-	box-shadow: inset 0em 0em 5px 0px black;
+	box-shadow: inset 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
 	float: left;
 	cursor: pointer;
+	z-index: 10;
 }
 
 .row {

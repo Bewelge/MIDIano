@@ -1,3 +1,4 @@
+import { sum } from "./Util.js"
 export class InputListeners {
 	constructor(player, ui, render) {
 		this.grabSpeed = []
@@ -7,8 +8,20 @@ export class InputListeners {
 			this.onMouseDown(ev, render)
 		)
 		document.body.addEventListener("mousemove", ev =>
-			this.onMouseMove(ev, player, render)
+			this.onMouseMove(ev, player, render, ui)
 		)
+		document.body.addEventListener("wheel", this.onWheel(player))
+
+		this.addProgressBarMouseListeners(render, player)
+
+		window.addEventListener("keydown", this.onKeyDown(player, ui))
+
+		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
+
+		ui.fireInitialListeners()
+	}
+
+	addProgressBarMouseListeners(render, player) {
 		render
 			.getProgressBarCanvas()
 			.addEventListener(
@@ -21,11 +34,6 @@ export class InputListeners {
 				"mousedown",
 				this.onMouseDownProgressCanvas(render, player)
 			)
-
-		window.addEventListener("keydown", this.onKeyDown(player, ui))
-		document.body.addEventListener("wheel", this.onWheel(player))
-
-		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
 	}
 
 	onWheel(player) {
@@ -89,7 +97,7 @@ export class InputListeners {
 
 	onMouseMoveProgressCanvas(render, player) {
 		return ev => {
-			if (this.grabbedProgressBar) {
+			if (this.grabbedProgressBar && player.song) {
 				let newTime =
 					(ev.clientX / render.windowWidth) * (player.song.getEnd() / 1000)
 
@@ -98,8 +106,8 @@ export class InputListeners {
 		}
 	}
 
-	onMouseMove(ev, player, render) {
-		if (this.grabbedMainCanvas) {
+	onMouseMove(ev, player, render, ui) {
+		if (this.grabbedMainCanvas && player.song) {
 			if (this.lastYGrabbed) {
 				let alreadyScrolling = player.scrolling != 0
 				let yChange = this.lastYGrabbed - ev.clientY
@@ -115,6 +123,8 @@ export class InputListeners {
 		}
 
 		render.setMouseCoords(ev.clientX, ev.clientY)
+
+		ui.mouseMoved()
 	}
 
 	onMouseDown(ev, render) {
@@ -133,8 +143,4 @@ export class InputListeners {
 		this.grabbedMainCanvas = false
 		this.lastYGrabbed = false
 	}
-}
-
-function sum(arr) {
-	return arr.reduce((previousVal, currentVal) => previousVal + currentVal)
 }

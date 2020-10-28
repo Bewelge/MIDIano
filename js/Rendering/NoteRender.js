@@ -1,0 +1,297 @@
+import { isBlack, drawRoundRect } from "../Util.js"
+
+import { ParticleRender } from "./ParticleRender.js"
+const LOOK_BACK_TIME = 4
+const LOOK_AHEAD_TIME = 10
+
+export class NoteRender {
+	constructor(ctx, pianoRender) {
+		this.pianoRender = pianoRender
+		this.ctx = ctx
+		this.particleRender = new ParticleRender(this.ctx)
+	}
+	render(playerState) {
+		this.playerState = playerState
+		let renderInfos = []
+		if (playerState.song) {
+			playerState.song.activeTracks.forEach((track, index) => {
+				if (
+					this.playerState.tracks[index] &&
+					this.playerState.tracks[index].draw
+				) {
+					this.drawNotesInTimeWindowAndReturnRenderInfos(
+						playerState.time,
+						track.notesBySeconds,
+						index
+					).forEach(renderInfo => renderInfos.push(renderInfo))
+				}
+			})
+		}
+
+		this.particleRender.render()
+
+		return renderInfos
+	}
+	resize(windowWidth, windowHeight, noteToHeightConst) {
+		this.windowWidth = windowWidth
+		this.windowHeight = windowHeight
+		this.noteToHeightConst = noteToHeightConst
+	}
+	drawNotesInTimeWindowAndReturnRenderInfos(time, notesBySeconds, index) {
+		let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
+		let lookAheadTime = Math.ceil(time + LOOK_AHEAD_TIME)
+
+		//sort by Black/white, so we have to only change fillstyle once.
+		let notesRenderInfoBlack = []
+		let notesRenderInfoWhite = []
+		for (let i = lookBackTime; i < lookAheadTime; i++) {
+			if (notesBySeconds[i]) {
+				notesBySeconds[i]
+					.slice(0)
+					.filter(note => note.instrument != "percussion")
+					.slice(0)
+					.map(note => this.getRenderInfos(note, time))
+					.forEach(renderInfo =>
+						renderInfo.keyBlack
+							? notesRenderInfoBlack.push(renderInfo)
+							: notesRenderInfoWhite.push(renderInfo)
+					)
+
+				// .forEach(note => this.drawNote(note, time))
+			}
+		}
+		let colWhite = this.getColor(index).white
+		let colBlack = this.getColor(index).black
+
+		let activeNotesBlack = notesRenderInfoBlack
+			.slice(0)
+			.filter(renderInfo => renderInfo.isOn)
+
+		let activeNotesWhite = notesRenderInfoWhite
+			.slice(0)
+			.filter(renderInfo => renderInfo.isOn)
+
+		this.ctx.fillStyle = colWhite
+		activeNotesWhite.forEach(note => this.renderActiveNote(note))
+		this.ctx.fillStyle = colBlack
+		activeNotesBlack.forEach(note => this.renderActiveNote(note))
+
+		this.ctx.strokeStyle = "rgba(0,0,0,1)"
+		this.ctx.lineWidth = 1
+		this.ctx.fillStyle = colWhite
+		notesRenderInfoWhite.forEach(renderInfo => this.drawNote(renderInfo))
+		this.ctx.fillStyle = colBlack
+		notesRenderInfoBlack.forEach(renderInfo => this.drawNote(renderInfo))
+
+		this.ctx.fillStyle = colWhite
+		activeNotesWhite.forEach(note =>
+			this.pianoRender.drawActiveKey(note, colWhite)
+		)
+		this.ctx.fillStyle = colBlack
+		activeNotesBlack.forEach(note =>
+			this.pianoRender.drawActiveKey(note, colBlack)
+		)
+
+		activeNotesWhite.forEach(note =>
+			this.particleRender.createParticles(
+				note.x,
+				this.windowHeight -
+					this.pianoRender.whiteKeyHeight +
+					2 +
+					Math.random() * 2,
+				note.w,
+				colWhite
+			)
+		)
+		activeNotesBlack.forEach(note =>
+			this.particleRender.createParticles(
+				note.x,
+				this.windowHeight -
+					this.pianoRender.whiteKeyHeight +
+					2 +
+					Math.random() * 2,
+				note.w,
+				colBlack
+			)
+		)
+
+		// this.ctx.strokeStyle = "black"
+		// this.ctx.lineWidth = 1
+		// notesRenderInfoBlack.forEach(note => this.strokeNote(note))
+		this.ctx.strokeStyle = "rgba(255,255,255,0.5)"
+		this.ctx.lineWidth = 1
+		activeNotesBlack.forEach(note => this.strokeNote(note))
+		activeNotesWhite.forEach(note => this.strokeNote(note))
+
+		return notesRenderInfoWhite.concat(notesRenderInfoBlack)
+	}
+	getRenderInfos(note, time) {
+		time *= 1000
+		let noteDims = this.getNoteDimensions(
+			note.noteNumber,
+			time,
+			note.timestamp,
+			note.offTime
+		)
+		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
+		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
+		noteDoneRatio *= isOn
+		let rad = (noteDims.w / 10) * (1 - noteDoneRatio)
+		let keyBlack = isBlack(note.noteNumber - 21)
+		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
+		return {
+			noteNumber: note.noteNumber,
+			timestamp: note.timestamp,
+			offTime: note.offTime,
+			duration: note.duration,
+			instrument: note.instrument,
+			track: note.track,
+			channel: note.channel,
+			fillStyle: keyBlack
+				? this.getColor(note.track).black
+				: this.getColor(note.track).white,
+			currentTime: time,
+			keyBlack: keyBlack,
+			noteDims: noteDims,
+			isOn: isOn,
+			noteDoneRatio: noteDoneRatio,
+			rad: rad,
+			x: noteDims.x + rad + 1,
+			y: noteDims.y,
+			w: noteDims.w - rad * 2 - 2,
+			h: noteDims.h
+		}
+	}
+	strokeNote(renderInfo) {
+		// drawRoundRect(
+		// 	ctx,
+		// 	renderInfos.x - wOffset / 2,
+		// 	renderInfos.y,
+		// 	renderInfos.w + wOffset,
+		// 	renderInfos.h,
+		// 	renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
+		// )
+		drawRoundRect(
+			this.ctx,
+			renderInfo.x,
+			renderInfo.y,
+			renderInfo.w,
+			renderInfo.h,
+			renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4
+		)
+		this.ctx.stroke()
+	}
+	/**
+	 *
+	 * @param {Object} renderInfos
+	 */
+	drawNote(renderInfos) {
+		// if (
+		// 	!this.playerState.tracks[note.track] ||
+		// 	!this.playerState.tracks[note.track].draw
+		// ) {
+		// 	return
+		// }
+		let ctx = this.ctx
+
+		let rad = renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 4
+		let x = renderInfos.x
+		let y = renderInfos.y
+		let w = renderInfos.w
+		let h = renderInfos.h
+
+		ctx.globalAlpha = Math.min(
+			1,
+			(y + h - this.menuHeight) /
+				(this.windowHeight -
+					this.pianoRender.whiteKeyHeight -
+					this.menuHeight -
+					60) /
+				0.2
+		)
+		drawRoundRect(ctx, x, y, w, h, rad)
+		ctx.fill()
+		// let lgr = ctx.createLinearGradient(x, y, x + w, y + h)
+		// lgr.addColorStop(0, "rgba(0,0,0,0.2)")
+		// lgr.addColorStop(1, "rgba(255,255,255,0)")
+		// ctx.fillStyle = lgr
+		// ctx.fill()
+		// lgr = ctx.createLinearGradient(x + w, y + h, x, y)
+		// lgr.addColorStop(0, "rgba(0,0,0,0)")
+		// lgr.addColorStop(1, "rgba(255,255,255,0.2)")
+		// ctx.fillStyle = lgr
+		// ctx.fill()
+
+		// lgr = ctx.createLinearGradient(x + w / 2, y + h, x + w / 2, y + h - w * 1.2)
+		// lgr.addColorStop(1, "rgba(0,0,0,0)")
+		// lgr.addColorStop(0, "rgba(255,255,255,0.25)")
+		// ctx.fillStyle = lgr
+		// ctx.fill()
+		ctx.globalAlpha = 1
+
+		if (!renderInfos.isOn) {
+			ctx.stroke()
+		}
+	}
+
+	renderActiveNote(renderInfos) {
+		let ctx = this.ctx
+		ctx.globalAlpha = Math.max(0, 0.7 - renderInfos.noteDoneRatio)
+		let wOffset = Math.pow(
+			this.pianoRender.whiteKeyWidth / 2,
+			1 + renderInfos.noteDoneRatio
+		)
+		drawRoundRect(
+			ctx,
+			renderInfos.x - wOffset / 2,
+			renderInfos.y,
+			renderInfos.w + wOffset,
+			renderInfos.h,
+			renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
+		)
+		ctx.fill()
+		ctx.globalAlpha = 1
+	}
+
+	/**
+	 *
+	 * @param {Number} noteNumber
+	 * @param {Number} currentTime
+	 * @param {Number} noteStartTime
+	 * @param {Number} noteEndTime
+	 */
+	getNoteDimensions(noteNumber, currentTime, noteStartTime, noteEndTime) {
+		noteNumber -= 21
+		const height = this.windowHeight - this.pianoRender.whiteKeyHeight
+
+		const dur = noteEndTime - noteStartTime
+		const keyBlack = isBlack(noteNumber)
+		const x = this.pianoRender.getKeyX(noteNumber, keyBlack)
+
+		const h =
+			(dur / this.noteToHeightConst) *
+			(this.windowHeight - this.pianoRender.whiteKeyHeight)
+		const y =
+			height -
+			((noteEndTime - currentTime) / this.noteToHeightConst) *
+				(this.windowHeight - this.pianoRender.whiteKeyHeight)
+		return {
+			x: x,
+			y: y - 2,
+			w: keyBlack
+				? this.pianoRender.blackKeyWidth
+				: this.pianoRender.whiteKeyWidth,
+			h: h - 2,
+			black: keyBlack
+		}
+	}
+	/**
+	 *
+	 * @param {Number} trackIndex
+	 */
+	getColor(trackIndex) {
+		return this.playerState.tracks
+			? this.playerState.tracks[trackIndex].color
+			: "rgba(0,0,0,0)"
+	}
+}

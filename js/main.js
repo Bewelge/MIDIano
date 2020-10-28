@@ -5,13 +5,13 @@ import { InputListeners } from "./InputListeners.js"
 
 /**
  * TODOs:
- * - song progress bar make pretty
  * - piano zoom
  * - menu settings
  * - channel menu
- * - track control
  * - loading app display
  * - dragndropfile
+ * - load from URL
+ * - add example song
  */
 var soundfontLoader, player, ui, player, loading, listeners
 var channels = []
@@ -26,8 +26,8 @@ async function init() {
 	player = new Player()
 	console.log("Player created.")
 
-	ui = new UI(player)
 	render = new Render(player)
+	ui = new UI(player)
 	listeners = new InputListeners(player, ui, render)
 	drawIt()
 }

@@ -39,7 +39,7 @@ export class Song {
 	}
 	getOffset() {
 		if (!this.smpteOffset) {
-			return 0
+			return 0 //
 		} else {
 			return (
 				((this.smpteOffset.hour * 60 + this.smpteOffset.min) * 60 +

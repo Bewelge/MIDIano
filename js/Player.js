@@ -2,6 +2,7 @@ import { MidiLoader } from "./MidiLoader.js"
 import { Song } from "./Song.js"
 import { SoundfontLoader } from "./SoundfontLoader.js"
 import { CONST } from "./CONST.js"
+const LOOK_AHEAD_TIME = 0.2
 export class Player {
 	constructor(buffers) {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext
@@ -37,7 +38,6 @@ export class Player {
 			loading: this.loading,
 			song: this.song,
 			tracks: this.tracks
-			// drawableNotes: this.drawableNotes
 		}
 	}
 	addNewSongCallback(callback) {
@@ -142,8 +142,7 @@ export class Player {
 		await Promise.all(neededInstruments)
 
 		this.setupTracks()
-		this.newSongCallbacks.forEach(callback => callback())
-		setLoadMessage("Creating Buffers")
+		this.newSongCallbacks.forEach(callback => callback())("Creating Buffers")
 		return this.loadBuffers()
 	}
 	setBuffers(buffers) {
@@ -158,6 +157,8 @@ export class Player {
 		this.song = song
 	}
 	startPlay() {
+		if (!this.song) return false
+
 		console.log("Starting Song")
 		this.paused = false
 		this.playing = true
@@ -165,23 +166,33 @@ export class Player {
 		this.lastTime = this.context.currentTime
 		this.context.resume()
 		this.play()
+		return true
 	}
 	handleScroll(stacksize) {
 		if (this.scrolling != 0) {
+			if (!this.song) {
+				this.scrolling = 0
+				return
+			}
 			this.lastTime = this.context.currentTime
 			let newScrollOffset = this.scrollOffset + 0.01 * this.scrolling
+			//get hypothetical time with new scrollOffset.
 			let newTime = this.getTimeWithScrollOffset(newScrollOffset)
-			if (this.getSong()) {
-				if (newTime > 1 + this.getSong().getEnd() / 1000) {
-					newScrollOffset =
-						this.scrollOffset +
-						(1 + this.getSong().getEnd() / 1000 - this.getTime())
-				}
+
+			//if we would scroll past the end of the song, reduce the scrolloffset.
+			if (this.getSong() && newTime > 1 + this.getSong().getEnd() / 1000) {
+				newScrollOffset =
+					this.scrollOffset +
+					(1 + this.getSong().getEnd() / 1000 - this.getTime())
 			}
+
+			//limit scroll past beginning
 			if (newTime < this.startDelay) {
 				newScrollOffset = this.scrollOffset + (this.startDelay - this.getTime())
 			}
 			this.scrollOffset = newScrollOffset
+
+			//calculate actuall scroll amount somehow...
 			this.scrolling =
 				(Math.abs(this.scrolling) -
 					Math.max(
@@ -189,10 +200,13 @@ export class Player {
 						this.playbackSpeed * 0.001
 					)) *
 				(Math.abs(this.scrolling) / this.scrolling)
+
+			//set to zero if minimal scrolling left
 			if (Math.abs(this.scrolling) <= this.playbackSpeed * 0.01) {
 				this.scrolling = 0
 				this.resetNoteSequence()
 			}
+			//limit stack
 			if (!stacksize) stacksize = 0
 			if (stacksize > 50) {
 				window.setTimeout(() => {
@@ -204,6 +218,7 @@ export class Player {
 			return
 		}
 	}
+
 	play() {
 		if (this.scrolling != 0) {
 			window.setTimeout(this.play.bind(this), 20)
@@ -252,7 +267,7 @@ export class Player {
 		return (
 			this.noteSequence.length &&
 			this.noteSequence[0].timestamp / 1000 <
-				currentTime + 0.2 * this.playbackSpeed
+				currentTime + LOOK_AHEAD_TIME * this.playbackSpeed
 		)
 	}
 
@@ -266,6 +281,7 @@ export class Player {
 		this.pause()
 	}
 	resume() {
+		if (!this.song) return
 		console.log("Resuming Song")
 		this.paused = false
 		this.resetNoteSequence()
@@ -301,14 +317,13 @@ export class Player {
 		try {
 			buffer = this.buffers[this.soundfontName][note.instrument][key]
 		} catch (e) {
-			console.log(e)
-			console.log(this.buffers)
-			console.log(note.instrument)
+			console.error(e)
 		}
 		let gain =
-			(((note.velocity / 127 - 1) * 2 * note.channelVolume) / 127) *
+			(((1 + note.velocity / 127 - 1) * 2 * note.channelVolume) / 127) *
 			(track.volume / 100) *
 			(this.volume / 100)
+
 		let clampedGain = Math.min(1.0, Math.max(-1.0, gain))
 		//   console.log(gain, -0.5 ,(note.velocity / 127) * 2 , channel.volume / 127 , track.volume / 100 , this.volume / 100)
 		if (gain == 0) {
@@ -322,12 +337,16 @@ export class Player {
 
 		gainNode.value = 0
 		gainNode.gain.setTargetAtTime(0, contextTime, 0.1)
-		// gainNode.gain.linearRampToValueAtTime(clampedGain, contextTime + delay - 0.1, 0.1);
-		gainNode.gain.exponentialRampToValueAtTime(
+		gainNode.gain.linearRampToValueAtTime(
 			clampedGain,
 			contextTime + delay - 0.1,
 			0.1
 		)
+		// gainNode.gain.exponentialRampToValueAtTime(
+		// 	clampedGain,
+		// 	contextTime + delay - 0.1,
+		// 	0.1
+		// )
 		gainNode.gain.setTargetAtTime(
 			clampedGain,
 			contextTime + delay + note.duration / 1000 / this.playbackSpeed,
