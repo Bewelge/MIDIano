@@ -8,10 +8,10 @@ import { InputListeners } from "./InputListeners.js"
  * - piano zoom
  * - menu settings
  * - channel menu
+ * - accessability
  * - loading app display
  * - dragndropfile
  * - load from URL
- * - add example song
  */
 var soundfontLoader, player, ui, player, loading, listeners
 var channels = []
@@ -30,6 +30,8 @@ async function init() {
 	ui = new UI(player)
 	listeners = new InputListeners(player, ui, render)
 	drawIt()
+
+	loadSongFromFile()
 }
 
 var render
@@ -38,11 +40,20 @@ function drawIt() {
 	render.render(playerState)
 	window.requestAnimationFrame(drawIt)
 }
-
+async function loadSongFromFile() {
+	loadSongFromURL("../mz_331_3.mid")
+}
 async function loadSongFromURL(url) {
 	let response = fetch(url, {
 		method: "GET", // *GET, POST, PUT, DELETE, etc.
 		mode: "no-cors" // no-cors, *cors, same-origin
 	})
-	await response.then(res => console.log(res))
+	await (await response).blob().then(res => {
+		let reader = new FileReader()
+		let fileName = url
+		reader.onload = function (theFile) {
+			player.loadSong(reader.result, fileName, () => {})
+		}
+		reader.readAsDataURL(res)
+	})
 }
