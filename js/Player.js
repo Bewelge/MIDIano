@@ -142,7 +142,8 @@ export class Player {
 		await Promise.all(neededInstruments)
 
 		this.setupTracks()
-		this.newSongCallbacks.forEach(callback => callback())("Creating Buffers")
+		this.newSongCallbacks.forEach(callback => callback())
+		setLoadMessage("Creating Buffers")
 		return this.loadBuffers()
 	}
 	setBuffers(buffers) {
