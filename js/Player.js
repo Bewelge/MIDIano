@@ -180,7 +180,7 @@ export class Player {
 			//get hypothetical time with new scrollOffset.
 			let newTime = this.getTimeWithScrollOffset(newScrollOffset)
 
-			//if we would scroll past the end of the song, reduce the scrolloffset.
+			//limit scroll past end
 			if (this.getSong() && newTime > 1 + this.getSong().getEnd() / 1000) {
 				newScrollOffset =
 					this.scrollOffset +
@@ -193,21 +193,21 @@ export class Player {
 			}
 			this.scrollOffset = newScrollOffset
 
-			//calculate actuall scroll amount somehow...
+			//dampen scroll amount somehow...
 			this.scrolling =
 				(Math.abs(this.scrolling) -
 					Math.max(
-						Math.abs(this.scrolling * 0.006),
+						Math.abs(this.scrolling * 0.003),
 						this.playbackSpeed * 0.001
 					)) *
 				(Math.abs(this.scrolling) / this.scrolling)
 
-			//set to zero if minimal scrolling left
+			//set to zero if only minimal scrollingspeed left
 			if (Math.abs(this.scrolling) <= this.playbackSpeed * 0.01) {
 				this.scrolling = 0
 				this.resetNoteSequence()
 			}
-			//limit stack
+			//limit recursion
 			if (!stacksize) stacksize = 0
 			if (stacksize > 50) {
 				window.setTimeout(() => {
