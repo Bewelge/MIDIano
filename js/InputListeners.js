@@ -3,12 +3,29 @@ export class InputListeners {
 	constructor(player, ui, render) {
 		this.grabSpeed = []
 		this.delay = false
-		window.addEventListener("mouseup", ev => this.onMouseUp(player))
-		document.body.addEventListener("mousedown", ev =>
-			this.onMouseDown(ev, render)
+		window.addEventListener("mouseup", ev => this.onMouseUp(ev, player))
+		document.body.addEventListener(
+			"mousedown",
+			ev => this.onMouseDown(ev, render),
+			{ passive: false }
 		)
-		document.body.addEventListener("mousemove", ev =>
-			this.onMouseMove(ev, player, render, ui)
+		document.body.addEventListener(
+			"mousemove",
+			ev => this.onMouseMove(ev, player, render, ui),
+			{ passive: false }
+		)
+		window.addEventListener("touchend", ev => this.onMouseUp(ev, player), {
+			passive: false
+		})
+		document.body.addEventListener(
+			"touchstart",
+			ev => this.onMouseDown(ev, render),
+			{ passive: false }
+		)
+		document.body.addEventListener(
+			"touchmove",
+			ev => this.onMouseMove(ev, player, render, ui),
+			{ passive: false }
 		)
 		document.body.addEventListener("wheel", this.onWheel(player))
 
@@ -107,10 +124,12 @@ export class InputListeners {
 	}
 
 	onMouseMove(ev, player, render, ui) {
+		ev.preventDefault()
+		let pos = this.getXYFromMouseEvent(ev)
 		if (this.grabbedMainCanvas && player.song) {
 			if (this.lastYGrabbed) {
 				let alreadyScrolling = player.scrolling != 0
-				let yChange = this.lastYGrabbed - ev.clientY
+				let yChange = this.lastYGrabbed - pos.y
 				if (!alreadyScrolling) {
 					player.setTime(player.getTime() - render.getTimeFromHeight(yChange))
 					this.grabSpeed.push(yChange)
@@ -119,7 +138,7 @@ export class InputListeners {
 					}
 				}
 			}
-			this.lastYGrabbed = ev.clientY
+			this.lastYGrabbed = pos.y
 		}
 
 		render.setMouseCoords(ev.clientX, ev.clientY)
@@ -128,19 +147,32 @@ export class InputListeners {
 	}
 
 	onMouseDown(ev, render) {
-		if (ev.target == document.body && render.isOnMainCanvas(ev)) {
+		ev.preventDefault()
+		let pos = this.getXYFromMouseEvent(ev)
+		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
 			this.grabbedMainCanvas = true
 		}
 	}
 
-	onMouseUp(player) {
+	onMouseUp(ev, player) {
+		ev.preventDefault()
 		if (this.grabSpeed.length) {
-			player.scrolling = sum(this.grabSpeed) / 50
+			player.scrolling = this.grabSpeed[this.grabSpeed.length - 1] / 50
 			player.handleScroll()
 			this.grabSpeed = []
 		}
 		this.grabbedProgressBar = false
 		this.grabbedMainCanvas = false
 		this.lastYGrabbed = false
+	}
+
+	getXYFromMouseEvent(ev) {
+		if (ev.clientX == undefined) {
+			return {
+				x: ev.touches[ev.touches.length - 1].clientX,
+				y: ev.touches[ev.touches.length - 1].clientY
+			}
+		}
+		return { x: ev.clientX, y: ev.clientY }
 	}
 }
