@@ -47,8 +47,7 @@ async function loadSongFromFile() {
 }
 async function loadSongFromURL(url) {
 	let response = fetch(url, {
-		method: "GET", // *GET, POST, PUT, DELETE, etc.
-		mode: "no-cors" // no-cors, *cors, same-origin
+		method: "GET" // *GET, POST, PUT, DELETE, etc.
 	})
 	await (await response).blob().then(res => {
 		let reader = new FileReader()
