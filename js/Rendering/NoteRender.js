@@ -137,6 +137,11 @@ export class NoteRender {
 		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
 		noteDoneRatio *= isOn
 		let rad = (noteDims.w / 10) * (1 - noteDoneRatio)
+		if (noteDims.h < rad * 2) {
+			let diff = rad * 2 - noteDims.h
+			noteDims.h = rad * 2
+			noteDims.y -= diff
+		}
 		let keyBlack = isBlack(note.noteNumber - 21)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
 		return {
@@ -186,12 +191,6 @@ export class NoteRender {
 	 * @param {Object} renderInfos
 	 */
 	drawNote(renderInfos) {
-		// if (
-		// 	!this.playerState.tracks[note.track] ||
-		// 	!this.playerState.tracks[note.track].draw
-		// ) {
-		// 	return
-		// }
 		let ctx = this.ctx
 
 		let rad = renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 4
@@ -199,6 +198,7 @@ export class NoteRender {
 		let y = renderInfos.y
 		let w = renderInfos.w
 		let h = renderInfos.h
+		// rad = Math.min(h / 2, rad)
 
 		ctx.globalAlpha = Math.min(
 			1,
@@ -211,22 +211,6 @@ export class NoteRender {
 		)
 		drawRoundRect(ctx, x, y, w, h, rad)
 		ctx.fill()
-		// let lgr = ctx.createLinearGradient(x, y, x + w, y + h)
-		// lgr.addColorStop(0, "rgba(0,0,0,0.2)")
-		// lgr.addColorStop(1, "rgba(255,255,255,0)")
-		// ctx.fillStyle = lgr
-		// ctx.fill()
-		// lgr = ctx.createLinearGradient(x + w, y + h, x, y)
-		// lgr.addColorStop(0, "rgba(0,0,0,0)")
-		// lgr.addColorStop(1, "rgba(255,255,255,0.2)")
-		// ctx.fillStyle = lgr
-		// ctx.fill()
-
-		// lgr = ctx.createLinearGradient(x + w / 2, y + h, x + w / 2, y + h - w * 1.2)
-		// lgr.addColorStop(1, "rgba(0,0,0,0)")
-		// lgr.addColorStop(0, "rgba(255,255,255,0.25)")
-		// ctx.fillStyle = lgr
-		// ctx.fill()
 		ctx.globalAlpha = 1
 
 		if (!renderInfos.isOn) {
