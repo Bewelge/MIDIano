@@ -34,10 +34,10 @@ export class Render {
 
 		window.addEventListener("resize", this.resize.bind(this))
 	}
-	isOnMainCanvas(mouseEvent) {
+	isOnMainCanvas(position) {
 		return (
-			mouseEvent.clientY > this.menuHeight &&
-			mouseEvent.clientY < this.windowHeight - this.pianoRender.whiteKeyHeight
+			position.x > this.menuHeight &&
+			position.y < this.windowHeight - this.pianoRender.whiteKeyHeight
 		)
 	}
 	setMouseCoords(x, y) {
