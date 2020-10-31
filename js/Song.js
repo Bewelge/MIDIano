@@ -1,7 +1,6 @@
 import { CONST } from "./CONST.js"
 export class Song {
 	constructor(midiData, fileName) {
-		console.log(midiData)
 		this.fileName = fileName
 		this.name = ""
 		this.text = []
@@ -21,8 +20,6 @@ export class Song {
 		this.channels = this.getDefaultChannels()
 
 		this.processEvents(midiData)
-		console.log(this)
-		console.log(this.getNoteSequence())
 	}
 	getStart() {
 		return this.getNoteSequence()[0].timestamp
@@ -177,7 +174,6 @@ export class Song {
 		return Object.keys(instruments)
 	}
 	processEvents(midiData) {
-		console.log(midiData)
 		midiData.tracks.forEach(track => {
 			let newTrack = {
 				notes: [],

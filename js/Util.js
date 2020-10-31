@@ -1,7 +1,11 @@
 function formatTime(seconds) {
 	seconds = Math.max(seconds, 0)
 	let date = new Date(seconds * 1000)
-	return date.toISOString().substr(11, 8)
+	try {
+		return date.toISOString().substr(11, 8)
+	} catch (e) {
+		//ignore this. only seems to happend when messing with breakpoints in devtools
+	}
 }
 function isBlack(noteNumber) {
 	return (noteNumber + 11) % 12 == 0 ||

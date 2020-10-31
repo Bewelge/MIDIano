@@ -33,7 +33,7 @@ export class SoundfontLoader {
 				document.body.appendChild(scr)
 			})
 			.catch(function (error) {
-				console.log("Looks like there was a problem: \n", error)
+				console.error("Error fetching soundfont: \n", error)
 			})
 	}
 	static async loadInstruments(instruments) {
@@ -64,7 +64,7 @@ export class SoundfontLoader {
 	static async createBuffers(ctx) {
 		let promises = []
 		for (let instrument in MIDI.Soundfont) {
-			console.log(instrument)
+			console.log("Loaded instrument : " + instrument)
 			for (let note in MIDI.Soundfont[instrument]) {
 				let base64Buffer = SoundfontLoader.getBase64Buffer(
 					MIDI.Soundfont[instrument][note]

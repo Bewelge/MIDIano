@@ -1,7 +1,15 @@
 import { DomHelper } from "./DomHelper.js"
+/**
+ * Contains all initiation, appending and manipulation of DOM-elements.
+ * Callback-bindings for some events are passed into the constructor
+ */
 export class UI {
-	constructor(player) {
+	constructor(player, isMobile) {
 		this.player = player
+
+		this.isMobile = window.matchMedia(
+			"only screen and (max-width: 1600px)"
+		).matches
 
 		//add callbacks to the player
 		player.newSongCallbacks.push(this.newSongCallback.bind(this))
@@ -61,7 +69,9 @@ export class UI {
 		this.getNavBar().appendChild(minimizeButton)
 		this.getNavBar().appendChild(topGroupsContainer)
 	}
-	getZoomDiv() {}
+	getZoomDiv() {
+		//todo
+	}
 	mouseMoved() {
 		this.getMinimizeButton().style.transition = "none"
 		this.getMinimizeButton().style.opacity = 1
@@ -450,6 +460,9 @@ export class UI {
 				}
 			)
 			DomHelper.addClassToElement("floatSpanLeft", this.channelsButton)
+
+			//Todo. decide what channel info to show...
+			this.channelsButton.style.opacity = 0
 		}
 		return this.channelsButton
 	}

@@ -43,23 +43,6 @@ export class Player {
 	addNewSongCallback(callback) {
 		this.newSongCallbacks.push(callback)
 	}
-	getDefaultChannels() {
-		let channels = {}
-		for (var i = 0; i <= 15; i++) {
-			channels[i] = {
-				instrument: i,
-				pitchBend: 0,
-				volume: 127,
-				volumeControl: 50,
-				mute: false,
-				mono: false,
-				omni: false,
-				solo: false
-			}
-		}
-		channels[9].instrument = -1
-		return channels
-	}
 
 	getContext() {
 		return this.context

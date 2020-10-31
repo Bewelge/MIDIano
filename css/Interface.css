@@ -221,7 +221,7 @@ input[type="text"] {
 	z-index: 999;
 	overflow: show;
 	margin: auto;
-	top: 0;
+	top: 150px;
 	left: 0;
 	bottom: 0;
 	right: 0;
