@@ -1,13 +1,12 @@
 # MIDIano
-## A JavaScript MIDI-visualizer like Synthesia
+
+## A JavaScript MIDI-Player similar to Synthesia
 
 ### [Try out here](https://bewelge.github.io/MIDIano/)
 
+![Screenshot](/Screenshot.png)
 
-All the visuals are done on HTML Canvas.
+libraries used:
 
-Thanks to:
-
-
-
-
+- pickr - Color Picker - https://github.com/Simonwep/pickr
+- jquery
