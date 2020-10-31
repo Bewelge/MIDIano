@@ -41,6 +41,35 @@ export class DomHelper {
 		cont.appendChild(slider)
 		return { slider: slider, container: cont }
 	}
+	static createSliderWithLabelAndField(id, label, val, min, max, onChange) {
+		let displayDiv = DomHelper.createElement(
+			"div",
+			{},
+			{ id: id + "Field", className: "sliderVal", innerHTML: val }
+		)
+
+		let onChangeInternal = ev => {
+			displayDiv.innerHTML = ev.target.value
+			onChange(ev.target.value)
+		}
+
+		let cont = DomHelper.createElement(
+			"div",
+			{},
+			{ id: id + "container", className: "sliderContainer" }
+		)
+		let labelDiv = DomHelper.createElement(
+			"div",
+			{},
+			{ id: id + "label", className: "sliderLabel", innerHTML: label }
+		)
+		let slider = DomHelper.createSlider(id, val, min, max, onChangeInternal)
+		cont.appendChild(labelDiv)
+		cont.appendChild(displayDiv)
+		cont.appendChild(slider)
+
+		return { slider: slider, container: cont }
+	}
 	static createGlyphiconButton(id, glyph, onClick) {
 		let bt = DomHelper.createButton(id, onClick)
 		bt.appendChild(this.getGlyphicon(glyph))
@@ -109,8 +138,30 @@ export class DomHelper {
 		)
 	}
 	static createTextInput(onChange, styles, attributes) {
+		attributes = attributes || {}
+		attributes.type = "text"
 		attributes.onchange = onChange
 		return DomHelper.createElement("input", styles, attributes)
+	}
+	static createCheckbox(text, onChange, value) {
+		let id = text.replaceAll(" ", "") + "checkbox"
+		let cont = DomHelper.createDivWithIdAndClass(id, "checkboxCont")
+		let checkbox = DomHelper.createElementWithClass("checkboxInput", "input")
+		checkbox.setAttribute("checked", value)
+		checkbox.setAttribute("type", "checkbox")
+		checkbox.setAttribute("name", id)
+		checkbox.onchange = onChange
+		let label = DomHelper.createElementWithClass(
+			"checkboxlabel",
+			"label",
+			{},
+			{ innerHTML: text }
+		)
+		label.setAttribute("for", id)
+
+		cont.appendChild(checkbox)
+		cont.appendChild(label)
+		return cont
 	}
 	static addClassToElements(className, elements) {
 		elements.forEach(element => DomHelper.addClassToElement(className, element))

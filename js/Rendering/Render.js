@@ -41,6 +41,9 @@ export class Render {
 
 		window.addEventListener("resize", this.resize.bind(this))
 	}
+	updateSettings(settingsObj) {
+		this.settings = settingsObj
+	}
 	isOnMainCanvas(position) {
 		return (
 			position.x > this.menuHeight &&
@@ -91,17 +94,13 @@ export class Render {
 		this.ctx.clearRect(0, 0, this.windowWidth, this.windowHeight)
 		this.progressBarCtx.clearRect(0, 0, this.windowWidth, this.windowHeight)
 		this.pianoRender.clearPlayedKeysCanvases()
-		let time = playerState.time
+		// let time = playerState.time + this.settings.renderOffset
 
 		let renderInfos = []
 		if (!playerState.loading && playerState.song) {
 			this.drawProgressBar(playerState)
-			this.drawTempoLines(time)
-			renderInfos = this.noteRender.render(
-				playerState,
-				this.mouseX,
-				this.mouseY
-			)
+			// this.drawTempoLines(time)
+			renderInfos = this.noteRender.render(playerState, this.settings)
 		}
 
 		this.overlayRender.render()
@@ -213,39 +212,6 @@ export class Render {
 	isNoteDrawn(note, tracks) {
 		return !tracks[note.track] || !tracks[note.track].draw
 	}
-	// drawActiveNote(note, time) {
-	// 	let color = keyBlack
-	// 		? this.getColor(note.track).black
-	// 		: this.getColor(note.track).white
-	// 	ctx.fillStyle = color
-	// 	ctx.globalAlpha = Math.max(0, 0.7 - noteDoneRatio)
-	// 	let wOffset = Math.pow(
-	// 		this.pianoRender.whiteKeyWidth / 2,
-	// 		1 + noteDoneRatio
-	// 	)
-	// 	this.createParticles(
-	// 		x - w / 2,
-	// 		this.windowHeight -
-	// 			this.pianoRender.whiteKeyHeight +
-	// 			2 +
-	// 			Math.random() * 2,
-	// 		w,
-	// 		ctx.fillStyle
-	// 	)
-	// 	this.drawRoundRect(
-	// 		ctx,
-	// 		x - wOffset / 2,
-	// 		y,
-	// 		w + wOffset,
-	// 		h,
-	// 		rad + rad * noteDoneRatio * 4
-	// 	)
-	// 	ctx.fill()
-	// 	ctx.globalAlpha = 1
-	// 	this.pianoRender.drawActiveKey(note, color)
-	// 	ctx.strokeStyle = "rgba(255,255,255,0.5)"
-	// 	ctx.lineWidth = 1.5
-	// }
 
 	/**
 	 *

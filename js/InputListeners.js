@@ -134,7 +134,7 @@ export class InputListeners {
 	}
 
 	onMouseMove(ev, player, render, ui) {
-		ev.preventDefault()
+		// ev.preventDefault()
 		let pos = this.getXYFromMouseEvent(ev)
 		if (this.grabbedMainCanvas && player.song) {
 			if (this.lastYGrabbed) {

@@ -28,7 +28,7 @@ async function init() {
 	console.log("Player created.")
 
 	render = new Render(player)
-	ui = new UI(player)
+	ui = new UI(player, render)
 	listeners = new InputListeners(player, ui, render)
 	drawIt()
 

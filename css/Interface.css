@@ -75,12 +75,13 @@ input[type="text"] {
 	padding-top: 6px;
 	padding-bottom: 6px;
 }
-#trackContainerDiv {
+.innerMenuDiv {
 	height: calc(75% - 22px);
 	margin-top: 20px;
 	position: absolute;
 	right: 5px;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 .trackName {
 	width: 100%;
@@ -90,7 +91,7 @@ input[type="text"] {
 	border: 0;
 	border: 1px solid var(--buttonColor);
 }
-.trackDiv {
+.innerMenuContDiv {
 	background-color: #f5f5f5;
 	background-image: var(--navBackground);
 	color: var(--buttonColor);

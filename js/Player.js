@@ -30,7 +30,9 @@ export class Player {
 
 		this.playbackSpeed = 1
 	}
-
+	updateSettings(settings) {
+		this.settings = settings
+	}
 	getState() {
 		return {
 			time: this.getTime(),

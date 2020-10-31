@@ -10,8 +10,9 @@ export class NoteRender {
 		this.ctx = ctx
 		this.particleRender = new ParticleRender(this.ctx)
 	}
-	render(playerState) {
+	render(playerState, settings) {
 		this.playerState = playerState
+		this.settings = settings
 		let renderInfos = []
 		if (playerState.song) {
 			playerState.song.activeTracks.forEach((track, index) => {
@@ -20,7 +21,7 @@ export class NoteRender {
 					this.playerState.tracks[index].draw
 				) {
 					this.drawNotesInTimeWindowAndReturnRenderInfos(
-						playerState.time,
+						playerState.time + this.settings.renderOffset / 1000,
 						track.notesBySeconds,
 						index
 					).forEach(renderInfo => renderInfos.push(renderInfo))
@@ -56,8 +57,6 @@ export class NoteRender {
 							? notesRenderInfoBlack.push(renderInfo)
 							: notesRenderInfoWhite.push(renderInfo)
 					)
-
-				// .forEach(note => this.drawNote(note, time))
 			}
 		}
 		let colWhite = this.getColor(index).white
@@ -71,10 +70,12 @@ export class NoteRender {
 			.slice(0)
 			.filter(renderInfo => renderInfo.isOn)
 
-		this.ctx.fillStyle = colWhite
-		activeNotesWhite.forEach(note => this.renderActiveNote(note))
-		this.ctx.fillStyle = colBlack
-		activeNotesBlack.forEach(note => this.renderActiveNote(note))
+		if (this.settings.showHitKeys) {
+			this.ctx.fillStyle = colWhite
+			activeNotesWhite.forEach(note => this.renderActiveNote(note))
+			this.ctx.fillStyle = colBlack
+			activeNotesBlack.forEach(note => this.renderActiveNote(note))
+		}
 
 		this.ctx.strokeStyle = "rgba(0,0,0,1)"
 		this.ctx.lineWidth = 1
@@ -83,41 +84,44 @@ export class NoteRender {
 		this.ctx.fillStyle = colBlack
 		notesRenderInfoBlack.forEach(renderInfo => this.drawNote(renderInfo))
 
-		this.ctx.fillStyle = colWhite
-		activeNotesWhite.forEach(note =>
-			this.pianoRender.drawActiveKey(note, colWhite)
-		)
-		this.ctx.fillStyle = colBlack
-		activeNotesBlack.forEach(note =>
-			this.pianoRender.drawActiveKey(note, colBlack)
-		)
-
-		activeNotesWhite.forEach(note =>
-			this.particleRender.createParticles(
-				note.x,
-				this.windowHeight -
-					this.pianoRender.whiteKeyHeight +
-					2 +
-					Math.random() * 2,
-				note.w,
-				colWhite
+		if (this.settings.showPianoKeys) {
+			this.ctx.fillStyle = colWhite
+			activeNotesWhite.forEach(note =>
+				this.pianoRender.drawActiveKey(note, colWhite)
 			)
-		)
-		activeNotesBlack.forEach(note =>
-			this.particleRender.createParticles(
-				note.x,
-				this.windowHeight -
-					this.pianoRender.whiteKeyHeight +
-					2 +
-					Math.random() * 2,
-				note.w,
-				colBlack
+			this.ctx.fillStyle = colBlack
+			activeNotesBlack.forEach(note =>
+				this.pianoRender.drawActiveKey(note, colBlack)
 			)
-		)
+		}
 
-		// this.ctx.strokeStyle = "black"
-		// this.ctx.lineWidth = 1
-		// notesRenderInfoBlack.forEach(note => this.strokeNote(note))
+		if (this.settings && this.settings.showParticles) {
+			activeNotesWhite.forEach(note =>
+				this.particleRender.createParticles(
+					note.x,
+					this.windowHeight -
+						this.pianoRender.whiteKeyHeight +
+						2 +
+						Math.random() * 2,
+					note.w,
+					note.h,
+					colWhite
+				)
+			)
+			activeNotesBlack.forEach(note =>
+				this.particleRender.createParticles(
+					note.x,
+					this.windowHeight -
+						this.pianoRender.whiteKeyHeight +
+						2 +
+						Math.random() * 2,
+					note.w,
+					note.h,
+					colBlack
+				)
+			)
+		}
+
 		this.ctx.strokeStyle = "rgba(255,255,255,0.5)"
 		this.ctx.lineWidth = 1
 		activeNotesBlack.forEach(note => this.strokeNote(note))

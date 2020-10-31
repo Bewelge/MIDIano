@@ -3,15 +3,16 @@ export class ParticleRender {
 		this.ctx = ctx
 		this.particles = new Map()
 	}
-	createParticles(x, y, w, color) {
+	createParticles(x, y, w, h, color) {
 		for (let i = 0; i < Math.random() * 40; i++) {
-			let rndX = x + w * Math.random() // / 2 - (w / 2) * (Math.random() - Math.random())
+			let rndX = x + w * 0.2 + (w - 0.4) * Math.random() // / 2 - (w / 2) * (Math.random() - Math.random())
 
 			let ang = Math.random() * Math.PI + Math.PI
 			let radius = Math.random() * 2 + 0.5
-			let motion = Math.random() * 3 + 0.5
+			rndX -= radius / 2
+			let motion = Math.random() * 5 + 0.5
 			let angMotion = Math.random() * 0.05
-			let lifeTime = Math.random() * 6 + 1
+			let lifeTime = Math.random() * 6 + 5
 			this.createParticle(
 				rndX,
 				y,
@@ -52,11 +53,16 @@ export class ParticleRender {
 		particle[0] += Math.cos(particle[2]) * particle[4] //x
 		particle[1] += Math.sin(particle[2]) * particle[4] //y
 
+		//turn ang
 		particle[2] += particle[5]
 
+		//dampen angular and xy-motion
 		particle[4] *= 0.92
 		particle[5] *= 0.92
 
+		particle[3] = Math.max(0.5, particle[3] * 0.95)
+
+		//particle lifetime
 		particle[6]--
 	}
 	render() {

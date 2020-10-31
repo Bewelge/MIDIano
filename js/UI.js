@@ -1,10 +1,18 @@
 import { DomHelper } from "./DomHelper.js"
+
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
- * Callback-bindings for some events are passed into the constructor
+ * Callback-bindings for some events are created in  the constructor
  */
 export class UI {
-	constructor(player, isMobile) {
+	constructor(player, render, isMobile) {
+		this.settings = {
+			showParticles: true,
+			showHitKeys: true,
+			showPianoKeys: true,
+			renderOffset: 0
+		}
+
 		this.player = player
 
 		this.isMobile = window.matchMedia(
@@ -15,6 +23,13 @@ export class UI {
 		player.newSongCallbacks.push(this.newSongCallback.bind(this))
 		player.onloadStartCallbacks.push(this.startLoad.bind(this))
 		player.onloadStopCallbacks.push(this.stopLoad.bind(this))
+
+		render.updateSettings(this.settings)
+		player.updateSettings(this.settings)
+		this.notifySettingsChanged = () => {
+			render.updateSettings(this.settings)
+			player.updateSettings(this.settings)
+		}
 
 		this.resize()
 
@@ -199,12 +214,97 @@ export class UI {
 				"settingsButton",
 				"cog",
 				() => {
-					//TODO open Settings.
+					if (this.settingsShown) {
+						this.hideSettings()
+					} else {
+						this.showSettings()
+					}
 				}
 			)
 		}
 		return this.settingsButton
 	}
+	hideSettings() {
+		DomHelper.removeClass("selected", this.getSettingsButton())
+		this.settingsShown = false
+		this.getSettingsDiv().style.display = "none"
+	}
+	showSettings() {
+		if (this.settingsShown) {
+			this.hideSettings()
+		}
+		DomHelper.addClassToElement("selected", this.getSettingsButton())
+		this.settingsShown = true
+		this.getSettingsDiv().style.display = "block"
+	}
+	getSettingsDiv() {
+		if (!this.settingsDiv) {
+			this.settingsDiv = DomHelper.createDivWithIdAndClass(
+				"settingsDiv",
+				"innerMenuDiv"
+			)
+			this.settingsDiv.style.display = "none"
+			this.getSettingsContent().forEach(element =>
+				this.settingsDiv.appendChild(element)
+			)
+			document.body.appendChild(this.settingsDiv)
+		}
+		this.settingsDiv.style.marginTop = this.getNavBar().clientHeight + 25 + "px"
+		return this.settingsDiv
+	}
+	getSettingsContent() {
+		let settingsDivs = []
+
+		let showParticlesCheckbox = DomHelper.createCheckbox(
+			"Show Particles",
+			ev => {
+				this.settings.showParticles = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showParticles
+		)
+
+		settingsDivs.push(showParticlesCheckbox)
+
+		let showHitKeysCheckbox = DomHelper.createCheckbox(
+			"Hit Key Effect",
+			ev => {
+				this.settings.showHitKeys = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showHitKeys
+		)
+		settingsDivs.push(showHitKeysCheckbox)
+
+		let showPianoKeysCheckbox = DomHelper.createCheckbox(
+			"Show Notes on Piano",
+			ev => {
+				this.settings.showPianoKeys = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showPianoKeys
+		)
+		settingsDivs.push(showPianoKeysCheckbox)
+
+		let renderOffsetSlider = DomHelper.createSliderWithLabelAndField(
+			"renderOffsetSlider",
+			"Render Offset (ms)",
+			this.settings.renderOffset,
+			-250,
+			250,
+			value => {
+				this.settings.renderOffset = value
+				console.log(this.settings)
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(renderOffsetSlider.container)
+
+		settingsDivs.forEach(div => div.classList.add("innerMenuContDiv"))
+
+		return settingsDivs
+	}
+	notifySettingsChanged() {}
 	getFullscreenButton() {
 		if (!this.fullscreenButton) {
 			this.fullscreen = false
@@ -661,7 +761,10 @@ export class UI {
 	}
 	getTrackMenuDiv() {
 		if (!this.trackMenuDiv) {
-			this.trackMenuDiv = DomHelper.createDivWithId("trackContainerDiv")
+			this.trackMenuDiv = DomHelper.createDivWithIdAndClass(
+				"trackContainerDiv",
+				"innerMenuDiv"
+			)
 			this.trackMenuDiv.style.display = "none"
 			document.body.appendChild(this.trackMenuDiv)
 		}
@@ -675,7 +778,7 @@ export class UI {
 
 		let trackDiv = DomHelper.createDivWithIdAndClass(
 			"trackDiv" + track,
-			"trackDiv"
+			"innerMenuContDiv"
 		)
 
 		//Name

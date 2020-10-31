@@ -3,8 +3,17 @@
 	margin-bottom: 5px;
 	position: relative;
 }
-.sliderLabel {
+.sliderLabel,
+.checkboxLabel {
 	text-align: center;
+	color: #424242a3;
+	z-index: 15;
+	pointer-events: none;
+	font-size: 0.75rem;
+	margin-bottom: -5px;
+}
+.sliderVal {
+	float: left;
 	color: #424242a3;
 	z-index: 15;
 	pointer-events: none;
