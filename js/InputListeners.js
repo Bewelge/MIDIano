@@ -3,7 +3,22 @@ export class InputListeners {
 	constructor(player, ui, render) {
 		this.grabSpeed = []
 		this.delay = false
-		window.addEventListener("mouseup", ev => this.onMouseUp(ev, player))
+
+		this.addMouseAndTouchListeners(render, player, ui)
+
+		document.body.addEventListener("wheel", this.onWheel(player))
+
+		this.addProgressBarMouseListeners(render, player)
+
+		window.addEventListener("keydown", this.onKeyDown(player, ui))
+
+		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
+
+		ui.fireInitialListeners()
+	}
+
+	addMouseAndTouchListeners(render, player, ui) {
+		window.addEventListener("mouseup", ev => this.onMouseUp(ev, render, player))
 		document.body.addEventListener(
 			"mousedown",
 			ev => this.onMouseDown(ev, render),
@@ -14,9 +29,13 @@ export class InputListeners {
 			ev => this.onMouseMove(ev, player, render, ui),
 			{ passive: false }
 		)
-		window.addEventListener("touchend", ev => this.onMouseUp(ev, player), {
-			passive: false
-		})
+		window.addEventListener(
+			"touchend",
+			ev => this.onMouseUp(ev, render, player),
+			{
+				passive: false
+			}
+		)
 		document.body.addEventListener(
 			"touchstart",
 			ev => this.onMouseDown(ev, render),
@@ -27,15 +46,6 @@ export class InputListeners {
 			ev => this.onMouseMove(ev, player, render, ui),
 			{ passive: false }
 		)
-		document.body.addEventListener("wheel", this.onWheel(player))
-
-		this.addProgressBarMouseListeners(render, player)
-
-		window.addEventListener("keydown", this.onKeyDown(player, ui))
-
-		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
-
-		ui.fireInitialListeners()
 	}
 
 	addProgressBarMouseListeners(render, player) {
@@ -147,15 +157,18 @@ export class InputListeners {
 	}
 
 	onMouseDown(ev, render) {
-		ev.preventDefault()
 		let pos = this.getXYFromMouseEvent(ev)
 		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
+			ev.preventDefault()
 			this.grabbedMainCanvas = true
 		}
 	}
 
-	onMouseUp(ev, player) {
-		ev.preventDefault()
+	onMouseUp(ev, render, player) {
+		let pos = this.getXYFromMouseEvent(ev)
+		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
+			ev.preventDefault()
+		}
 		if (this.grabSpeed.length) {
 			player.scrolling = this.grabSpeed[this.grabSpeed.length - 1] / 50
 			player.handleScroll()
@@ -168,9 +181,13 @@ export class InputListeners {
 
 	getXYFromMouseEvent(ev) {
 		if (ev.clientX == undefined) {
-			return {
-				x: ev.touches[ev.touches.length - 1].clientX,
-				y: ev.touches[ev.touches.length - 1].clientY
+			if (ev.touches.length) {
+				return {
+					x: ev.touches[ev.touches.length - 1].clientX,
+					y: ev.touches[ev.touches.length - 1].clientY
+				}
+			} else {
+				return { x: -1, y: -1 }
 			}
 		}
 		return { x: ev.clientX, y: ev.clientY }
