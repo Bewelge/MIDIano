@@ -233,6 +233,9 @@ export class UI {
 		if (this.settingsShown) {
 			this.hideSettings()
 		}
+		if (this.tracksShown) {
+			this.hideTracks()
+		}
 		DomHelper.addClassToElement("selected", this.getSettingsButton())
 		this.settingsShown = true
 		this.getSettingsDiv().style.display = "block"
@@ -518,9 +521,9 @@ export class UI {
 				"Tracks",
 				ev => {
 					if (this.tracksShown) {
-						this.hideTracks(trackMenuDiv)
+						this.hideTracks()
 					} else {
-						this.showTracks(trackMenuDiv)
+						this.showTracks()
 					}
 				}
 			)
@@ -528,19 +531,22 @@ export class UI {
 		}
 		return this.tracksButton
 	}
-	hideTracks(trackMenuDiv) {
+	hideTracks() {
 		DomHelper.removeClass("selected", this.tracksButton)
 		this.tracksShown = false
-		trackMenuDiv.style.display = "none"
+		this.getTrackMenuDiv().style.display = "none"
 	}
 
-	showTracks(trackMenuDiv) {
+	showTracks() {
 		if (this.channelsShown) {
 			this.hideChannels()
 		}
+		if (this.settingsShown) {
+			this.hideSettings()
+		}
 		DomHelper.addClassToElement("selected", this.tracksButton)
 		this.tracksShown = true
-		trackMenuDiv.style.display = "block"
+		this.getTrackMenuDiv().style.display = "block"
 	}
 
 	getChannelsButton() {
