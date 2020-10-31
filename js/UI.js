@@ -294,7 +294,6 @@ export class UI {
 			250,
 			value => {
 				this.settings.renderOffset = value
-				console.log(this.settings)
 				this.notifySettingsChanged()
 			}
 		)
