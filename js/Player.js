@@ -55,6 +55,9 @@ export class Player {
 	getTime() {
 		return this.progress + this.startDelay - this.scrollOffset
 	}
+	getTimeWithoutScrollOffset() {
+		return this.progress + this.startDelay
+	}
 	setTime(seconds) {
 		this.progress += seconds - this.getTime()
 		this.resetNoteSequence()
@@ -163,18 +166,27 @@ export class Player {
 			this.lastTime = this.context.currentTime
 			let newScrollOffset = this.scrollOffset + 0.01 * this.scrolling
 			//get hypothetical time with new scrollOffset.
+			let oldTime = this.getTimeWithScrollOffset(this.scrollOffset)
 			let newTime = this.getTimeWithScrollOffset(newScrollOffset)
 
 			//limit scroll past end
 			if (this.getSong() && newTime > 1 + this.getSong().getEnd() / 1000) {
+				this.scrolling = 0
 				newScrollOffset =
 					this.scrollOffset +
-					(1 + this.getSong().getEnd() / 1000 - this.getTime())
+						(1 + this.getSong().getEnd() / 1000 - this.getTime()) ||
+					this.scrollOffset
 			}
 
 			//limit scroll past beginning
-			if (newTime < this.startDelay) {
-				newScrollOffset = this.scrollOffset + (this.startDelay - this.getTime())
+			if (newTime < oldTime && newTime < this.startDelay) {
+				this.scrolling = 0
+				newScrollOffset = this.getTimeWithoutScrollOffset() - this.startDelay
+				// this.scrollOffset + (this.startDelay - this.getTime()) ||
+				// this.scrollOffset
+			}
+			if (isNaN(newScrollOffset)) {
+				console.log(123)
 			}
 			this.scrollOffset = newScrollOffset
 
@@ -185,10 +197,10 @@ export class Player {
 						Math.abs(this.scrolling * 0.003),
 						this.playbackSpeed * 0.001
 					)) *
-				(Math.abs(this.scrolling) / this.scrolling)
+					(Math.abs(this.scrolling) / this.scrolling) || 0
 
 			//set to zero if only minimal scrollingspeed left
-			if (Math.abs(this.scrolling) <= this.playbackSpeed * 0.01) {
+			if (Math.abs(this.scrolling) <= this.playbackSpeed * 0.005) {
 				this.scrolling = 0
 				this.resetNoteSequence()
 			}
@@ -206,6 +218,8 @@ export class Player {
 	}
 
 	play() {
+		console.log(this.scrolling, this.getTime(), this.scrollOffset)
+
 		if (this.scrolling != 0) {
 			window.setTimeout(this.play.bind(this), 20)
 			return

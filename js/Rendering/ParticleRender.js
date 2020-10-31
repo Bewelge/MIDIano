@@ -5,14 +5,14 @@ export class ParticleRender {
 	}
 	createParticles(x, y, w, h, color) {
 		for (let i = 0; i < Math.random() * 40; i++) {
-			let rndX = x + w * 0.2 + (w - 0.4) * Math.random() // / 2 - (w / 2) * (Math.random() - Math.random())
+			let rndX = x + w * 0.5 + w * 0.5 * (Math.random() - Math.random()) // / 2 - (w / 2) * (Math.random() - Math.random())
 
-			let ang = Math.random() * Math.PI + Math.PI
+			let ang = (Math.random() - Math.random()) * 0.5 * Math.PI + Math.PI * 1.5
 			let radius = Math.random() * 2 + 0.5
 			rndX -= radius / 2
-			let motion = Math.random() * 5 + 0.5
+			let motion = Math.random() * 7 + 0.5
 			let angMotion = Math.random() * 0.05
-			let lifeTime = Math.random() * 6 + 5
+			let lifeTime = Math.random() * 3 + 5
 			this.createParticle(
 				rndX,
 				y,
@@ -68,6 +68,7 @@ export class ParticleRender {
 	render() {
 		this.updateParticles()
 		this.strokeStyle = "rgba(255,255,255,0.2)"
+		this.ctx.globalAlpha = 0.5
 
 		this.particles.forEach((particleArray, color) => {
 			this.ctx.fillStyle = color
@@ -77,6 +78,7 @@ export class ParticleRender {
 			c.fill()
 			c.closePath()
 		})
+		this.ctx.globalAlpha = 0.5
 	}
 	renderParticle(particle) {
 		this.ctx.moveTo(particle[0], particle[1])
