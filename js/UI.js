@@ -200,7 +200,7 @@ export class UI {
 				"nav",
 				{},
 				{
-					className: "navbar"
+					className: "navbar navbar-wrapper"
 				}
 			)
 
