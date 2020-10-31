@@ -42,17 +42,20 @@ function drawIt() {
 	window.requestAnimationFrame(drawIt)
 }
 async function loadSongFromFile() {
-	loadSongFromURL("https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true") // Local: "../mz_331_3.mid")
+	loadSongFromURL(
+		"https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true",
+		"Mozart KV 331 3rd Movement"
+	) // Local: "../mz_331_3.mid")
 }
-async function loadSongFromURL(url) {
+async function loadSongFromURL(url, title) {
 	let response = fetch(url, {
 		method: "GET" // *GET, POST, PUT, DELETE, etc.
 	})
 	await (await response).blob().then(res => {
 		let reader = new FileReader()
-		let fileName = url
+		let fileName = title
 		reader.onload = function (theFile) {
-			player.loadSong(reader.result, fileName, () => {})
+			player.loadSong(reader.result, title, () => {})
 		}
 		reader.readAsDataURL(res)
 	})
