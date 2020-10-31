@@ -218,8 +218,6 @@ export class Player {
 	}
 
 	play() {
-		console.log(this.scrolling, this.getTime(), this.scrollOffset)
-
 		if (this.scrolling != 0) {
 			window.setTimeout(this.play.bind(this), 20)
 			return
