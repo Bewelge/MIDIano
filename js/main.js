@@ -42,10 +42,13 @@ function drawIt() {
 	window.requestAnimationFrame(drawIt)
 }
 async function loadSongFromFile() {
-	loadSongFromURL(
-		"https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true",
-		"Mozart KV 331 3rd Movement"
-	) // Local: "../mz_331_3.mid")
+	let domain = window.location.href
+	let url = "http://midiano.com/mz_331_3.mid?raw=true"
+	if (domain.split("github").length > 1) {
+		url = "https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true"
+	}
+
+	loadSongFromURL(url, "Mozart KV 331 3rd Movement") // Local: "../mz_331_3.mid")
 }
 async function loadSongFromURL(url, title) {
 	let response = fetch(url, {
