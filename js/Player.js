@@ -173,8 +173,10 @@ export class Player {
 			if (this.getSong() && newTime > 1 + this.getSong().getEnd() / 1000) {
 				this.scrolling = 0
 				newScrollOffset =
-					this.scrollOffset +
-						(1 + this.getSong().getEnd() / 1000 - this.getTime()) ||
+					this.getTimeWithoutScrollOffset() -
+					(1 + this.getSong().getEnd() / 1000)
+				this.scrollOffset +
+					(1 + this.getSong().getEnd() / 1000 - this.getTime()) ||
 					this.scrollOffset
 			}
 
