@@ -265,7 +265,7 @@ export class NoteRender {
 				(this.windowHeight - this.pianoRender.whiteKeyHeight)
 		return {
 			x: x,
-			y: y - 2,
+			y: y + 1,
 			w: keyBlack
 				? this.pianoRender.blackKeyWidth
 				: this.pianoRender.whiteKeyWidth,
