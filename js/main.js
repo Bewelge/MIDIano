@@ -43,7 +43,7 @@ function drawIt() {
 }
 async function loadSongFromFile() {
 	let domain = window.location.href
-	let url = "http://midiano.com/mz_331_3.mid?raw=true"
+	let url = "https://midiano.com/mz_331_3.mid?raw=true"
 	if (domain.split("github").length > 1) {
 		url = "https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true"
 	}
