@@ -104,7 +104,9 @@ export class Render {
 		}
 
 		this.overlayRender.render()
-		this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
+		if (this.settings.showNoteDebugInfo) {
+			this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
+		}
 	}
 
 	/**

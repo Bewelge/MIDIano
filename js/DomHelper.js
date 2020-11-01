@@ -147,8 +147,8 @@ export class DomHelper {
 		let id = text.replaceAll(" ", "") + "checkbox"
 		let cont = DomHelper.createDivWithIdAndClass(id, "checkboxCont")
 		let checkbox = DomHelper.createElementWithClass("checkboxInput", "input")
-		checkbox.setAttribute("checked", value)
 		checkbox.setAttribute("type", "checkbox")
+		checkbox.checked = value
 		checkbox.setAttribute("name", id)
 		checkbox.onchange = onChange
 		let label = DomHelper.createElementWithClass(
@@ -157,6 +157,7 @@ export class DomHelper {
 			{},
 			{ innerHTML: text }
 		)
+
 		label.setAttribute("for", id)
 
 		cont.appendChild(checkbox)

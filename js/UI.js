@@ -10,7 +10,8 @@ export class UI {
 			showParticles: true,
 			showHitKeys: true,
 			showPianoKeys: true,
-			renderOffset: 0
+			renderOffset: 0,
+			showNoteDebugInfo: false
 		}
 
 		this.player = player
@@ -301,6 +302,16 @@ export class UI {
 			}
 		)
 		settingsDivs.push(renderOffsetSlider.container)
+
+		let showNoteDebugInfo = DomHelper.createCheckbox(
+			"Show Note Debug Info",
+			ev => {
+				this.settings.showNoteDebugInfo = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showNoteDebugInfo
+		)
+		settingsDivs.push(showNoteDebugInfo)
 
 		settingsDivs.forEach(div => div.classList.add("innerMenuContDiv"))
 
