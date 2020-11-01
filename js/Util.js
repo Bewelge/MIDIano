@@ -4,6 +4,7 @@ function formatTime(seconds) {
 	try {
 		return date.toISOString().substr(11, 8)
 	} catch (e) {
+		console.error(e)
 		//ignore this. only seems to happend when messing with breakpoints in devtools
 	}
 }
