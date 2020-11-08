@@ -6,7 +6,15 @@
 
 ![Screenshot](/Screenshot.png)
 
-libraries used:
+#### Possible Todos / Ideas :
+
+- Add support for Actual Midi-Input
+- Make UI more mobile-friendly
+- Extend Settings:
+  - Choose between Soundfonts
+
+#### Libraries used:
 
 - pickr - Color Picker - https://github.com/Simonwep/pickr
-- jquery
+- jQuery
+- Bootstrap (only really use the glyphicons)
