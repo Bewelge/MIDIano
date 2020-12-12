@@ -790,7 +790,7 @@ export class UI {
 	}
 	createTrackDiv(track) {
 		const trackObj = this.player.tracks[track]
-		let volumeSlider, muteButton, hideButton, trackName
+		let volumeSlider, muteButton, hideButton, trackName, requireToPlayButton
 
 		let trackDiv = DomHelper.createDivWithIdAndClass(
 			"trackDiv" + track,
@@ -858,6 +858,21 @@ export class UI {
 				}
 			}
 		)
+
+		//Require Track to play along
+		requireToPlayButton = DomHelper.createGlyphiconButton(
+			"require" + track,
+			"plus-sign",
+			() => {
+				if (!trackObj.requiredToPlay) {
+					DomHelper.replaceGlyph(requireToPlayButton, "minus-sign", "plus-sign")
+					trackObj.requiredToPlay = true
+				} else {
+					trackObj.requiredToPlay = false
+					DomHelper.replaceGlyph(requireToPlayButton, "plus-sign", "minus-sign")
+				}
+			}
+		)
 		let clearDiv = DomHelper.createElement("p", { clear: "both" })
 
 		let colorPickerWhite = DomHelper.createGlyphiconTextButton(
@@ -881,6 +896,7 @@ export class UI {
 		DomHelper.appendChildren(btnGrp, [
 			hideButton,
 			muteButton,
+			requireToPlayButton,
 			colorPickerWhite,
 			colorPickerBlack
 		])

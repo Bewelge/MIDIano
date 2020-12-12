@@ -62,6 +62,20 @@ export class PianoRender {
 		this.getPlayedKeysBlack().style.top =
 			this.windowHeight - this.whiteKeyHeight + "px"
 	}
+	drawActiveInputKey(noteNumber) {
+		let dim = this.getKeyDimensions(noteNumber - 21)
+		let keyBlack = isBlack(noteNumber - 21)
+		console.log(keyBlack)
+		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
+		// let x = this.getKeyX(noteNumber)
+		// let w = keyBlack ? this.blackKeyWidth : this.whiteKeyWidth
+		ctx.fillStyle = "rgba(255,0,0,1)"
+		if (keyBlack) {
+			this.drawBlackKey(ctx, dim, "rgba(255,0,0,1)")
+		} else {
+			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
+		}
+	}
 	drawActiveKey(renderInfo, color) {
 		let dim = this.getKeyDimensions(renderInfo.noteNumber - 21)
 		let keyBlack = renderInfo.keyBlack
@@ -212,12 +226,13 @@ export class PianoRender {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Dimensions} dims
 	 */
-	drawBlackKey(ctx, dims) {
+	drawBlackKey(ctx, dims, color) {
 		let radius = 2
 		let x = dims.x
 		let y = dims.y + 3.5
 		let height = dims.h
 		let width = dims.w
+		color = color || "black"
 
 		ctx.beginPath()
 		ctx.moveTo(x + 1, y + radius)
@@ -230,31 +245,31 @@ export class PianoRender {
 		ctx.lineTo(x + 1, y + height - radius)
 		ctx.lineTo(x + 1, y)
 
-		ctx.fillStyle = "black"
+		ctx.fillStyle = color
 		ctx.fill()
 
-		let rgr = ctx.createLinearGradient(
-			x,
-			this.whiteKeyHeight / 2,
-			x + width,
-			this.whiteKeyHeight / 2
-		)
-		rgr.addColorStop(0.9, "rgba(0,0,0,0.3)")
-		rgr.addColorStop(0.5, "rgba(0,0,0,0)")
-		rgr.addColorStop(0.1, "rgba(0,0,0,0.3)")
-		ctx.fillStyle = rgr
-		ctx.fill()
+		// let rgr = ctx.createLinearGradient(
+		// 	x,
+		// 	this.whiteKeyHeight / 2,
+		// 	x + width,
+		// 	this.whiteKeyHeight / 2
+		// )
+		// rgr.addColorStop(0.9, "rgba(0,0,0,0.3)")
+		// rgr.addColorStop(0.5, "rgba(0,0,0,0)")
+		// rgr.addColorStop(0.1, "rgba(0,0,0,0.3)")
+		// ctx.fillStyle = rgr
+		// ctx.fill()
 
-		let rgr2 = ctx.createLinearGradient(
-			this.windowWidth / 2,
-			0,
-			this.windowWidth / 2,
-			this.whiteKeyHeight
-		)
-		rgr2.addColorStop(1, "rgba(0,0,0,0.5)")
-		rgr2.addColorStop(0, "rgba(0,0,0,0.6)")
-		ctx.fillStyle = rgr2
-		ctx.fill()
+		// let rgr2 = ctx.createLinearGradient(
+		// 	this.windowWidth / 2,
+		// 	0,
+		// 	this.windowWidth / 2,
+		// 	this.whiteKeyHeight
+		// )
+		// rgr2.addColorStop(1, "rgba(0,0,0,0.5)")
+		// rgr2.addColorStop(0, "rgba(0,0,0,0.6)")
+		// ctx.fillStyle = rgr2
+		// ctx.fill()
 
 		ctx.closePath()
 	}

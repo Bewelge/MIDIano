@@ -29,8 +29,13 @@ export class NoteRender {
 			})
 		}
 
+		for (let noteNumber in playerState.inputActiveNotes) {
+			this.pianoRender.drawActiveInputKey(noteNumber, isBlack(noteNumber))
+		}
+
 		this.particleRender.render()
 
+		//return renderInfos for Debugrender..
 		return renderInfos
 	}
 	resize(windowWidth, windowHeight, noteToHeightConst) {

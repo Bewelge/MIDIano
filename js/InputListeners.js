@@ -21,7 +21,7 @@ export class InputListeners {
 		window.addEventListener("mouseup", ev => this.onMouseUp(ev, render, player))
 		document.body.addEventListener(
 			"mousedown",
-			ev => this.onMouseDown(ev, render),
+			ev => this.onMouseDown(ev, render, player),
 			{ passive: false }
 		)
 		document.body.addEventListener(
@@ -156,11 +156,12 @@ export class InputListeners {
 		ui.mouseMoved()
 	}
 
-	onMouseDown(ev, render) {
+	onMouseDown(ev, render, player) {
 		let pos = this.getXYFromMouseEvent(ev)
 		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
 			ev.preventDefault()
 			this.grabbedMainCanvas = true
+			player.paused = true
 		}
 	}
 
@@ -174,6 +175,7 @@ export class InputListeners {
 			player.handleScroll()
 			this.grabSpeed = []
 		}
+		player.paused = false
 		this.grabbedProgressBar = false
 		this.grabbedMainCanvas = false
 		this.lastYGrabbed = false
