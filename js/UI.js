@@ -13,7 +13,7 @@ export class UI {
 			renderOffset: 0,
 			showNoteDebugInfo: false
 		}
-
+		this.midiInputHandler = player.midiInputHandler
 		this.player = player
 
 		this.isMobile = window.matchMedia(
@@ -156,7 +156,8 @@ export class UI {
 		let trackGrp = DomHelper.createButtonGroup(true)
 		DomHelper.appendChildren(trackGrp, [
 			this.getTracksButton(),
-			this.getChannelsButton()
+			this.getMidiInputButton()
+			// this.getChannelsButton()
 		])
 		return trackGrp
 	}
@@ -525,7 +526,6 @@ export class UI {
 	}
 	getTracksButton() {
 		if (!this.tracksButton) {
-			let trackMenuDiv = this.getTrackMenuDiv()
 			this.tracksButton = DomHelper.createGlyphiconTextButton(
 				"tracks",
 				"align-justify",
@@ -549,17 +549,43 @@ export class UI {
 	}
 
 	showTracks() {
-		if (this.channelsShown) {
-			this.hideChannels()
-		}
-		if (this.settingsShown) {
-			this.hideSettings()
-		}
+		this.hideAllDialogs()
 		DomHelper.addClassToElement("selected", this.tracksButton)
 		this.tracksShown = true
 		this.getTrackMenuDiv().style.display = "block"
 	}
 
+	getMidiInputButton() {
+		if (!this.midiInputButton) {
+			this.midiInputButton = DomHelper.createGlyphiconTextButton(
+				"midiInput",
+				"tower",
+				"Midi-Input",
+				ev => {
+					if (this.midiInputDialogShown) {
+						this.hideMidiInputDialog()
+					} else {
+						this.showMidiInputDialog()
+					}
+				}
+			)
+			DomHelper.addClassToElement("floatSpanLeft", this.midiInputButton)
+		}
+		return this.midiInputButton
+	}
+	hideMidiInputDialog() {
+		DomHelper.removeClass("selected", this.midiInputButton)
+		this.midiInputDialogShown = false
+		this.getMidiInputDialog().style.display = "none"
+	}
+
+	showMidiInputDialog() {
+		this.hideAllDialogs()
+		DomHelper.addClassToElement("selected", this.midiInputButton)
+		this.midiInputDialogShown = true
+
+		this.getMidiInputDialog().style.display = "block"
+	}
 	getChannelsButton() {
 		if (!this.channelsButton) {
 			let channelMenuDiv = this.getChannelMenuDiv()
@@ -604,6 +630,12 @@ export class UI {
 		DomHelper.removeClass("selected", this.tracksButton)
 		this.channelsShown = false
 		channelMenuDiv.style.display = "none"
+	}
+	hideAllDialogs() {
+		// this.hideChannels()
+		this.hideMidiInputDialog()
+		this.hideSettings()
+		this.hideTracks()
 	}
 
 	getMainVolumeSlider() {
@@ -775,6 +807,61 @@ export class UI {
 			})
 		})
 	}
+	getMidiInputDialog() {
+		if (!this.midiInputDialog) {
+			this.midiInputDialog = DomHelper.createDivWithIdAndClass(
+				"midiInputDialog",
+				"centeredMenuDiv"
+			)
+			this.midiInputDialog.style.display = "none"
+			document.body.appendChild(this.midiInputDialog)
+
+			let text = DomHelper.createDivWithClass(
+				"centeredBigText",
+				{ marginTop: "25px" },
+				{ innerHTML: "Choose Midi device:" }
+			)
+			this.midiInputDialog.appendChild(text)
+
+			this.inputDevicesDiv = DomHelper.createDivWithClass("container")
+			this.midiInputDialog.appendChild(this.inputDevicesDiv)
+		}
+		let devices = this.midiInputHandler.getAvailableDevices()
+		console.log(devices)
+		if (devices.length == 0) {
+			this.inputDevicesDiv.innerHTML = "No MIDI-devices found."
+		} else {
+			this.inputDevicesDiv.innerHTML = ""
+			devices.forEach(device => {
+				this.inputDevicesDiv.appendChild(this.createDeviceDiv(device))
+			})
+		}
+
+		this.midiInputDialog.style.marginTop =
+			this.getNavBar().clientHeight + 25 + "px"
+		return this.midiInputDialog
+	}
+	createDeviceDiv(device) {
+		let deviceDiv = DomHelper.createTextButton(
+			"midiDeviceDiv" + device.id,
+			device.name,
+			() => {
+				if (deviceDiv.classList.contains("selected")) {
+					DomHelper.removeClass("selected", deviceDiv)
+					this.midiInputHandler.clearInput(device)
+				} else {
+					DomHelper.addClassToElement("selected", deviceDiv)
+					console.log(device)
+					this.midiInputHandler.addInput(device)
+				}
+			}
+		)
+		if (this.midiInputHandler.isInputActive(device)) {
+			DomHelper.addClassToElement("selected", deviceDiv)
+		}
+
+		return deviceDiv
+	}
 	getTrackMenuDiv() {
 		if (!this.trackMenuDiv) {
 			this.trackMenuDiv = DomHelper.createDivWithIdAndClass(
@@ -788,9 +875,14 @@ export class UI {
 			this.getNavBar().clientHeight + 25 + "px"
 		return this.trackMenuDiv
 	}
+
 	createTrackDiv(track) {
 		const trackObj = this.player.tracks[track]
-		let volumeSlider, muteButton, hideButton, trackName, requireToPlayButton
+		let volumeSlider,
+			muteButton,
+			hideButton,
+			trackName,
+			requireToPlayAlongButton
 
 		let trackDiv = DomHelper.createDivWithIdAndClass(
 			"trackDiv" + track,
@@ -860,16 +952,25 @@ export class UI {
 		)
 
 		//Require Track to play along
-		requireToPlayButton = DomHelper.createGlyphiconButton(
+		requireToPlayAlongButton = DomHelper.createGlyphiconTextButton(
 			"require" + track,
-			"plus-sign",
+			"minus-sign",
+			"Play along",
 			() => {
 				if (!trackObj.requiredToPlay) {
-					DomHelper.replaceGlyph(requireToPlayButton, "minus-sign", "plus-sign")
+					DomHelper.replaceGlyph(
+						requireToPlayAlongButton,
+						"minus-sign",
+						"plus-sign"
+					)
 					trackObj.requiredToPlay = true
 				} else {
 					trackObj.requiredToPlay = false
-					DomHelper.replaceGlyph(requireToPlayButton, "plus-sign", "minus-sign")
+					DomHelper.replaceGlyph(
+						requireToPlayAlongButton,
+						"plus-sign",
+						"minus-sign"
+					)
 				}
 			}
 		)
@@ -896,7 +997,7 @@ export class UI {
 		DomHelper.appendChildren(btnGrp, [
 			hideButton,
 			muteButton,
-			requireToPlayButton,
+			requireToPlayAlongButton,
 			colorPickerWhite,
 			colorPickerBlack
 		])

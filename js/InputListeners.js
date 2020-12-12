@@ -158,6 +158,7 @@ export class InputListeners {
 
 	onMouseDown(ev, render, player) {
 		let pos = this.getXYFromMouseEvent(ev)
+		player.wasPaused = player.paused
 		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
 			ev.preventDefault()
 			this.grabbedMainCanvas = true
@@ -175,7 +176,7 @@ export class InputListeners {
 			player.handleScroll()
 			this.grabSpeed = []
 		}
-		player.paused = false
+		player.paused = player.wasPaused
 		this.grabbedProgressBar = false
 		this.grabbedMainCanvas = false
 		this.lastYGrabbed = false

@@ -78,6 +78,23 @@ input[type="text"] {
 	overflow-y: auto;
 	overflow-x: hidden;
 }
+.centeredMenuDiv {
+	max-height: calc(50% - 50px);
+	margin-top: 20px;
+	padding: 30px;
+	position: absolute;
+	width: 50%;
+	left: 25%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	background-color: #9e9e9e;
+	border-radius: 5px;
+}
+
+.centeredBigText {
+	width: 100%;
+	text-align: center;
+}
 .trackName {
 	width: 100%;
 	text-align: l;
@@ -93,7 +110,7 @@ input[type="text"] {
 	border-radius: 2px;
 	padding: 5px;
 	width: 250px;
-	margin-top: 5px;
+	margin: 5px;
 	box-sizing: border-box;
 }
 .floatSpanLeft span {
@@ -120,7 +137,7 @@ input[type="text"] {
 }
 .btn {
 	font-family: "Source Sans Pro", sans-serif !important;
-	transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	transition: all 0.2s c cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	/* box-shadow: 0em 0em 2px 1px rgba(0, 0, 0, 0.5); */
 	box-sizing: border-box;
 	text-align: center;
@@ -146,7 +163,7 @@ input[type="text"] {
 }
 .btn-select-line {
 	border-bottom: 4px solid #607d8b;
-	transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	transition: all 0.2s ease-out;
 	position: absolute;
 	bottom: 0;
 	left: 0;

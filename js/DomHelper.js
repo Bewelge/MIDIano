@@ -232,6 +232,21 @@ export class DomHelper {
 		bt.appendChild(DomHelper.getButtonSelectLine())
 		return bt
 	}
+	static createTextButton(id, text, onClick) {
+		let bt = DomHelper.createElement(
+			"button",
+			{},
+			{
+				id: id,
+				type: "button",
+				className: "btn btn-default",
+				onclick: onClick,
+				innerHTML: text
+			}
+		)
+		bt.appendChild(DomHelper.getButtonSelectLine())
+		return bt
+	}
 	static getButtonSelectLine() {
 		return DomHelper.createDivWithClass("btn-select-line")
 	}
