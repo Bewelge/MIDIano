@@ -52,7 +52,16 @@ export class Player {
 	addNewSongCallback(callback) {
 		this.newSongCallbacks.push(callback)
 	}
-
+	switchSoundfont(soundfontName) {
+		this.pause()
+		//TODO: WHY IS THIS NOT PAUSING?! Throws errors, but works...
+		this.soundfontName = soundfontName
+		this.loadSoundfont()
+	}
+	async loadSoundfont() {
+		await this.loadInstrumentsForSong()
+		await this.loadBuffers()
+	}
 	getContext() {
 		return this.context
 	}
@@ -95,7 +104,10 @@ export class Player {
 	}
 
 	async loadBuffers() {
-		return await SoundfontLoader.getBuffers(this.context).then(buffers => {
+		return await SoundfontLoader.getBuffers(
+			this.context,
+			this.soundfontName
+		).then(buffers => {
 			console.log("Buffers loaded")
 			this.setBuffers(buffers)
 			this.onloadStopCallbacks.forEach(callback => callback())
@@ -123,6 +135,15 @@ export class Player {
 
 		this.setSong(this.currentSong)
 		this.loadedSongs.add(this.currentSong)
+
+		await this.loadInstrumentsForSong()
+
+		this.setupTracks()
+		this.newSongCallbacks.forEach(callback => callback())
+		setLoadMessage("Creating Buffers")
+		return this.loadBuffers()
+	}
+	async loadInstrumentsForSong() {
 		if (!this.buffers.hasOwnProperty(this.soundfontName)) {
 			this.buffers[this.soundfontName] = {}
 		}
@@ -136,13 +157,12 @@ export class Player {
 			.map(instrument =>
 				SoundfontLoader.loadInstrument(instrument, this.soundfontName)
 			)
+		if (neededInstruments.length == 0) {
+			return Promise.resolve()
+		}
 		await Promise.all(neededInstruments)
-
-		this.setupTracks()
-		this.newSongCallbacks.forEach(callback => callback())
-		setLoadMessage("Creating Buffers")
-		return this.loadBuffers()
 	}
+
 	setBuffers(buffers) {
 		this.buffers[this.soundfontName] = buffers
 	}
@@ -193,12 +213,8 @@ export class Player {
 			if (newTime < oldTime && newTime < this.startDelay) {
 				this.scrolling = 0
 				newScrollOffset = this.getTimeWithoutScrollOffset() - this.startDelay
-				// this.scrollOffset + (this.startDelay - this.getTime()) ||
-				// this.scrollOffset
 			}
-			if (isNaN(newScrollOffset)) {
-				console.log(123)
-			}
+
 			this.scrollOffset = newScrollOffset
 
 			//dampen scroll amount somehow...
@@ -235,7 +251,13 @@ export class Player {
 		}
 
 		let delta = (this.context.currentTime - this.lastTime) * this.playbackSpeed
+		//cap max framerate.
+		if (delta < 0.0069) {
+			window.requestAnimationFrame(this.play.bind(this))
+			return
+		}
 		let oldProgress = this.progress
+		console.log(this.paused)
 		if (!this.paused) {
 			this.progress += delta
 		}
@@ -349,8 +371,6 @@ export class Player {
 
 	pause() {
 		console.log("Pausing Song")
-		// this.sources.forEach(source => source.stop(0))
-		// this.context.suspend()
 		this.pauseTime = this.getTime()
 		this.paused = true
 	}

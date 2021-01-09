@@ -29,7 +29,8 @@ export class SoundfontLoader {
 				let scr = document.createElement("script")
 				scr.language = "javascript"
 				scr.type = "text/javascript"
-				scr.text = data
+				let newData = data.replaceAll("Soundfont", soundfontName)
+				scr.text = newData
 				document.body.appendChild(scr)
 			})
 			.catch(function (error) {
@@ -44,30 +45,31 @@ export class SoundfontLoader {
 				.map(instrument => SoundfontLoader.loadInstrument(instrument))
 		)
 	}
-	static async getBuffers(ctx) {
+	static async getBuffers(ctx, soundfontName) {
 		let sortedBuffers = null
-		let unsortedBuffers = await SoundfontLoader.createBuffers(ctx).then(
-			unsortedBuffers => {
-				let buffers = {}
-				for (let b in unsortedBuffers) {
-					let buffer = unsortedBuffers[b]
-					if (!buffers.hasOwnProperty(buffer.instrument)) {
-						buffers[buffer.instrument] = {}
-					}
-					buffers[buffer.instrument][buffer.note] = buffer.buffer
+		let unsortedBuffers = await SoundfontLoader.createBuffers(
+			ctx,
+			soundfontName
+		).then(unsortedBuffers => {
+			let buffers = {}
+			for (let b in unsortedBuffers) {
+				let buffer = unsortedBuffers[b]
+				if (!buffers.hasOwnProperty(buffer.instrument)) {
+					buffers[buffer.instrument] = {}
 				}
-				sortedBuffers = buffers
+				buffers[buffer.instrument][buffer.note] = buffer.buffer
 			}
-		)
+			sortedBuffers = buffers
+		})
 		return sortedBuffers
 	}
-	static async createBuffers(ctx) {
+	static async createBuffers(ctx, soundfontName) {
 		let promises = []
-		for (let instrument in MIDI.Soundfont) {
+		for (let instrument in MIDI[soundfontName]) {
 			console.log("Loaded instrument : " + instrument)
-			for (let note in MIDI.Soundfont[instrument]) {
+			for (let note in MIDI[soundfontName][instrument]) {
 				let base64Buffer = SoundfontLoader.getBase64Buffer(
-					MIDI.Soundfont[instrument][note]
+					MIDI[soundfontName][instrument][note]
 				)
 				promises.push(
 					SoundfontLoader.getNotePromise(ctx, base64Buffer, note, instrument)

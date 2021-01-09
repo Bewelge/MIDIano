@@ -11,7 +11,8 @@ export class UI {
 			showHitKeys: true,
 			showPianoKeys: true,
 			renderOffset: 0,
-			showNoteDebugInfo: false
+			showNoteDebugInfo: false,
+			soundfontName: "MusyngKite"
 		}
 		this.midiInputHandler = player.midiInputHandler
 		this.player = player
@@ -322,6 +323,16 @@ export class UI {
 			this.settings.showNoteDebugInfo
 		)
 		settingsDivs.push(showNoteDebugInfo)
+
+		let loadMessage = this.setLoadMessage.bind(this)
+		let soundfontSelect = DomHelper.createInputSelect(
+			"Soundfont",
+			["MusyngKite", "FluidR3_GM", "FatBoy"],
+			function (newVal) {
+				this.player.switchSoundfont(newVal, loadMessage)
+			}.bind(this)
+		)
+		settingsDivs.push(soundfontSelect)
 
 		settingsDivs.forEach(div => div.classList.add("innerMenuContDiv"))
 
