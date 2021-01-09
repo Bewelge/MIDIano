@@ -16,6 +16,15 @@ export class MidiInputHandler {
 				"No MIDI support present in your browser.  Check https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility to see which Browsers support this feature."
 			)
 	}
+	isAnyInputSet() {
+		let devices = this.getAvailableDevices()
+		for (let i = 0; i < devices.length; i++) {
+			if (this.isInputActive(devices[i])) {
+				return true
+			}
+		}
+		return false
+	}
 	getAvailableDevices() {
 		return Array.from(this.midiAccess.inputs.values())
 	}

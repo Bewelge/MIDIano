@@ -47,7 +47,7 @@ export class NoteRender {
 		let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
 		let lookAheadTime = Math.ceil(time + LOOK_AHEAD_TIME)
 
-		//sort by Black/white, so we have to only change fillstyle once.
+		//sort by Black/white, so we only have to change fillstyle once.
 		let notesRenderInfoBlack = []
 		let notesRenderInfoWhite = []
 		for (let i = lookBackTime; i < lookAheadTime; i++) {
@@ -170,21 +170,13 @@ export class NoteRender {
 			isOn: isOn,
 			noteDoneRatio: noteDoneRatio,
 			rad: rad,
-			x: noteDims.x + rad + 1,
-			y: noteDims.y,
-			w: noteDims.w - rad * 2 - 2,
-			h: noteDims.h
+			x: Math.floor(noteDims.x + rad + 1),
+			y: Math.floor(noteDims.y),
+			w: Math.floor(noteDims.w - rad * 2 - 2),
+			h: Math.floor(noteDims.h)
 		}
 	}
 	strokeNote(renderInfo) {
-		// drawRoundRect(
-		// 	ctx,
-		// 	renderInfos.x - wOffset / 2,
-		// 	renderInfos.y,
-		// 	renderInfos.w + wOffset,
-		// 	renderInfos.h,
-		// 	renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
-		// )
 		drawRoundRect(
 			this.ctx,
 			renderInfo.x,
@@ -236,7 +228,7 @@ export class NoteRender {
 		)
 		drawRoundRect(
 			ctx,
-			renderInfos.x - wOffset / 2,
+			renderInfos.x - Math.floor(wOffset / 2),
 			renderInfos.y,
 			renderInfos.w + wOffset,
 			renderInfos.h,

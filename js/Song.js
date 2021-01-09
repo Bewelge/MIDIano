@@ -20,6 +20,8 @@ export class Song {
 		this.channels = this.getDefaultChannels()
 
 		this.processEvents(midiData)
+
+		console.log(this)
 	}
 	getStart() {
 		return this.getNoteSequence()[0].timestamp
