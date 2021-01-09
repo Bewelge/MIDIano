@@ -257,7 +257,6 @@ export class Player {
 			return
 		}
 		let oldProgress = this.progress
-		console.log(this.paused)
 		if (!this.paused) {
 			this.progress += delta
 		}
