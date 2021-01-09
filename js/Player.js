@@ -394,8 +394,8 @@ export class Player {
 		)
 		gainNode.gain.linearRampToValueAtTime(clampedGain, startTime, 0.05)
 		gainNode.gain.setTargetAtTime(clampedGain, endTime, 0.05)
-		gainNode.gain.exponentialRampToValueAtTime(0.001, endTime + 0.1)
-		// gainNode.gain.linearRampToValueAtTime(0, contextTime + delay + (note.duration / 1000) / this.playbackSpeed + 0.1)
+		gainNode.gain.exponentialRampToValueAtTime(0.001, endTime + 0.5)
+		//gainNode.gain.linearRampToValueAtTime(0, contextTime + delay + (note.duration / 1000) / this.playbackSpeed + 0.1)
 		gainNode.connect(this.context.destination)
 
 		source.start(Math.max(0, startTime))
@@ -417,16 +417,16 @@ export class Player {
 	getClampedGain(note) {
 		let track = this.tracks[note.track]
 		let gain =
-			(((1 + note.velocity / 127 - 1) * 2 * note.channelVolume) / 127) *
-			(track.volume / 100) *
-			(this.volume / 100)
+			2 +
+			(((note.velocity / 127) * 2 * note.channelVolume) / 127) *
+				(track.volume / 100) *
+				(this.volume / 100)
 
-		let clampedGain = Math.min(1.0, Math.max(-1.0, gain))
+		let clampedGain = Math.min(5.0, Math.max(-1.0, gain))
 		return clampedGain
 	}
 
 	startNoteAndGetNodes(noteNumber) {
-		let time = this.context.currentTime
 		let source = this.context.createBufferSource()
 		let gainNode = this.context.createGain()
 		let buffer = this.getBufferForNote(noteNumber, "acoustic_grand_piano")
