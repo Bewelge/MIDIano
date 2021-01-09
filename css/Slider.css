@@ -3,6 +3,11 @@
 	margin-bottom: 5px;
 	position: relative;
 }
+.inputSelect {
+	float: left;
+	margin-left: 3px;
+}
+label,
 .sliderLabel,
 .checkboxlabel {
 	text-align: center;
@@ -11,6 +16,7 @@
 	pointer-events: none;
 	font-size: 0.75rem;
 	margin-bottom: -5px;
+	float: left;
 }
 .sliderVal {
 	float: left;
