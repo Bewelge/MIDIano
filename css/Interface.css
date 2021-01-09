@@ -43,7 +43,8 @@ canvas {
 	left: 0px;
 	top: 150px;
 	position: absolute;
-	box-shadow: inset 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+	border-top: 1px solid rgba(0, 0, 0, 0.5);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 	float: left;
 	cursor: pointer;
 	z-index: 10;
