@@ -436,10 +436,9 @@ export class Player {
 	getClampedGain(note) {
 		let track = this.tracks[note.track]
 		let gain =
-			2 +
-			(((note.velocity / 127) * 2 * note.channelVolume) / 127) *
-				(track.volume / 100) *
-				(this.volume / 100)
+			(2 + ((note.velocity / 127) * 2 * note.channelVolume) / 127) *
+			(track.volume / 100) *
+			(this.volume / 100)
 
 		let clampedGain = Math.min(5.0, Math.max(-1.0, gain))
 		return clampedGain
