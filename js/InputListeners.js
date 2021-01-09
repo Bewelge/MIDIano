@@ -65,6 +65,9 @@ export class InputListeners {
 
 	onWheel(player) {
 		return event => {
+			if (event.target != document.body) {
+				return
+			}
 			if (this.delay) {
 				return
 			}
