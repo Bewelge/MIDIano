@@ -267,7 +267,12 @@ export class DomHelper {
 
 	static createInputSelect(title, items, callback) {
 		let selectBox = DomHelper.createDivWithIdAndClass(title, "inputSelect")
-		let label = DomHelper.createElement("label", {}, { innerHTML: title })
+		let label = DomHelper.createElementWithClass(
+			"inputSelectLabel",
+			"label",
+			{},
+			{ innerHTML: title }
+		)
 		selectBox.appendChild(label)
 		let selectTag = DomHelper.createElementWithIdAndClass(
 			title,

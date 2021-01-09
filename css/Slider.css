@@ -7,7 +7,7 @@
 	float: left;
 	margin-left: 3px;
 }
-label,
+.inputSelectLabel,
 .sliderLabel,
 .checkboxlabel {
 	text-align: center;
