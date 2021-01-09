@@ -166,11 +166,11 @@ export class Render {
 	drawProgressBar(playerState) {
 		let ctx = this.progressBarCtx
 		let progressPercent = playerState.time / (playerState.end / 1000)
-		ctx.fillStyle = "rgba(150,150,150,0.8)"
+		ctx.fillStyle = "rgba(80,80,80,0.8)"
 		let ht = this.windowHeight - this.pianoRender.whiteKeyHeight
-		ctx.fillRect(this.windowWidth * progressPercent, 0, 4, 20)
-		ctx.fillStyle = "rgba(50,150,50,1)"
-		ctx.fillRect(0, 2, this.windowWidth * progressPercent, 16)
+		ctx.fillRect(this.windowWidth * progressPercent, 0, 2, 20)
+		ctx.fillStyle = "rgba(50,150,50,0.8)"
+		ctx.fillRect(0, 1, this.windowWidth * progressPercent, 18)
 
 		ctx.fillStyle = "rgba(0,0,0,1)"
 		let text =

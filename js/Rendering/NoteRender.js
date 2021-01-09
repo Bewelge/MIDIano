@@ -170,10 +170,10 @@ export class NoteRender {
 			isOn: isOn,
 			noteDoneRatio: noteDoneRatio,
 			rad: rad,
-			x: Math.floor(noteDims.x + rad + 1),
-			y: Math.floor(noteDims.y),
-			w: Math.floor(noteDims.w - rad * 2 - 2),
-			h: Math.floor(noteDims.h)
+			x: noteDims.x + rad + 1,
+			y: noteDims.y,
+			w: noteDims.w - rad * 2 - 2,
+			h: noteDims.h
 		}
 	}
 	strokeNote(renderInfo) {
@@ -228,7 +228,7 @@ export class NoteRender {
 		)
 		drawRoundRect(
 			ctx,
-			renderInfos.x - Math.floor(wOffset / 2),
+			renderInfos.x - wOffset / 2,
 			renderInfos.y,
 			renderInfos.w + wOffset,
 			renderInfos.h,
