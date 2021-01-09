@@ -95,6 +95,8 @@ export class UI {
 		this.getTrackMenuDiv()
 		this.getLoadedSongsDiv()
 		this.getSettingsDiv()
+
+		this.createFileDragArea()
 	}
 	getZoomDiv() {
 		//todo
@@ -424,20 +426,102 @@ export class UI {
 		wrapper.appendChild(song.div)
 		this.getLoadedSongsDiv().appendChild(wrapper)
 	}
+	createFileDragArea() {
+		let dragArea = DomHelper.createElement(
+			"div",
+			{
+				position: "absolute",
+				top: 0,
+				left: 0,
+				width: "100%",
+				height: "100%",
+				zIndex: 10000,
+				visibility: "hidden",
+				opacity: "0",
+				backgroundColor: "rgba(0,0,0,0.2)",
+				transition: "all 0.2s ease-out"
+			},
+			{
+				draggable: "true"
+			}
+		)
+
+		let dragAreaText = DomHelper.createDivWithClass(
+			"centeredBigText",
+			{
+				marginTop: "25%",
+				fontSize: "35px",
+				color: "rgba(225,225,225,0.8)"
+			},
+			{ innerHTML: "Drop Midi File anywhere!" }
+		)
+		dragArea.appendChild(dragAreaText)
+
+		dragArea.ondrop = ev => {
+			console.log(123)
+			dragArea.style.backgroundColor = "rgba(0,0,0,0)"
+			this.handleDragDropFileSelect(ev)
+		}
+		let lastTarget
+		window.ondragenter = ev => {
+			ev.preventDefault()
+			lastTarget = ev.target
+			dragArea.style.visibility = ""
+			dragArea.style.opacity = "1"
+		}
+		window.ondragleave = ev => {
+			if (ev.target === lastTarget || ev.target === document) {
+				dragArea.style.visibility = "hidden"
+				dragArea.style.opacity = "0"
+			}
+		}
+		window.ondragover = ev => ev.preventDefault()
+		window.ondrop = ev => {
+			ev.preventDefault()
+			dragArea.style.visibility = "hidden"
+			dragArea.style.opacity = "0"
+			this.handleDragDropFileSelect(ev)
+		}
+		document.body.appendChild(dragArea)
+	}
+	handleDragOverFile(ev) {
+		this.createFileDragArea().style
+	}
+	handleDragDropFileSelect(ev) {
+		if (ev.dataTransfer.items) {
+			// Use DataTransferItemList interface to access the file(s)
+			if (ev.dataTransfer.items.length > 0) {
+				if (ev.dataTransfer.items[0].kind === "file") {
+					var file = ev.dataTransfer.items[0].getAsFile()
+					this.readFile(file)
+				}
+			}
+		} else {
+			// Use DataTransfer interface to access the file(s)
+			if (ev.dataTransfer.files.length > 0) {
+				var file = ev.dataTransfer.files[0]
+				this.readFile(file)
+			}
+		}
+	}
 	handleFileSelect(evt) {
 		var files = evt.target.files
 		for (var i = 0, f; (f = files[i]); i++) {
-			let reader = new FileReader()
-			let fileName = f.name
-			reader.onload = function (theFile) {
-				this.player.loadSong(
-					reader.result,
-					fileName,
-					this.setLoadMessage.bind(this)
-				)
-			}.bind(this)
-			reader.readAsDataURL(f)
+			console.log(f)
+			this.readFile(f)
 		}
+	}
+	readFile(file) {
+		let reader = new FileReader()
+		let fileName = file.name
+		reader.onload = function (theFile) {
+			this.player.loadSong(
+				reader.result,
+				fileName,
+				this.setLoadMessage.bind(this)
+			)
+		}.bind(this)
+		reader.readAsDataURL(file)
 	}
 	startLoad() {
 		this.getLoadingDiv().style.display = "block"
