@@ -1,30 +1,32 @@
 .sliderContainer {
-	margin-top: 5px;
+	/* margin-top: 5px;
 	margin-bottom: 5px;
-	position: relative;
+	position: relative; */
 }
 .inputSelect {
-	float: left;
+	float: right;
 	margin-left: 3px;
 }
 .inputSelectLabel,
 .sliderLabel,
 .checkboxlabel {
-	text-align: center;
 	color: #424242a3;
 	z-index: 15;
 	pointer-events: none;
 	font-size: 0.75rem;
-	margin-bottom: -5px;
-	float: left;
+}
+
+.checkboxInput {
+	float: right;
 }
 .sliderVal {
-	float: left;
+	margin-top: 5px;
+	margin-right: 5px;
+	float: right;
 	color: #424242a3;
 	z-index: 15;
 	pointer-events: none;
 	font-size: 0.75rem;
-	margin-bottom: -5px;
 }
 input[type="range"] {
 	-webkit-appearance: none;

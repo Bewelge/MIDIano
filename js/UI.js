@@ -8,8 +8,15 @@ export class UI {
 	constructor(player, render, isMobile) {
 		this.settings = {
 			showParticles: true,
+			particleAmount: 40,
+			particleSize: 1,
+			particleLife: 12,
+			particleSpeed: 4,
 			showHitKeys: true,
 			showPianoKeys: true,
+			strokeNotes: true,
+			roundedNotes: true,
+			fadeInNotes: true,
 			renderOffset: 0,
 			showNoteDebugInfo: false,
 			soundfontName: "MusyngKite"
@@ -32,6 +39,8 @@ export class UI {
 			render.updateSettings(this.settings)
 			player.updateSettings(this.settings)
 		}
+
+		document.body.addEventListener("mousemove", this.mouseMoved.bind(this))
 
 		this.createControlMenu()
 		this.resize()
@@ -89,7 +98,7 @@ export class UI {
 		let minimizeButton = this.getMinimizeButton()
 		let zoomDiv = this.getZoomDiv()
 
-		this.getNavBar().appendChild(minimizeButton)
+		document.body.appendChild(minimizeButton)
 		this.getNavBar().appendChild(topGroupsContainer)
 
 		this.getTrackMenuDiv()
@@ -102,12 +111,12 @@ export class UI {
 		//todo
 	}
 	mouseMoved() {
-		this.getMinimizeButton().style.transition = "none"
+		console.log(123)
+
 		this.getMinimizeButton().style.opacity = 1
 		if (!this.fadingOutMinimizeButton) {
 			this.fadingOutMinimizeButton = true
 			window.setTimeout(() => {
-				this.getMinimizeButton().style.transition = "1s all ease-out"
 				this.getMinimizeButton().style.opacity = 0
 				this.fadingOutMinimizeButton = false
 			}, 1000)
@@ -120,7 +129,7 @@ export class UI {
 				"chevron-up",
 				() => {
 					if (!this.navMinimized) {
-						this.getNavBar().style.top =
+						this.getNavBar().style.marginTop =
 							"-" + this.getNavBar().clientHeight + "px"
 						this.navMinimized = true
 						this.minimizeButton
@@ -131,8 +140,7 @@ export class UI {
 							.classList.add("glyphicon-chevron-down")
 						this.onMenuHeightChange(0)
 					} else {
-						this.getNavBar().style.top = "0px"
-						// this.minimizeButton.style.bottom = "0px"
+						this.getNavBar().style.marginTop = "0px"
 						this.navMinimized = false
 
 						this.minimizeButton
@@ -148,8 +156,8 @@ export class UI {
 			this.minimizeButton.style.padding = "0px"
 			this.minimizeButton.style.fontSize = "0.5em"
 		}
-		this.minimizeButton.style.bottom =
-			-24 - this.minimizeButton.clientHeight + "px"
+		let navbarHeight = this.navMinimized ? 0 : this.getNavBar().clientHeight
+		this.minimizeButton.style.top = navbarHeight + 20 + "px"
 		return this.minimizeButton
 	}
 
@@ -272,6 +280,16 @@ export class UI {
 	getSettingsContent() {
 		let settingsDivs = []
 
+		let loadMessage = this.setLoadMessage.bind(this)
+		let soundfontSelect = DomHelper.createInputSelect(
+			"Soundfont",
+			["MusyngKite", "FluidR3_GM", "FatBoy"],
+			function (newVal) {
+				this.player.switchSoundfont(newVal, loadMessage)
+			}.bind(this)
+		)
+		settingsDivs.push(soundfontSelect)
+
 		let showParticlesCheckbox = DomHelper.createCheckbox(
 			"Show Particles",
 			ev => {
@@ -280,8 +298,58 @@ export class UI {
 			},
 			this.settings.showParticles
 		)
-
 		settingsDivs.push(showParticlesCheckbox)
+
+		let particleAmountSlider = DomHelper.createSliderWithLabelAndField(
+			"particleAmountSlider",
+			"Particle Amount",
+			this.settings.particleAmount,
+			0,
+			200,
+			value => {
+				this.settings.particleAmount = value
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(particleAmountSlider.container)
+		let particleSizeSlider = DomHelper.createSliderWithLabelAndField(
+			"particleSizeSlider",
+			"Particle Size",
+			this.settings.particleSize,
+			0,
+			5,
+			value => {
+				this.settings.particleSize = value
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(particleSizeSlider.container)
+
+		let particleSpeedSlider = DomHelper.createSliderWithLabelAndField(
+			"particleSpeedSlider",
+			"Particle Speed",
+			this.settings.particleSpeed,
+			1,
+			15,
+			value => {
+				this.settings.particleSpeed = value
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(particleSpeedSlider.container)
+
+		let particleLifeSlider = DomHelper.createSliderWithLabelAndField(
+			"particleDurationSlider",
+			"Particle Duration",
+			this.settings.particleLife,
+			1,
+			30,
+			value => {
+				this.settings.particleLife = value
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(particleLifeSlider.container)
 
 		let showHitKeysCheckbox = DomHelper.createCheckbox(
 			"Hit Key Effect",
@@ -292,6 +360,36 @@ export class UI {
 			this.settings.showHitKeys
 		)
 		settingsDivs.push(showHitKeysCheckbox)
+
+		let strokeNotesCheckbox = DomHelper.createCheckbox(
+			"Stroke Notes",
+			ev => {
+				this.settings.strokeNotes = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.strokeNotes
+		)
+		settingsDivs.push(strokeNotesCheckbox)
+
+		let roundedNotesCheckbox = DomHelper.createCheckbox(
+			"Rounded Corners Notes",
+			ev => {
+				this.settings.roundedNotes = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.roundedNotes
+		)
+		settingsDivs.push(roundedNotesCheckbox)
+
+		let fadeInNotesCheckbox = DomHelper.createCheckbox(
+			"Fade in Notes",
+			ev => {
+				this.settings.fadeInNotes = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.fadeInNotes
+		)
+		settingsDivs.push(fadeInNotesCheckbox)
 
 		let showPianoKeysCheckbox = DomHelper.createCheckbox(
 			"Show Notes on Piano",
@@ -325,16 +423,6 @@ export class UI {
 			this.settings.showNoteDebugInfo
 		)
 		settingsDivs.push(showNoteDebugInfo)
-
-		let loadMessage = this.setLoadMessage.bind(this)
-		let soundfontSelect = DomHelper.createInputSelect(
-			"Soundfont",
-			["MusyngKite", "FluidR3_GM", "FatBoy"],
-			function (newVal) {
-				this.player.switchSoundfont(newVal, loadMessage)
-			}.bind(this)
-		)
-		settingsDivs.push(soundfontSelect)
 
 		settingsDivs.forEach(div => div.classList.add("innerMenuContDiv"))
 

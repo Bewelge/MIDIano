@@ -64,6 +64,7 @@ export class Render {
 	onMenuHeightChanged(menuHeight) {
 		this.menuHeight = menuHeight
 		this.getProgressBarCanvas().style.top = menuHeight + "px"
+		this.noteRender.setMenuHeight(menuHeight)
 	}
 	/**
 	 * (Re)sets all dimensions dependent on window size

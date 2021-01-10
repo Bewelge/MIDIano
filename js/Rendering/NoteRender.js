@@ -33,7 +33,7 @@ export class NoteRender {
 			this.pianoRender.drawActiveInputKey(noteNumber, isBlack(noteNumber))
 		}
 
-		this.particleRender.render()
+		this.particleRender.render(settings)
 
 		//return renderInfos for Debugrender..
 		return renderInfos
@@ -42,6 +42,9 @@ export class NoteRender {
 		this.windowWidth = windowWidth
 		this.windowHeight = windowHeight
 		this.noteToHeightConst = noteToHeightConst
+	}
+	setMenuHeight(menuHeight) {
+		this.menuHeight = menuHeight
 	}
 	drawNotesInTimeWindowAndReturnRenderInfos(time, notesBySeconds, index) {
 		let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
@@ -81,7 +84,7 @@ export class NoteRender {
 			this.ctx.fillStyle = colBlack
 			activeNotesBlack.forEach(note => this.renderActiveNote(note))
 		}
-
+		this.ctx.globalAlpha = 1
 		this.ctx.strokeStyle = "rgba(0,0,0,1)"
 		this.ctx.lineWidth = 1
 		this.ctx.fillStyle = colWhite
@@ -177,14 +180,20 @@ export class NoteRender {
 		}
 	}
 	strokeNote(renderInfo) {
-		drawRoundRect(
-			this.ctx,
-			renderInfo.x,
-			renderInfo.y,
-			renderInfo.w,
-			renderInfo.h,
-			renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4
-		)
+		if (this.settings.roundedNotes) {
+			drawRoundRect(
+				this.ctx,
+				renderInfo.x,
+				renderInfo.y,
+				renderInfo.w,
+				renderInfo.h,
+				renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4
+			)
+		} else {
+			ctx.beginPath()
+			this.ctx.rect(renderInfo.x, renderInfo.y, renderInfo.w, renderInfo.h)
+			ctx.closePath()
+		}
 		this.ctx.stroke()
 	}
 	/**
@@ -201,22 +210,33 @@ export class NoteRender {
 		let h = renderInfos.h
 		// rad = Math.min(h / 2, rad)
 
-		ctx.globalAlpha = Math.min(
+		if (this.settings.fadeInNotes) {
+			ctx.globalAlpha = this.getAlphaFromHeight(y, h)
+		}
+		if (this.settings.roundedNotes) {
+			drawRoundRect(ctx, x, y, w, h, rad)
+		} else {
+			ctx.beginPath()
+			ctx.rect(x, y, w, h)
+			ctx.closePath()
+		}
+		ctx.fill()
+
+		if (!renderInfos.isOn && this.settings.strokeNotes) {
+			ctx.stroke()
+		}
+		ctx.globalAlpha = 1
+	}
+
+	getAlphaFromHeight(y, h) {
+		return Math.min(
 			1,
 			(y + h - this.menuHeight) /
 				(this.windowHeight -
 					this.pianoRender.whiteKeyHeight -
-					this.menuHeight -
-					60) /
-				0.2
+					this.menuHeight) /
+				0.5
 		)
-		drawRoundRect(ctx, x, y, w, h, rad)
-		ctx.fill()
-		ctx.globalAlpha = 1
-
-		if (!renderInfos.isOn) {
-			ctx.stroke()
-		}
 	}
 
 	renderActiveNote(renderInfos) {
@@ -226,14 +246,25 @@ export class NoteRender {
 			this.pianoRender.whiteKeyWidth / 2,
 			1 + renderInfos.noteDoneRatio
 		)
-		drawRoundRect(
-			ctx,
-			renderInfos.x - wOffset / 2,
-			renderInfos.y,
-			renderInfos.w + wOffset,
-			renderInfos.h,
-			renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
-		)
+		if (this.settings.roundedNotes) {
+			drawRoundRect(
+				ctx,
+				renderInfos.x - wOffset / 2,
+				renderInfos.y,
+				renderInfos.w + wOffset,
+				renderInfos.h,
+				renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
+			)
+		} else {
+			ctx.beginPath()
+			ctx.rect(
+				renderInfos.x - wOffset / 2,
+				renderInfos.y,
+				renderInfos.w + wOffset,
+				renderInfos.h
+			)
+			ctx.closePath()
+		}
 		ctx.fill()
 		ctx.globalAlpha = 1
 	}
