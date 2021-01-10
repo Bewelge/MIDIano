@@ -247,21 +247,24 @@ export class UI {
 		}
 		return this.settingsButton
 	}
+	hideDiv(div) {
+		div.style.visibility = "hidden"
+		div.style.opacity = "0"
+	}
+	showDiv(div) {
+		div.style.visibility = "visible"
+		div.style.opacity = "1"
+	}
 	hideSettings() {
 		DomHelper.removeClass("selected", this.getSettingsButton())
 		this.settingsShown = false
-		this.getSettingsDiv().style.display = "none"
+		this.hideDiv(this.getSettingsDiv())
 	}
 	showSettings() {
-		if (this.settingsShown) {
-			this.hideSettings()
-		}
-		if (this.tracksShown) {
-			this.hideTracks()
-		}
+		this.hideAllDialogs()
 		DomHelper.addClassToElement("selected", this.getSettingsButton())
 		this.settingsShown = true
-		this.getSettingsDiv().style.display = "block"
+		this.showDiv(this.getSettingsDiv())
 	}
 	getSettingsDiv() {
 		if (!this.settingsDiv) {
@@ -269,7 +272,7 @@ export class UI {
 				"settingsDiv",
 				"innerMenuDiv"
 			)
-			this.settingsDiv.style.display = "none"
+			this.hideDiv(this.settingsDiv)
 			this.getSettingsContent().forEach(element =>
 				this.settingsDiv.appendChild(element)
 			)
@@ -477,21 +480,22 @@ export class UI {
 		return this.loadedSongsButton
 	}
 	showLoadedSongsDiv() {
+		this.hideAllDialogs()
 		DomHelper.addClassToElement("selected", this.loadedSongsButton)
 		this.loadedSongsShown = true
-		this.getLoadedSongsDiv().style.display = "block"
+		this.showDiv(this.getLoadedSongsDiv())
 	}
 
 	hideLoadedSongsDiv() {
 		DomHelper.removeClass("selected", this.loadedSongsButton)
 		this.loadedSongsShown = false
-		this.getLoadedSongsDiv().style.display = "none"
+		this.hideDiv(this.getLoadedSongsDiv())
 	}
 
 	getLoadedSongsDiv() {
 		if (!this.loadedSongsDiv) {
 			this.loadedSongsDiv = DomHelper.createDivWithClass("innerMenuDiv")
-			this.loadedSongsDiv.style.display = "none"
+			this.hideDiv(this.loadedSongsDiv)
 			document.body.appendChild(this.loadedSongsDiv)
 		}
 		this.player.loadedSongs.forEach(song => {
@@ -742,14 +746,14 @@ export class UI {
 	hideTracks() {
 		DomHelper.removeClass("selected", this.tracksButton)
 		this.tracksShown = false
-		this.getTrackMenuDiv().style.display = "none"
+		this.hideDiv(this.getTrackMenuDiv())
 	}
 
 	showTracks() {
 		this.hideAllDialogs()
 		DomHelper.addClassToElement("selected", this.tracksButton)
 		this.tracksShown = true
-		this.getTrackMenuDiv().style.display = "block"
+		this.showDiv(this.getTrackMenuDiv())
 	}
 
 	getMidiInputButton() {
@@ -773,7 +777,7 @@ export class UI {
 	hideMidiInputDialog() {
 		DomHelper.removeClass("selected", this.midiInputButton)
 		this.midiInputDialogShown = false
-		this.getMidiInputDialog().style.display = "none"
+		this.hideDiv(this.getMidiInputDialog())
 	}
 
 	showMidiInputDialog() {
@@ -781,7 +785,7 @@ export class UI {
 		DomHelper.addClassToElement("selected", this.midiInputButton)
 		this.midiInputDialogShown = true
 
-		this.getMidiInputDialog().style.display = "block"
+		this.showDiv(this.getMidiInputDialog())
 	}
 	getChannelsButton() {
 		if (!this.channelsButton) {
@@ -1012,7 +1016,7 @@ export class UI {
 				"midiInputDialog",
 				"centeredMenuDiv"
 			)
-			this.midiInputDialog.style.display = "none"
+			this.hideDiv(this.midiInputDialog)
 			document.body.appendChild(this.midiInputDialog)
 
 			let text = DomHelper.createDivWithClass(
@@ -1065,7 +1069,7 @@ export class UI {
 				"trackContainerDiv",
 				"innerMenuDiv"
 			)
-			this.trackMenuDiv.style.display = "none"
+			this.hideDiv(this.trackMenuDiv)
 			document.body.appendChild(this.trackMenuDiv)
 		}
 		return this.trackMenuDiv
