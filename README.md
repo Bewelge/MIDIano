@@ -6,12 +6,11 @@
 
 ![Screenshot](/Screenshot.png)
 
-#### Possible Todos / Ideas :
+#### Features :
 
-- Add support for Actual Midi-Input
-- Make UI more mobile-friendly
-- Extend Settings:
-  - Choose between Soundfonts
+- MIDI playback
+- MIDI input to play along
+- 3 different soundfonts from https://github.com/gleitz/midi-js-soundfonts
 
 #### Libraries used:
 
