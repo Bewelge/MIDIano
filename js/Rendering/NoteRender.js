@@ -190,9 +190,9 @@ export class NoteRender {
 				renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4
 			)
 		} else {
-			ctx.beginPath()
+			this.ctx.beginPath()
 			this.ctx.rect(renderInfo.x, renderInfo.y, renderInfo.w, renderInfo.h)
-			ctx.closePath()
+			this.ctx.closePath()
 		}
 		this.ctx.stroke()
 	}

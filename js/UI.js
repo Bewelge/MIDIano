@@ -111,8 +111,6 @@ export class UI {
 		//todo
 	}
 	mouseMoved() {
-		console.log(123)
-
 		this.getMinimizeButton().style.opacity = 1
 		if (!this.fadingOutMinimizeButton) {
 			this.fadingOutMinimizeButton = true
