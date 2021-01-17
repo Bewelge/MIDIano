@@ -115,8 +115,11 @@ export class InputListeners {
 
 	onMouseDownProgressCanvas(render, player) {
 		return ev => {
+			ev.preventDefault()
 			if (ev.target == render.getProgressBarCanvas()) {
 				this.grabbedProgressBar = true
+				player.wasPaused = player.paused
+				player.paused = true
 				let newTime =
 					(ev.clientX / render.renderDimensions.windowWidth) *
 					(player.song.getEnd() / 1000)
@@ -132,7 +135,6 @@ export class InputListeners {
 				let newTime =
 					(ev.clientX / render.renderDimensions.windowWidth) *
 					(player.song.getEnd() / 1000)
-
 				player.setTime(newTime)
 			}
 		}
@@ -170,8 +172,12 @@ export class InputListeners {
 
 	onMouseDown(ev, render, player) {
 		let pos = this.getXYFromMouseEvent(ev)
-		player.wasPaused = player.paused
-		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
+		if (
+			ev.target == document.body &&
+			render.isOnMainCanvas(pos) &&
+			!this.grabbedProgressBar
+		) {
+			player.wasPaused = player.paused
 			ev.preventDefault()
 			this.grabbedMainCanvas = true
 			player.paused = true
