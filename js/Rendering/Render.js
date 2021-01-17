@@ -5,11 +5,15 @@ import { PianoRender } from "./PianoRender.js"
 import { DebugRender } from "./DebugRender.js"
 import { OverlayRender } from "./OverlayRender.js"
 import { NoteRender } from "./NoteRender.js"
+import { SustainRender } from "./SustainRenderer.js"
 
 const DEBUG = true
 
 const MIN_WIDTH = 1040
 const MIN_HEIGHT = 560
+
+const LOOK_BACK_TIME = 4
+const LOOK_AHEAD_TIME = 10
 
 export class Render {
 	constructor(player) {
@@ -28,7 +32,18 @@ export class Render {
 		)
 
 		this.debugRender = new DebugRender(DEBUG, this.ctx)
-		this.noteRender = new NoteRender(this.ctx, this.pianoRender)
+		this.noteRender = new NoteRender(
+			this.ctx,
+			this.pianoRender,
+			LOOK_BACK_TIME,
+			LOOK_AHEAD_TIME
+		)
+		this.sustainRender = new SustainRender(
+			this.ctx,
+			LOOK_BACK_TIME,
+			LOOK_AHEAD_TIME,
+			this.noteRender.getYForTime.bind(this.noteRender)
+		)
 
 		this.resize()
 
@@ -40,6 +55,56 @@ export class Render {
 		this.playerState = player.getState()
 
 		window.addEventListener("resize", this.resize.bind(this))
+	}
+	renderSustainOnOffs(sustainsBySecond) {
+		// Draw sustain On and Offs
+		for (
+			let lookUpTime = lookBackTime;
+			lookUpTime < lookAheadTime;
+			lookUpTime++
+		) {
+			if (sustainsBySecond.hasOwnProperty(lookUpTime)) {
+				sustainsBySecond[lookUpTime].forEach(sustain => {
+					this.ctx.lineWidth = "5"
+					if (sustain.isOn) {
+						this.ctx.strokeStyle = "green"
+					} else {
+						this.ctx.strokeStyle = "red"
+					}
+					let y = this.noteRender.getYForTime(sustain.timestamp - time * 1000)
+					this.ctx.beginPath()
+					this.ctx.moveTo(0, y)
+					this.ctx.lineTo(this.windowWidth, y)
+					this.ctx.closePath()
+					this.ctx.stroke()
+				})
+			}
+		}
+	}
+	renderSustainPeriods(sustainPeriods) {
+		// Draw sustain On and Offs
+		for (
+			let lookUpTime = lookBackTime;
+			lookUpTime < lookAheadTime;
+			lookUpTime++
+		) {
+			if (sustainsBySecond.hasOwnProperty(lookUpTime)) {
+				sustainsBySecond[lookUpTime].forEach(sustain => {
+					this.ctx.lineWidth = "5"
+					if (sustain.isOn) {
+						this.ctx.strokeStyle = "green"
+					} else {
+						this.ctx.strokeStyle = "red"
+					}
+					let y = this.noteRender.getYForTime(sustain.timestamp - time * 1000)
+					this.ctx.beginPath()
+					this.ctx.moveTo(0, y)
+					this.ctx.lineTo(this.windowWidth, y)
+					this.ctx.closePath()
+					this.ctx.stroke()
+				})
+			}
+		}
 	}
 	updateSettings(settingsObj) {
 		this.settings = settingsObj
@@ -80,6 +145,7 @@ export class Render {
 		this.pianoRender.resize(this.windowWidth, this.windowHeight)
 		this.overlayRender.resize(this.windowWidth, this.windowHeight)
 		this.debugRender.resize(this.windowWidth, this.windowHeight)
+		this.sustainRender.resize(this.windowWidth, this.windowHeight)
 		this.noteRender.resize(
 			this.windowWidth,
 			this.windowHeight,
@@ -95,12 +161,12 @@ export class Render {
 		this.ctx.clearRect(0, 0, this.windowWidth, this.windowHeight)
 		this.progressBarCtx.clearRect(0, 0, this.windowWidth, this.windowHeight)
 		this.pianoRender.clearPlayedKeysCanvases()
-		// let time = playerState.time + this.settings.renderOffset
 
 		let renderInfos = []
 		if (!playerState.loading && playerState.song) {
 			this.drawProgressBar(playerState)
-			// this.drawTempoLines(time)
+			this.drawMeasureLines(playerState)
+			this.sustainRender.render(playerState, this.settings)
 			renderInfos = this.noteRender.render(playerState, this.settings)
 		}
 
@@ -220,24 +286,25 @@ export class Render {
 	 *
 	 * @param {Number} currentTime
 	 */
-	drawTempoLines(playerState) {
+	drawMeasureLines(playerState) {
 		let currentTime = playerState.time
-		let tempoLines = playerState.song ? playerState.song.getTempoLines() : []
+		let measureLines = playerState.song
+			? playerState.song.getMeasureLines()
+			: []
 		let ctx = this.ctx
 		let height = this.windowHeight - this.pianoRender.whiteKeyHeight
 
-		ctx.strokeStyle = "rgba(255,255,255,0.05)"
+		ctx.strokeStyle = "rgba(255,255,255,0.3)"
 
 		ctx.lineWidth = 1
 		let currentSecond = Math.floor(currentTime)
 		for (let i = currentSecond; i < currentSecond + 6; i++) {
-			if (!tempoLines[i]) {
+			if (!measureLines[i]) {
 				continue
 			}
-			tempoLines[i].forEach(tempoLine => {
-				let ht =
-					height -
-					((tempoLine - currentTime * 1000) / this.noteToHeightConst) * height
+			measureLines[i].forEach(tempoLine => {
+				let ht = this.noteRender.getYForTime(tempoLine - currentTime * 1000)
+
 				ctx.beginPath()
 				ctx.moveTo(0, ht)
 				ctx.lineTo(this.windowWidth, ht)

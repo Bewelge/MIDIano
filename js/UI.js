@@ -7,7 +7,13 @@ import { DomHelper } from "./DomHelper.js"
 export class UI {
 	constructor(player, render, isMobile) {
 		this.settings = {
+			soundfontName: "MusyngKite",
 			showParticles: true,
+			sustainEnabled: true,
+			showSustainOnOffs: true,
+			showSustainPeriods: true,
+			showSustainedNotes: true,
+			sustainedNotesOpacity: 50,
 			particleAmount: 40,
 			particleSize: 1,
 			particleLife: 12,
@@ -18,8 +24,7 @@ export class UI {
 			roundedNotes: true,
 			fadeInNotes: true,
 			renderOffset: 0,
-			showNoteDebugInfo: false,
-			soundfontName: "MusyngKite"
+			showNoteDebugInfo: false
 		}
 		this.midiInputHandler = player.midiInputHandler
 		this.player = player
@@ -290,6 +295,66 @@ export class UI {
 			}.bind(this)
 		)
 		settingsDivs.push(soundfontSelect)
+
+		let enableSustainCheckbox = DomHelper.createCheckbox(
+			"Enable Sustain",
+			ev => {
+				this.settings.sustainEnabled = ev.target.checked
+				if (!this.settings.sustainEnabled) {
+					//TODO
+					//if sustain gets disabled in the audio, lets also turn off all rendering of sustains
+					// this.settings.showSustainOnOffs = false
+					// this.settings.showSustainPeriods = false
+					// this.settings.showSustainedNotes = false
+				}
+				this.notifySettingsChanged()
+			},
+			this.settings.sustainEnabled
+		)
+		settingsDivs.push(enableSustainCheckbox)
+
+		let drawSustainOnOffsCheckbox = DomHelper.createCheckbox(
+			"Draw Sustain On/Off Events",
+			ev => {
+				this.settings.showSustainOnOffs = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showSustainOnOffs
+		)
+		settingsDivs.push(drawSustainOnOffsCheckbox)
+
+		let drawSustainPeriodsCheckbox = DomHelper.createCheckbox(
+			"Draw Sustain Periods",
+			ev => {
+				this.settings.showSustainPeriods = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showSustainPeriods
+		)
+		settingsDivs.push(drawSustainPeriodsCheckbox)
+
+		let drawSustainedNotesCheckbox = DomHelper.createCheckbox(
+			"Draw Sustained Notes",
+			ev => {
+				this.settings.showSustainedNotes = ev.target.checked
+				this.notifySettingsChanged()
+			},
+			this.settings.showSustainedNotes
+		)
+		settingsDivs.push(drawSustainedNotesCheckbox)
+
+		let sustainedNotesOpacitySlider = DomHelper.createSliderWithLabelAndField(
+			"sustainedNotesOpacitySlider",
+			"Sustained Notes Opacity (%)",
+			this.settings.sustainedNotesOpacity,
+			0,
+			100,
+			value => {
+				this.settings.sustainedNotesOpacity = value
+				this.notifySettingsChanged()
+			}
+		)
+		settingsDivs.push(sustainedNotesOpacitySlider.container)
 
 		let showParticlesCheckbox = DomHelper.createCheckbox(
 			"Show Particles",

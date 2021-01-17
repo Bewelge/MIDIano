@@ -10,7 +10,8 @@ export class Song {
 		this.speed = 1
 		this.notesBySeconds = {}
 		this.controlEvents = []
-		this.bpms = midiData.bpms
+		this.temporalData = midiData.temporalData
+		this.sustainsBySecond = midiData.temporalData.sustainsBySecond
 
 		this.header = midiData.header
 		this.tracks = midiData.tracks
@@ -47,73 +48,65 @@ export class Song {
 			)
 		}
 	}
-	setTempoLines() {
+	getMeasureLines() {
+		if (!this.measureLines) {
+			this.setMeasureLines()
+		}
+		return this.measureLines
+	}
+	setMeasureLines() {
 		let timeSignature = this.timeSignature
 		let numerator = timeSignature.numerator || 4
 		let denominator = timeSignature.denominator || 4
 		let thirtySecond = timeSignature.thirtyseconds || 8
 
-		let bpms = this.bpms.slice(0)
-
-		let timestamp = 0
-		let timeInBeat = 0
-		let beatsDone = 0
-		let timeSig = numerator / denominator
-		let tempoLines = {}
-		let bpm = 120
-		let bps = 2
-		let milisecondsPerBeat = (1000 / bps) * timeSig
-		while (bpms.length) {
-			bpm = bpms[0].bpm
-			bps = bpm / 60
-			milisecondsPerBeat = (1000 / bps) * timeSig
-			timestamp++
-			timeInBeat++
-
-			if (timeInBeat >= milisecondsPerBeat) {
-				beatsDone++
-				timeInBeat -= milisecondsPerBeat
-				let second = Math.floor(timestamp / 1000)
-				if (!tempoLines.hasOwnProperty(second)) {
-					tempoLines[second] = []
+		let beatsPerMeasure = numerator / (denominator * (thirtySecond / 32))
+		let skippedBeats = beatsPerMeasure - 1
+		this.measureLines = {}
+		Object.keys(this.temporalData.beatsBySecond).forEach(second => {
+			this.temporalData.beatsBySecond[second].forEach(beat => {
+				if (skippedBeats < beatsPerMeasure - 1) {
+					skippedBeats++
+					return
 				}
-
-				tempoLines[second].push(timestamp - timeInBeat)
-			}
-			if (timestamp > bpms[0].timestamp) {
-				bpms.splice(0, 1)
-			}
-		}
-		while (timestamp < this.getEnd()) {
-			timestamp++
-			timeInBeat++
-			if (timeInBeat >= milisecondsPerBeat) {
-				beatsDone++
-				timeInBeat -= milisecondsPerBeat
-				let second = Math.floor(timestamp / 1000)
-				if (!tempoLines.hasOwnProperty(second)) {
-					tempoLines[second] = []
+				skippedBeats = 0
+				if (!this.measureLines.hasOwnProperty(second)) {
+					this.measureLines[second] = []
 				}
-
-				tempoLines[second].push(timestamp)
-			}
-		}
-		console.log(tempoLines)
-		this.tempoLines = tempoLines
+				this.measureLines[second].push(beat)
+			})
+		})
 	}
-	getTempoLines() {
-		if (!this.tempoLines) {
-			this.setTempoLines()
+	setSustainPeriods() {
+		this.sustainPeriods = []
+		let isOn = false
+		for (let second in this.sustainsBySecond) {
+			this.sustainsBySecond[second].forEach(sustain => {
+				if (isOn) {
+					if (!sustain.isOn) {
+						isOn = false
+						this.sustainPeriods[this.sustainPeriods.length - 1].end =
+							sustain.timestamp
+					}
+				} else {
+					if (sustain.isOn) {
+						isOn = true
+						this.sustainPeriods.push({
+							start: sustain.timestamp,
+							value: sustain.value
+						})
+					}
+				}
+			})
 		}
-		return this.tempoLines
 	}
 	getMicrosecondsPerBeat() {
 		return this.microSecondsPerBeat
 	}
 	getBPM(time) {
-		for (let i = this.bpms.length - 1; i >= 0; i--) {
-			if (this.bpms[i].timestamp < time) {
-				return this.bpms[i].bpm
+		for (let i = this.temporalData.bpms.length - 1; i >= 0; i--) {
+			if (this.temporalData.bpms[i].timestamp < time) {
+				return this.temporalData.bpms[i].bpm
 			}
 		}
 	}
@@ -176,6 +169,7 @@ export class Song {
 		return Object.keys(instruments)
 	}
 	processEvents(midiData) {
+		this.setSustainPeriods()
 		midiData.tracks.forEach(track => {
 			let newTrack = {
 				notes: [],
@@ -194,7 +188,8 @@ export class Song {
 
 		this.activeTracks.forEach((track, trackIndex) => {
 			track.notesBySeconds = {}
-			Song.processNotes(track.notes)
+			this.setNoteOffTimestamps(track.notes)
+			this.setNoteSustainTimestamps(track.notes)
 			track.notes = track.notes.slice(0).filter(note => note.type == "noteOn")
 			track.notes.forEach(note => (note.track = trackIndex))
 			this.setNotesBySecond(track)
@@ -243,8 +238,27 @@ export class Song {
 		}
 		return this.noteSequence.slice(0)
 	}
+	setNoteSustainTimestamps(notes) {
+		for (let i = 0; i < notes.length; i++) {
+			let note = notes[i]
+			let currentSustains = this.sustainPeriods.filter(
+				period =>
+					(period.start < note.timestamp && period.end > note.timestamp) ||
+					(period.start < note.offTime && period.end > note.offTime)
+			)
+			if (currentSustains.length) {
+				note.sustainOn = currentSustains[0].start
+				let end = Math.max.apply(
+					null,
+					currentSustains.map(sustain => sustain.end)
+				)
+				note.sustainEndTime = end
+				note.sustainDuration = note.sustainEndTime - note.timestamp
+			}
+		}
+	}
 
-	static processNotes(notes) {
+	setNoteOffTimestamps(notes) {
 		for (let i = 0; i < notes.length; i++) {
 			let note = notes[i]
 			if (note.type == "noteOn") {

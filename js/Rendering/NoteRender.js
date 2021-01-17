@@ -1,33 +1,35 @@
 import { isBlack, drawRoundRect } from "../Util.js"
 
 import { ParticleRender } from "./ParticleRender.js"
-const LOOK_BACK_TIME = 4
-const LOOK_AHEAD_TIME = 10
 
 export class NoteRender {
-	constructor(ctx, pianoRender) {
+	constructor(ctx, pianoRender, lookBackTime, lookAheadTime) {
 		this.pianoRender = pianoRender
 		this.ctx = ctx
 		this.particleRender = new ParticleRender(this.ctx)
+		this.lookBackTime = lookBackTime
+		this.lookAheadTime = lookAheadTime
 	}
 	render(playerState, settings) {
 		this.playerState = playerState
 		this.settings = settings
 		let renderInfos = []
-		if (playerState.song) {
-			playerState.song.activeTracks.forEach((track, index) => {
-				if (
-					this.playerState.tracks[index] &&
-					this.playerState.tracks[index].draw
-				) {
-					this.drawNotesInTimeWindowAndReturnRenderInfos(
-						playerState.time + this.settings.renderOffset / 1000,
-						track.notesBySeconds,
-						index
-					).forEach(renderInfo => renderInfos.push(renderInfo))
-				}
-			})
-		}
+
+		if (playerState)
+			if (playerState.song) {
+				playerState.song.activeTracks.forEach((track, trackIndex) => {
+					if (
+						this.playerState.tracks[trackIndex] &&
+						this.playerState.tracks[trackIndex].draw
+					) {
+						this.drawNotesInTimeWindowAndReturnRenderInfos(
+							this.getRenderTime(playerState),
+							track.notesBySeconds,
+							trackIndex
+						).forEach(renderInfo => renderInfos.push(renderInfo))
+					}
+				})
+			}
 
 		for (let noteNumber in playerState.inputActiveNotes) {
 			this.pianoRender.drawActiveInputKey(noteNumber, isBlack(noteNumber))
@@ -38,6 +40,9 @@ export class NoteRender {
 		//return renderInfos for Debugrender..
 		return renderInfos
 	}
+	getRenderTime(playerState) {
+		return playerState.time + this.settings.renderOffset / 1000
+	}
 	resize(windowWidth, windowHeight, noteToHeightConst) {
 		this.windowWidth = windowWidth
 		this.windowHeight = windowHeight
@@ -47,8 +52,8 @@ export class NoteRender {
 		this.menuHeight = menuHeight
 	}
 	drawNotesInTimeWindowAndReturnRenderInfos(time, notesBySeconds, index) {
-		let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
-		let lookAheadTime = Math.ceil(time + LOOK_AHEAD_TIME)
+		let lookBackTime = Math.floor(time - this.lookBackTime)
+		let lookAheadTime = Math.ceil(time + this.lookAheadTime)
 
 		//sort by Black/white, so we only have to change fillstyle once.
 		let notesRenderInfoBlack = []
@@ -143,16 +148,16 @@ export class NoteRender {
 			note.noteNumber,
 			time,
 			note.timestamp,
-			note.offTime
+			note.offTime,
+			note.sustainEndTime
 		)
 		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
 		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
 		noteDoneRatio *= isOn
 		let rad = (noteDims.w / 10) * (1 - noteDoneRatio)
 		if (noteDims.h < rad * 2) {
-			let diff = rad * 2 - noteDims.h
-			noteDims.h = rad * 2
-			noteDims.y -= diff
+			let diff = rad - noteDims.h
+			rad = noteDims.h / 4
 		}
 		let keyBlack = isBlack(note.noteNumber - 21)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
@@ -173,10 +178,12 @@ export class NoteRender {
 			isOn: isOn,
 			noteDoneRatio: noteDoneRatio,
 			rad: rad,
-			x: noteDims.x + rad + 1,
+			x: noteDims.x + 1,
 			y: noteDims.y,
-			w: noteDims.w - rad * 2 - 2,
-			h: noteDims.h
+			w: noteDims.w - 2,
+			h: noteDims.h,
+			sustainH: noteDims.sustainH,
+			sustainY: noteDims.sustainY
 		}
 	}
 	strokeNote(renderInfo) {
@@ -208,11 +215,37 @@ export class NoteRender {
 		let y = renderInfos.y
 		let w = renderInfos.w
 		let h = renderInfos.h
-		// rad = Math.min(h / 2, rad)
 
+		let fadeInAlpha = 1
 		if (this.settings.fadeInNotes) {
-			ctx.globalAlpha = this.getAlphaFromHeight(y, h)
+			fadeInAlpha = this.getAlphaFromHeight(y, h)
 		}
+
+		if (
+			renderInfos.sustainH &&
+			renderInfos.sustainY &&
+			this.settings.showSustainedNotes
+		) {
+			ctx.globalAlpha =
+				(fadeInAlpha * this.settings.sustainedNotesOpacity) / 100
+			if (this.settings.roundedNotes) {
+				drawRoundRect(
+					ctx,
+					x,
+					renderInfos.sustainY,
+					w,
+					renderInfos.sustainH,
+					rad
+				)
+			} else {
+				ctx.beginPath()
+				ctx.rect(x, renderInfos.sustainY, w, renderInfos.sustainH)
+				ctx.closePath()
+			}
+			ctx.fill()
+			ctx.globalAlpha = fadeInAlpha
+		}
+
 		if (this.settings.roundedNotes) {
 			drawRoundRect(ctx, x, y, w, h, rad)
 		} else {
@@ -276,9 +309,14 @@ export class NoteRender {
 	 * @param {Number} noteStartTime
 	 * @param {Number} noteEndTime
 	 */
-	getNoteDimensions(noteNumber, currentTime, noteStartTime, noteEndTime) {
+	getNoteDimensions(
+		noteNumber,
+		currentTime,
+		noteStartTime,
+		noteEndTime,
+		sustainEndTime
+	) {
 		noteNumber -= 21
-		const height = this.windowHeight - this.pianoRender.whiteKeyHeight
 
 		const dur = noteEndTime - noteStartTime
 		const keyBlack = isBlack(noteNumber)
@@ -287,10 +325,17 @@ export class NoteRender {
 		const h =
 			(dur / this.noteToHeightConst) *
 			(this.windowHeight - this.pianoRender.whiteKeyHeight)
-		const y =
-			height -
-			((noteEndTime - currentTime) / this.noteToHeightConst) *
+		const y = this.getYForTime(noteEndTime - currentTime)
+
+		let sustainY = 0
+		let sustainH = 0
+		if (sustainEndTime > noteEndTime) {
+			sustainH =
+				((sustainEndTime - noteStartTime) / this.noteToHeightConst) *
 				(this.windowHeight - this.pianoRender.whiteKeyHeight)
+			sustainY = this.getYForTime(sustainEndTime - currentTime)
+		}
+
 		return {
 			x: x,
 			y: y + 1,
@@ -298,8 +343,15 @@ export class NoteRender {
 				? this.pianoRender.blackKeyWidth
 				: this.pianoRender.whiteKeyWidth,
 			h: h - 2,
+			sustainH: sustainH,
+			sustainY: sustainY,
 			black: keyBlack
 		}
+	}
+
+	getYForTime(time) {
+		const height = this.windowHeight - this.pianoRender.whiteKeyHeight
+		return height - (time / this.noteToHeightConst) * height
 	}
 	/**
 	 *
