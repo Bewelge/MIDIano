@@ -15,7 +15,7 @@ export class UI {
 			showSustainedNotes: true,
 			sustainedNotesOpacity: 50,
 			particleAmount: 40,
-			particleSize: 1,
+			particleSize: 2,
 			particleLife: 12,
 			particleSpeed: 4,
 			showHitKeys: true,
@@ -40,10 +40,6 @@ export class UI {
 
 		render.updateSettings(this.settings)
 		player.updateSettings(this.settings)
-		this.notifySettingsChanged = () => {
-			render.updateSettings(this.settings)
-			player.updateSettings(this.settings)
-		}
 
 		document.body.addEventListener("mousemove", this.mouseMoved.bind(this))
 
@@ -55,8 +51,6 @@ export class UI {
 	 * Sets all dimensions dependent on window size
 	 */
 	resize() {
-		this.width = Math.floor(window.innerWidth)
-		this.height = Math.floor(window.innerHeight)
 		this.menuHeight = 200
 		document
 			.querySelectorAll(".innerMenuDiv")
@@ -307,7 +301,6 @@ export class UI {
 					// this.settings.showSustainPeriods = false
 					// this.settings.showSustainedNotes = false
 				}
-				this.notifySettingsChanged()
 			},
 			this.settings.sustainEnabled
 		)
@@ -317,7 +310,6 @@ export class UI {
 			"Draw Sustain On/Off Events",
 			ev => {
 				this.settings.showSustainOnOffs = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showSustainOnOffs
 		)
@@ -327,7 +319,6 @@ export class UI {
 			"Draw Sustain Periods",
 			ev => {
 				this.settings.showSustainPeriods = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showSustainPeriods
 		)
@@ -337,7 +328,6 @@ export class UI {
 			"Draw Sustained Notes",
 			ev => {
 				this.settings.showSustainedNotes = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showSustainedNotes
 		)
@@ -351,7 +341,6 @@ export class UI {
 			100,
 			value => {
 				this.settings.sustainedNotesOpacity = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(sustainedNotesOpacitySlider.container)
@@ -360,7 +349,6 @@ export class UI {
 			"Show Particles",
 			ev => {
 				this.settings.showParticles = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showParticles
 		)
@@ -374,7 +362,6 @@ export class UI {
 			200,
 			value => {
 				this.settings.particleAmount = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(particleAmountSlider.container)
@@ -383,10 +370,9 @@ export class UI {
 			"Particle Size",
 			this.settings.particleSize,
 			0,
-			5,
+			10,
 			value => {
 				this.settings.particleSize = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(particleSizeSlider.container)
@@ -399,7 +385,6 @@ export class UI {
 			15,
 			value => {
 				this.settings.particleSpeed = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(particleSpeedSlider.container)
@@ -412,7 +397,6 @@ export class UI {
 			30,
 			value => {
 				this.settings.particleLife = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(particleLifeSlider.container)
@@ -421,7 +405,6 @@ export class UI {
 			"Hit Key Effect",
 			ev => {
 				this.settings.showHitKeys = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showHitKeys
 		)
@@ -431,7 +414,6 @@ export class UI {
 			"Stroke Notes",
 			ev => {
 				this.settings.strokeNotes = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.strokeNotes
 		)
@@ -441,7 +423,6 @@ export class UI {
 			"Rounded Corners Notes",
 			ev => {
 				this.settings.roundedNotes = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.roundedNotes
 		)
@@ -451,7 +432,6 @@ export class UI {
 			"Fade in Notes",
 			ev => {
 				this.settings.fadeInNotes = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.fadeInNotes
 		)
@@ -461,7 +441,6 @@ export class UI {
 			"Show Notes on Piano",
 			ev => {
 				this.settings.showPianoKeys = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showPianoKeys
 		)
@@ -475,7 +454,6 @@ export class UI {
 			250,
 			value => {
 				this.settings.renderOffset = value
-				this.notifySettingsChanged()
 			}
 		)
 		settingsDivs.push(renderOffsetSlider.container)
@@ -484,7 +462,6 @@ export class UI {
 			"Show Note Debug Info",
 			ev => {
 				this.settings.showNoteDebugInfo = ev.target.checked
-				this.notifySettingsChanged()
 			},
 			this.settings.showNoteDebugInfo
 		)
@@ -494,7 +471,6 @@ export class UI {
 
 		return settingsDivs
 	}
-	notifySettingsChanged() {}
 	getFullscreenButton() {
 		if (!this.fullscreenButton) {
 			this.fullscreen = false
