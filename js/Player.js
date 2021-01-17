@@ -254,8 +254,6 @@ export class Player {
 	}
 	play() {
 		if (this.scrolling != 0) {
-			window.setTimeout(this.play.bind(this), 20)
-			return
 		}
 
 		let delta = (this.context.currentTime - this.lastTime) * this.playbackSpeed
@@ -265,10 +263,13 @@ export class Player {
 			return
 		}
 		let oldProgress = this.progress
+		this.lastTime = this.context.currentTime
 		if (!this.paused) {
 			this.progress += delta
+		} else {
+			window.setTimeout(this.play.bind(this), 20)
+			return
 		}
-		this.lastTime = this.context.currentTime
 
 		let currentTime = this.getTime()
 
