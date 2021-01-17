@@ -1,11 +1,13 @@
 import { DomHelper } from "../DomHelper.js"
-import { formatTime } from "../Util.js"
-import { isBlack } from "../Util.js"
 import { PianoRender } from "./PianoRender.js"
 import { DebugRender } from "./DebugRender.js"
 import { OverlayRender } from "./OverlayRender.js"
 import { NoteRender } from "./NoteRender.js"
 import { SustainRender } from "./SustainRenderer.js"
+import { RenderDimensions } from "./RenderDimensions.js"
+import { BackgroundRender } from "./BackgroundRender.js"
+import { MeasureLinesRender } from "./MeasureLinesRender.js"
+import { ProgressBarRender } from "./ProgressBarRender.js"
 
 const DEBUG = true
 
@@ -15,104 +17,73 @@ const MIN_HEIGHT = 560
 const LOOK_BACK_TIME = 4
 const LOOK_AHEAD_TIME = 10
 
+/**
+ * Class that handles all rendering
+ */
 export class Render {
 	constructor(player) {
-		this.windowWidth = Math.max(MIN_WIDTH, Math.floor(window.innerWidth))
-		this.windowHeight = Math.max(MIN_HEIGHT, Math.floor(window.innerHeight))
-
-		this.pianoRender = new PianoRender(this.windowWidth, this.windowHeight)
+		this.renderDimensions = new RenderDimensions()
+		this.renderDimensions.registerResizeCallback(this.setupCanvases.bind(this))
 		this.setupCanvases()
-		this.overlayRender = new OverlayRender(this.ctx)
 
-		this.overlayRender.addOverlay("MIDiano", 150)
-		this.overlayRender.addOverlay("A Javascript MIDI-Player", 150)
-		this.overlayRender.addOverlay(
-			"Example song by Bernd Krueger from piano-midi.de",
-			150
-		)
+		this.pianoRender = new PianoRender(this.renderDimensions)
 
-		this.debugRender = new DebugRender(DEBUG, this.ctx)
+		this.overlayRender = new OverlayRender(this.ctx, this.renderDimensions)
+		this.addStartingOverlayMessage()
+
+		this.debugRender = new DebugRender(DEBUG, this.ctx, this.renderDimensions)
 		this.noteRender = new NoteRender(
 			this.ctx,
+			this.renderDimensions,
 			this.pianoRender,
 			LOOK_BACK_TIME,
 			LOOK_AHEAD_TIME
 		)
 		this.sustainRender = new SustainRender(
 			this.ctx,
+			this.renderDimensions,
 			LOOK_BACK_TIME,
-			LOOK_AHEAD_TIME,
-			this.noteRender.getYForTime.bind(this.noteRender)
+			LOOK_AHEAD_TIME
 		)
 
-		this.resize()
+		this.measureLinesRender = new MeasureLinesRender(
+			this.ctx,
+			this.renderDimensions
+		)
 
-		this.grabSpeed = 0
+		this.progressBarRender = new ProgressBarRender(
+			this.progressBarCtx,
+			this.renderDimensions
+		)
+
+		this.backgroundRender = new BackgroundRender(
+			this.ctxBG,
+			this.renderDimensions
+		)
 
 		this.mouseX = 0
 		this.mouseY = 0
 
 		this.playerState = player.getState()
+	}
+	addStartingOverlayMessage() {
+		this.overlayRender.addOverlay("MIDiano", 150)
+		this.overlayRender.addOverlay("A Javascript MIDI-Player", 150)
+		this.overlayRender.addOverlay(
+			"Example song by Bernd Krueger from piano-midi.de",
+			150
+		)
+	}
 
-		window.addEventListener("resize", this.resize.bind(this))
-	}
-	renderSustainOnOffs(sustainsBySecond) {
-		// Draw sustain On and Offs
-		for (
-			let lookUpTime = lookBackTime;
-			lookUpTime < lookAheadTime;
-			lookUpTime++
-		) {
-			if (sustainsBySecond.hasOwnProperty(lookUpTime)) {
-				sustainsBySecond[lookUpTime].forEach(sustain => {
-					this.ctx.lineWidth = "5"
-					if (sustain.isOn) {
-						this.ctx.strokeStyle = "green"
-					} else {
-						this.ctx.strokeStyle = "red"
-					}
-					let y = this.noteRender.getYForTime(sustain.timestamp - time * 1000)
-					this.ctx.beginPath()
-					this.ctx.moveTo(0, y)
-					this.ctx.lineTo(this.windowWidth, y)
-					this.ctx.closePath()
-					this.ctx.stroke()
-				})
-			}
-		}
-	}
-	renderSustainPeriods(sustainPeriods) {
-		// Draw sustain On and Offs
-		for (
-			let lookUpTime = lookBackTime;
-			lookUpTime < lookAheadTime;
-			lookUpTime++
-		) {
-			if (sustainsBySecond.hasOwnProperty(lookUpTime)) {
-				sustainsBySecond[lookUpTime].forEach(sustain => {
-					this.ctx.lineWidth = "5"
-					if (sustain.isOn) {
-						this.ctx.strokeStyle = "green"
-					} else {
-						this.ctx.strokeStyle = "red"
-					}
-					let y = this.noteRender.getYForTime(sustain.timestamp - time * 1000)
-					this.ctx.beginPath()
-					this.ctx.moveTo(0, y)
-					this.ctx.lineTo(this.windowWidth, y)
-					this.ctx.closePath()
-					this.ctx.stroke()
-				})
-			}
-		}
-	}
 	updateSettings(settingsObj) {
 		this.settings = settingsObj
 	}
 	isOnMainCanvas(position) {
 		return (
 			position.x > this.menuHeight &&
-			position.y < this.windowHeight - this.pianoRender.whiteKeyHeight
+			position.y <
+				this.renderDimensions.windowHeight -
+					this.renderDimensions.whiteKeyHeight
 		)
 	}
 	setMouseCoords(x, y) {
@@ -121,8 +92,9 @@ export class Render {
 	}
 	getTimeFromHeight(height) {
 		return (
-			(height * this.noteToHeightConst) /
-			(this.windowHeight - this.pianoRender.whiteKeyHeight) /
+			(height * this.renderDimensions.noteToHeightConst) /
+			(this.renderDimensions.windowHeight -
+				this.renderDimensions.whiteKeyHeight) /
 			1000
 		)
 	}
@@ -132,45 +104,30 @@ export class Render {
 		this.noteRender.setMenuHeight(menuHeight)
 	}
 	/**
-	 * (Re)sets all dimensions dependent on window size
-	 */
-	resize() {
-		this.windowWidth = Math.max(1040, Math.floor(window.innerWidth))
-		this.windowHeight = Math.floor(window.innerHeight)
-		this.noteToHeightConst = this.windowHeight * 3
-
-		this.keyDimensions = []
-
-		this.setupCanvases()
-		this.pianoRender.resize(this.windowWidth, this.windowHeight)
-		this.overlayRender.resize(this.windowWidth, this.windowHeight)
-		this.debugRender.resize(this.windowWidth, this.windowHeight)
-		this.sustainRender.resize(this.windowWidth, this.windowHeight)
-		this.noteRender.resize(
-			this.windowWidth,
-			this.windowHeight,
-			this.noteToHeightConst
-		)
-		this.drawBackground()
-	}
-	/**
 	 * Main rendering function
 	 */
 	render(playerState) {
 		this.playerState = playerState
-		this.ctx.clearRect(0, 0, this.windowWidth, this.windowHeight)
-		this.progressBarCtx.clearRect(0, 0, this.windowWidth, this.windowHeight)
+		this.ctx.clearRect(
+			0,
+			0,
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.windowHeight
+		)
+
 		this.pianoRender.clearPlayedKeysCanvases()
 
 		let renderInfos = []
 		if (!playerState.loading && playerState.song) {
-			this.drawProgressBar(playerState)
-			this.drawMeasureLines(playerState)
+			this.progressBarRender.render(playerState)
+			this.measureLinesRender.render(playerState, this.settings)
 			this.sustainRender.render(playerState, this.settings)
+
 			renderInfos = this.noteRender.render(playerState, this.settings)
 		}
 
 		this.overlayRender.render()
+
 		if (this.settings.showNoteDebugInfo) {
 			this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
 		}
@@ -182,27 +139,34 @@ export class Render {
 	setupCanvases() {
 		DomHelper.setCanvasSize(
 			this.getBgCanvas(),
-			this.windowWidth,
-			this.windowHeight
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.windowHeight
 		)
 
 		DomHelper.setCanvasSize(
 			this.getMainCanvas(),
-			this.windowWidth,
-			this.windowHeight
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.windowHeight
 		)
-		this.pianoRender.setupCanvases()
 
-		DomHelper.setCanvasSize(this.getProgressBarCanvas(), this.windowWidth, 20)
+		DomHelper.setCanvasSize(
+			this.getProgressBarCanvas(),
+			this.renderDimensions.windowWidth,
+			20
+		)
 	}
 	getBgCanvas() {
 		if (!this.cnvBG) {
-			this.cnvBG = DomHelper.createCanvas(this.windowWidth, this.windowHeight, {
-				backgroundColor: "black",
-				position: "absolute",
-				top: "0px",
-				left: "0px"
-			})
+			this.cnvBG = DomHelper.createCanvas(
+				this.renderDimensions.windowWidth,
+				this.renderDimensions.windowHeight,
+				{
+					backgroundColor: "black",
+					position: "absolute",
+					top: "0px",
+					left: "0px"
+				}
+			)
 			document.body.appendChild(this.cnvBG)
 			this.ctxBG = this.cnvBG.getContext("2d")
 		}
@@ -210,11 +174,15 @@ export class Render {
 	}
 	getMainCanvas() {
 		if (!this.cnv) {
-			this.cnv = DomHelper.createCanvas(this.windowWidth, this.windowHeight, {
-				position: "absolute",
-				top: "0px",
-				left: "0px"
-			})
+			this.cnv = DomHelper.createCanvas(
+				this.renderDimensions.windowWidth,
+				this.renderDimensions.windowHeight,
+				{
+					position: "absolute",
+					top: "0px",
+					left: "0px"
+				}
+			)
 			document.body.appendChild(this.cnv)
 			this.ctx = this.cnv.getContext("2d")
 		}
@@ -223,100 +191,19 @@ export class Render {
 
 	getProgressBarCanvas() {
 		if (!this.progressBarCanvas) {
-			this.progressBarCanvas = DomHelper.createCanvas(this.windowWidth, 20, {})
+			this.progressBarCanvas = DomHelper.createCanvas(
+				this.renderDimensions.windowWidth,
+				20,
+				{}
+			)
 			this.progressBarCanvas.id = "progressBarCanvas"
 			document.body.appendChild(this.progressBarCanvas)
 			this.progressBarCtx = this.progressBarCanvas.getContext("2d")
 		}
 		return this.progressBarCanvas
 	}
-	drawProgressBar(playerState) {
-		let ctx = this.progressBarCtx
-		let progressPercent = playerState.time / (playerState.end / 1000)
-		ctx.fillStyle = "rgba(80,80,80,0.8)"
-		let ht = this.windowHeight - this.pianoRender.whiteKeyHeight
-		ctx.fillRect(this.windowWidth * progressPercent, 0, 2, 20)
-		ctx.fillStyle = "rgba(50,150,50,0.8)"
-		ctx.fillRect(0, 1, this.windowWidth * progressPercent, 18)
-
-		ctx.fillStyle = "rgba(0,0,0,1)"
-		let text =
-			formatTime(playerState.time) + "/" + formatTime(playerState.end / 1000)
-		let wd = ctx.measureText(text).width
-		ctx.font = "14px Arial black"
-		ctx.fillText(text, this.windowWidth / 2 - wd / 2, 15)
-	}
-
-	drawBackground() {
-		let c = this.ctxBG
-		const col1 = "rgba(200,200,200,1)"
-		const col3 = "rgba(160,160,160,0.8)"
-		const col2 = "rgba(140,140,140,0.8)"
-		c.strokeStyle = col1
-		c.fillStyle = col2
-		let whiteKey = 0
-		for (let i = 0; i < 88; i++) {
-			if (!isBlack(i)) {
-				c.strokeStyle = i % 2 ? col3 : col3
-				c.fillStyle = (i + 2) % 2 ? col3 : col2
-				c.lineWidth = 1
-				//c.globalAlpha = 0.25  + (i+9)%3 / 4  + (i + 9) % 12 / 48
-				let dim = this.pianoRender.getKeyDimensions(i)
-				c.fillRect(dim.x, dim.y, dim.w, this.windowHeight)
-				c.strokeRect(dim.x, dim.y, dim.w, this.windowHeight)
-
-				if (1 + (whiteKey % 7) == 3) {
-					c.lineWidth = 5
-					c.beginPath()
-					c.moveTo(dim.x, 0)
-					c.lineTo(dim.x, this.windowHeight)
-					c.stroke()
-					c.closePath()
-				}
-				whiteKey++
-			}
-		}
-	}
 
 	isNoteDrawn(note, tracks) {
 		return !tracks[note.track] || !tracks[note.track].draw
 	}
-
-	/**
-	 *
-	 * @param {Number} currentTime
-	 */
-	drawMeasureLines(playerState) {
-		let currentTime = playerState.time
-		let measureLines = playerState.song
-			? playerState.song.getMeasureLines()
-			: []
-		let ctx = this.ctx
-		let height = this.windowHeight - this.pianoRender.whiteKeyHeight
-
-		ctx.strokeStyle = "rgba(255,255,255,0.3)"
-
-		ctx.lineWidth = 1
-		let currentSecond = Math.floor(currentTime)
-		for (let i = currentSecond; i < currentSecond + 6; i++) {
-			if (!measureLines[i]) {
-				continue
-			}
-			measureLines[i].forEach(tempoLine => {
-				let ht = this.noteRender.getYForTime(tempoLine - currentTime * 1000)
-
-				ctx.beginPath()
-				ctx.moveTo(0, ht)
-				ctx.lineTo(this.windowWidth, ht)
-				ctx.closePath()
-				ctx.stroke()
-			})
-		}
-	}
-
-	/**
-	 *
-	 * @param {CanvasRenderingContext2D} ctxWhite
-	 * @param {CanvasRenderingContext2D} ctxBlack
-	 */
 }

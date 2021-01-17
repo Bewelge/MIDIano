@@ -3,10 +3,11 @@ import { isBlack, drawRoundRect } from "../Util.js"
 import { ParticleRender } from "./ParticleRender.js"
 
 export class NoteRender {
-	constructor(ctx, pianoRender, lookBackTime, lookAheadTime) {
-		this.pianoRender = pianoRender
+	constructor(ctx, renderDimensions, pianoRender, lookBackTime, lookAheadTime) {
 		this.ctx = ctx
-		this.particleRender = new ParticleRender(this.ctx)
+		this.renderDimensions = renderDimensions
+		this.pianoRender = pianoRender
+		this.particleRender = new ParticleRender(this.ctx, this.renderDimensions)
 		this.lookBackTime = lookBackTime
 		this.lookAheadTime = lookAheadTime
 	}
@@ -43,11 +44,7 @@ export class NoteRender {
 	getRenderTime(playerState) {
 		return playerState.time + this.settings.renderOffset / 1000
 	}
-	resize(windowWidth, windowHeight, noteToHeightConst) {
-		this.windowWidth = windowWidth
-		this.windowHeight = windowHeight
-		this.noteToHeightConst = noteToHeightConst
-	}
+	resize() {}
 	setMenuHeight(menuHeight) {
 		this.menuHeight = menuHeight
 	}
@@ -112,8 +109,8 @@ export class NoteRender {
 			activeNotesWhite.forEach(note =>
 				this.particleRender.createParticles(
 					note.x,
-					this.windowHeight -
-						this.pianoRender.whiteKeyHeight +
+					this.renderDimensions.windowHeight -
+						this.renderDimensions.whiteKeyHeight +
 						2 +
 						Math.random() * 2,
 					note.w,
@@ -124,8 +121,8 @@ export class NoteRender {
 			activeNotesBlack.forEach(note =>
 				this.particleRender.createParticles(
 					note.x,
-					this.windowHeight -
-						this.pianoRender.whiteKeyHeight +
+					this.renderDimensions.windowHeight -
+						this.renderDimensions.whiteKeyHeight +
 						2 +
 						Math.random() * 2,
 					note.w,
@@ -144,7 +141,7 @@ export class NoteRender {
 	}
 	getRenderInfos(note, time) {
 		time *= 1000
-		let noteDims = this.getNoteDimensions(
+		let noteDims = this.renderDimensions.getNoteDimensions(
 			note.noteNumber,
 			time,
 			note.timestamp,
@@ -265,8 +262,8 @@ export class NoteRender {
 		return Math.min(
 			1,
 			(y + h - this.menuHeight) /
-				(this.windowHeight -
-					this.pianoRender.whiteKeyHeight -
+				(this.renderDimensions.windowHeight -
+					this.renderDimensions.whiteKeyHeight -
 					this.menuHeight) /
 				0.5
 		)
@@ -276,7 +273,7 @@ export class NoteRender {
 		let ctx = this.ctx
 		ctx.globalAlpha = Math.max(0, 0.7 - renderInfos.noteDoneRatio)
 		let wOffset = Math.pow(
-			this.pianoRender.whiteKeyWidth / 2,
+			this.renderDimensions.whiteKeyWidth / 2,
 			1 + renderInfos.noteDoneRatio
 		)
 		if (this.settings.roundedNotes) {
@@ -302,57 +299,6 @@ export class NoteRender {
 		ctx.globalAlpha = 1
 	}
 
-	/**
-	 *
-	 * @param {Number} noteNumber
-	 * @param {Number} currentTime
-	 * @param {Number} noteStartTime
-	 * @param {Number} noteEndTime
-	 */
-	getNoteDimensions(
-		noteNumber,
-		currentTime,
-		noteStartTime,
-		noteEndTime,
-		sustainEndTime
-	) {
-		noteNumber -= 21
-
-		const dur = noteEndTime - noteStartTime
-		const keyBlack = isBlack(noteNumber)
-		const x = this.pianoRender.getKeyX(noteNumber, keyBlack)
-
-		const h =
-			(dur / this.noteToHeightConst) *
-			(this.windowHeight - this.pianoRender.whiteKeyHeight)
-		const y = this.getYForTime(noteEndTime - currentTime)
-
-		let sustainY = 0
-		let sustainH = 0
-		if (sustainEndTime > noteEndTime) {
-			sustainH =
-				((sustainEndTime - noteStartTime) / this.noteToHeightConst) *
-				(this.windowHeight - this.pianoRender.whiteKeyHeight)
-			sustainY = this.getYForTime(sustainEndTime - currentTime)
-		}
-
-		return {
-			x: x,
-			y: y + 1,
-			w: keyBlack
-				? this.pianoRender.blackKeyWidth
-				: this.pianoRender.whiteKeyWidth,
-			h: h - 2,
-			sustainH: sustainH,
-			sustainY: sustainY,
-			black: keyBlack
-		}
-	}
-
-	getYForTime(time) {
-		const height = this.windowHeight - this.pianoRender.whiteKeyHeight
-		return height - (time / this.noteToHeightConst) * height
-	}
 	/**
 	 *
 	 * @param {Number} trackIndex

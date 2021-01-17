@@ -1,15 +1,15 @@
 import { CONST } from "../CONST.js"
 import { formatTime } from "../Util.js"
 
+/**
+ * Class to render some debug-info when mouse is hovered over a note.
+ */
 export class DebugRender {
-	constructor(active, ctx) {
+	constructor(active, ctx, renderDimensions) {
 		this.noteInfoBoxesToDraw = []
 		this.active = active
 		this.ctx = ctx
-	}
-	resize(windowWidth, windowHeight) {
-		this.windowWidth = windowWidth
-		this.windowHeight = windowHeight
+		this.renderDimensions = renderDimensions
 	}
 	addNote(note) {
 		this.noteInfoBoxesToDraw.push(note)
@@ -47,8 +47,11 @@ export class DebugRender {
 			"Track: " + note.track,
 			"Channel: " + note.channel
 		]
-		let left = mouseX > this.windowWidth / 2 ? -160 : 60
-		let top = mouseY > this.windowHeight / 2 ? -10 - 14 * lines.length : 10
+		let left = mouseX > this.renderDimensions.windowWidth / 2 ? -160 : 60
+		let top =
+			mouseY > this.renderDimensions.windowHeight / 2
+				? -10 - 14 * lines.length
+				: 10
 
 		top += amountOfNotesDrawn * lines.length * 15
 		c.beginPath()

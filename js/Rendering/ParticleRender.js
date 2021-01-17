@@ -1,6 +1,7 @@
 export class ParticleRender {
-	constructor(ctx) {
+	constructor(ctx, renderDimensions) {
 		this.ctx = ctx
+		this.renderDimensions = renderDimensions
 		this.particles = new Map()
 	}
 	createParticles(x, y, w, h, color) {

@@ -118,7 +118,8 @@ export class InputListeners {
 			if (ev.target == render.getProgressBarCanvas()) {
 				this.grabbedProgressBar = true
 				let newTime =
-					(ev.clientX / render.windowWidth) * (player.song.getEnd() / 1000)
+					(ev.clientX / render.renderDimensions.windowWidth) *
+					(player.song.getEnd() / 1000)
 
 				player.setTime(newTime)
 			}
@@ -129,7 +130,8 @@ export class InputListeners {
 		return ev => {
 			if (this.grabbedProgressBar && player.song) {
 				let newTime =
-					(ev.clientX / render.windowWidth) * (player.song.getEnd() / 1000)
+					(ev.clientX / render.renderDimensions.windowWidth) *
+					(player.song.getEnd() / 1000)
 
 				player.setTime(newTime)
 			}
@@ -137,8 +139,15 @@ export class InputListeners {
 	}
 
 	onMouseMove(ev, player, render, ui) {
-		// ev.preventDefault()
 		let pos = this.getXYFromMouseEvent(ev)
+		if (this.grabbedProgressBar && player.song) {
+			let newTime =
+				(ev.clientX / render.renderDimensions.windowWidth) *
+				(player.song.getEnd() / 1000)
+			player.setTime(newTime)
+			return
+		}
+
 		if (this.grabbedMainCanvas && player.song) {
 			if (this.lastYGrabbed) {
 				let alreadyScrolling = player.scrolling != 0

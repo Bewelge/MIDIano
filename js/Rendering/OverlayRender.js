@@ -1,16 +1,25 @@
+/**
+ * Class to display message-overlays on screen
+ */
 export class OverlayRender {
-	constructor(ctx) {
+	constructor(ctx, renderDimensions) {
 		this.ctx = ctx
+		this.renderDimensions = renderDimensions
 		this.overlays = []
 	}
-	resize(windowWidth, windowHeight) {
-		this.windowWidth = windowWidth
-		this.windowHeight = windowHeight
-	}
+	/**
+	 * add a overlay-message to the screen
+	 *
+	 * @param {String} message
+	 * @param {Number} duration
+	 */
 	addOverlay(message, duration) {
 		let totalDuration = duration
 		this.overlays.push({ message, totalDuration, duration })
 	}
+	/**
+	 * Render / Update the overlays.
+	 */
 	render() {
 		for (let i = this.overlays.length - 1; i >= 0; i--) {
 			let overlay = this.overlays[i]
@@ -25,7 +34,12 @@ export class OverlayRender {
 				this.overlays[this.overlays.length - 1]
 			)
 			this.ctx.fillStyle = "rgba(0,0,0,0.9)"
-			this.ctx.fillRect(0, 0, this.windowWidth, this.windowHeight)
+			this.ctx.fillRect(
+				0,
+				0,
+				this.renderDimensions.windowWidth,
+				this.renderDimensions.windowHeight
+			)
 		}
 		for (let i = 0; i < this.overlays.length; i++) {
 			let overlay = this.overlays[i]
@@ -38,8 +52,8 @@ export class OverlayRender {
 			let wd = this.ctx.measureText(overlay.message).width
 			this.ctx.fillText(
 				overlay.message,
-				this.windowWidth / 2 - wd / 2,
-				this.windowHeight / 4 + i * 40
+				this.renderDimensions.windowWidth / 2 - wd / 2,
+				this.renderDimensions.windowHeight / 4 + i * 40
 			)
 		}
 		this.ctx.globalAlpha = 1

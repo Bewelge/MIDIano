@@ -1,19 +1,17 @@
+/**
+ * Class to render the sustain events in the midi-song. Can fill the sustain periods or draw lines for the individual control-events.
+ */
 export class SustainRender {
-	constructor(ctx, lookBackTime, lookAheadTime, yToTimeFunc) {
+	constructor(ctx, renderDimensions, lookBackTime, lookAheadTime) {
 		this.ctx = ctx
-		this.overlays = []
+		this.renderDimensions = renderDimensions
 		this.lookBackTime = lookBackTime
 		this.lookAheadTime = lookAheadTime
-		this.yToTimeFunc = yToTimeFunc
 
 		this.sustainPeriodFillStyle = "rgba(0,0,0,0.4)"
 		this.sustainOnStrokeStyle = "rgba(55,155,55,0.6)"
 		this.sustainOffStrokeStyle = "rgba(155,55,55,0.6)"
 		this.sustainOnOffFont = "12px Arial black"
-	}
-	resize(windowWidth, windowHeight) {
-		this.windowWidth = windowWidth
-		this.windowHeight = windowHeight
 	}
 	render(playerState, settings) {
 		this.settings = settings
@@ -27,11 +25,16 @@ export class SustainRender {
 			this.renderSustainPeriods(time, playerState.song.sustainPeriods)
 		}
 	}
+	/**
+	 * Renders On/Off Sustain Control-Events as lines on screen.
+	 *
+	 * @param {Number} time
+	 * @param {Object} sustainsBySecond
+	 */
 	renderSustainOnOffs(time, sustainsBySecond) {
 		let lookBackTime = Math.floor(time - this.lookBackTime)
 		let lookAheadTime = Math.ceil(time + this.lookAheadTime)
 
-		// Draw sustain On and Offs
 		for (
 			let lookUpTime = lookBackTime;
 			lookUpTime < lookAheadTime;
@@ -49,10 +52,12 @@ export class SustainRender {
 						this.ctx.strokeStyle = this.sustainOffStrokeStyle
 						text = "Sustain Off"
 					}
-					let y = this.yToTimeFunc(sustain.timestamp - time * 1000)
+					let y = this.renderDimensions.getYForTime(
+						sustain.timestamp - time * 1000
+					)
 					this.ctx.beginPath()
 					this.ctx.moveTo(0, y)
-					this.ctx.lineTo(this.windowWidth, y)
+					this.ctx.lineTo(this.renderDimensions.windowWidth, y)
 					this.ctx.closePath()
 					this.ctx.stroke()
 
@@ -62,10 +67,14 @@ export class SustainRender {
 			}
 		}
 	}
+	/**
+	 * Renders Sustain Periods as rectangles on screen.
+	 * @param {Number} time
+	 * @param {Array} sustainPeriods
+	 */
 	renderSustainPeriods(time, sustainPeriods) {
 		let lookBackTime = Math.floor(time - this.lookBackTime)
 		let lookAheadTime = Math.ceil(time + this.lookAheadTime)
-		// Draw sustain Periods
 		this.ctx.fillStyle = this.sustainPeriodFillStyle
 
 		sustainPeriods
@@ -77,10 +86,17 @@ export class SustainRender {
 						period.end > lookBackTime * 1000)
 			)
 			.forEach(period => {
-				let yStart = this.yToTimeFunc(period.start - time * 1000)
-				let yEnd = this.yToTimeFunc(period.end - time * 1000)
+				let yStart = this.renderDimensions.getYForTime(
+					period.start - time * 1000
+				)
+				let yEnd = this.renderDimensions.getYForTime(period.end - time * 1000)
 
-				this.ctx.fillRect(0, yEnd, this.windowWidth, yStart - yEnd)
+				this.ctx.fillRect(
+					0,
+					yEnd,
+					this.renderDimensions.windowWidth,
+					yStart - yEnd
+				)
 			})
 	}
 }
