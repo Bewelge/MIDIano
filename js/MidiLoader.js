@@ -39,11 +39,11 @@ function parseMidi(data) {
 		tracks: tracks
 	}
 
-	let bpms = Parser.setTemporal(midiData)
+	let temporalData = Parser.setTemporal(midiData)
 	return {
 		header: header,
 		tracks: tracks,
-		bpms: bpms
+		temporalData: temporalData
 	}
 }
 
@@ -358,6 +358,9 @@ class Parser {
 		let ticksPerBeat = midiObj.header.ticksPerBeat
 		var totTime = 0
 		var bpms = []
+		var generatedBeats = 0
+		var beatsBySecond = { 0: [0] }
+		var sustainsBySecond = {}
 		let channels = getDefaultChannels()
 		for (let t in midiObj.tracks) {
 			let track = midiObj.tracks[t]
@@ -373,6 +376,7 @@ class Parser {
 			var nextEventTrack = null
 			var nextEventIndex = null
 
+			//search all tracks for next event.
 			for (var i = 0; i < trackStates.length; i++) {
 				if (
 					trackStates[i].ticksToNextEvent != null &&
@@ -385,7 +389,7 @@ class Parser {
 				}
 			}
 			if (nextEventTrack != null) {
-				/* consume event from that track */
+				// get next event from that track and
 				var nextEvent = midiObj.tracks[nextEventTrack][nextEventIndex]
 				if (midiObj.tracks[nextEventTrack][nextEventIndex + 1]) {
 					trackStates[nextEventTrack].ticksToNextEvent +=
@@ -394,7 +398,7 @@ class Parser {
 					trackStates[nextEventTrack].ticksToNextEvent = null
 				}
 				trackStates[nextEventTrack].nextEventIndex += 1
-				/* advance timings on all tracks by ticksToNextEvent */
+				// advance timings on all tracks
 				for (var i = 0; i < trackStates.length; i++) {
 					if (trackStates[i].ticksToNextEvent != null) {
 						trackStates[i].ticksToNextEvent -= ticksToNextEvent
@@ -423,6 +427,7 @@ class Parser {
 			) {
 				channels[midiEvent.event.channel].volume = midiEvent.event.value
 			}
+
 			var beatsToGenerate = 0
 			var secondsToGenerate = 0
 			if (midiEvent.ticksToEvent > 0) {
@@ -433,12 +438,45 @@ class Parser {
 			midiEvent.event.temporalDelta = time
 			totTime += time
 			midiEvent.event.timestamp = totTime
+
+			//Keep track of sustain on/offs
+			if (
+				midiEvent.event.type == "controller" &&
+				midiEvent.event.controllerType == 64
+			) {
+				let currentSecond = Math.floor(totTime / 1000)
+				if (!sustainsBySecond.hasOwnProperty(currentSecond)) {
+					sustainsBySecond[currentSecond] = []
+				}
+				sustainsBySecond[currentSecond].push({
+					timestamp: totTime,
+					isOn: midiEvent.event.value > 64,
+					value: midiEvent.event.value
+				})
+			}
+
+			//keep track of completed beats to show beatLines
+			generatedBeats +=
+				Math.floor(ticksPerBeat * beatsToGenerate) / ticksPerBeat
+			while (generatedBeats >= 1) {
+				generatedBeats -= 1
+				let beatTime = totTime - generatedBeats * secondsToGenerate * 1000
+				let beatSecond = Math.floor(beatTime / 1000)
+				if (!beatsBySecond.hasOwnProperty(beatSecond)) {
+					beatsBySecond[beatSecond] = []
+				}
+				beatsBySecond[beatSecond].push(beatTime)
+			}
+
 			if (midiEvent.event.hasOwnProperty("channel")) {
 				midiEvent.event.channelVolume = channels[midiEvent.event.channel].volume
 			}
 			midiEvent = getNextEvent()
 			if (newBPM) {
-				bpms.push({ bpm: beatsPerMinute, timestamp: time })
+				bpms.push({
+					bpm: beatsPerMinute,
+					timestamp: totTime
+				})
 			}
 		} //end processNext
 
@@ -448,7 +486,7 @@ class Parser {
 		/*********
 		 * </ADAPTED FROM JASMID>
 		 *********/
-		return bpms
+		return { bpms, beatsBySecond, sustainsBySecond: sustainsBySecond }
 	}
 }
 
