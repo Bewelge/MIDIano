@@ -92,14 +92,14 @@ export class RenderDimensions {
 	 * @param {Number} currentTime
 	 * @param {Number} noteStartTime
 	 * @param {Number} noteEndTime
-	 * @param {Number} sustainEndTime
+	 * @param {Number} sustainOffTime
 	 */
 	getNoteDimensions(
 		noteNumber,
 		currentTime,
 		noteStartTime,
 		noteEndTime,
-		sustainEndTime
+		sustainOffTime
 	) {
 		noteNumber -= 21
 
@@ -113,11 +113,11 @@ export class RenderDimensions {
 
 		let sustainY = 0
 		let sustainH = 0
-		if (sustainEndTime > noteEndTime) {
+		if (sustainOffTime > noteEndTime) {
 			sustainH =
-				((sustainEndTime - noteStartTime) / this.noteToHeightConst) *
+				((sustainOffTime - noteStartTime) / this.noteToHeightConst) *
 				(this.windowHeight - this.whiteKeyHeight)
-			sustainY = this.getYForTime(sustainEndTime - currentTime)
+			sustainY = this.getYForTime(sustainOffTime - currentTime)
 		}
 
 		return {

@@ -247,13 +247,13 @@ export class Song {
 					(period.start < note.offTime && period.end > note.offTime)
 			)
 			if (currentSustains.length) {
-				note.sustainOn = currentSustains[0].start
+				note.sustainOnTime = currentSustains[0].start
 				let end = Math.max.apply(
 					null,
 					currentSustains.map(sustain => sustain.end)
 				)
-				note.sustainEndTime = end
-				note.sustainDuration = note.sustainEndTime - note.timestamp
+				note.sustainOffTime = end
+				note.sustainDuration = note.sustainOffTime - note.timestamp
 			}
 		}
 	}

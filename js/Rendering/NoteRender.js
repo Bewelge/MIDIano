@@ -198,7 +198,7 @@ export class NoteRender {
 			time,
 			note.timestamp,
 			note.offTime,
-			note.sustainEndTime
+			note.sustainOffTime
 		)
 		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
 		let noteDoneRatio = 1 - (note.offTime - time) / note.duration

@@ -76,6 +76,7 @@ export class PianoRender {
 			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
 		}
 	}
+
 	drawActiveKey(renderInfo, color) {
 		let dim = this.renderDimensions.getKeyDimensions(renderInfo.noteNumber - 21)
 		let keyBlack = renderInfo.keyBlack
