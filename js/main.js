@@ -6,15 +6,24 @@ import { InputListeners } from "./InputListeners.js"
 /**
  * TODOs:
  * - piano zoom
- * - menu settings
  * - channel menu
  * - accessability
- * - loading app display
- * - dragndropfile
  * - load from URL
+ *
+ * - implement configurable ADSR + maybe custom wave functions
+ * - make instrument choosable for tracks
+ * -
+ * - implement control messages of the other two pedals
+ * -
+ * - settings for playalong:
+ * 		- accuracy needed
+ * 		- different modes
+ * 		-
+ * - click piano = hit key
+ * - render note keys on each note/ on piano
+ * - Metronome
  */
-var soundfontLoader, player, ui, player, loading, listeners
-var channels = []
+var player, ui, player, loading, listeners
 
 window.onload = async function () {
 	await init()
