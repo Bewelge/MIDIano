@@ -75,34 +75,6 @@ export class Render {
 		)
 	}
 
-	updateSettings(settingsObj) {
-		this.settings = settingsObj
-	}
-	isOnMainCanvas(position) {
-		return (
-			position.x > this.menuHeight &&
-			position.y <
-				this.renderDimensions.windowHeight -
-					this.renderDimensions.whiteKeyHeight
-		)
-	}
-	setMouseCoords(x, y) {
-		this.mouseX = x
-		this.mouseY = y
-	}
-	getTimeFromHeight(height) {
-		return (
-			(height * this.renderDimensions.noteToHeightConst) /
-			(this.renderDimensions.windowHeight -
-				this.renderDimensions.whiteKeyHeight) /
-			1000
-		)
-	}
-	onMenuHeightChanged(menuHeight) {
-		this.menuHeight = menuHeight
-		this.getProgressBarCanvas().style.top = menuHeight + "px"
-		this.noteRender.setMenuHeight(menuHeight)
-	}
 	/**
 	 * Main rendering function
 	 */
@@ -205,5 +177,34 @@ export class Render {
 
 	isNoteDrawn(note, tracks) {
 		return !tracks[note.track] || !tracks[note.track].draw
+	}
+
+	updateSettings(settingsObj) {
+		this.settings = settingsObj
+	}
+	isOnMainCanvas(position) {
+		return (
+			position.x > this.menuHeight &&
+			position.y <
+				this.renderDimensions.windowHeight -
+					this.renderDimensions.whiteKeyHeight
+		)
+	}
+	setMouseCoords(x, y) {
+		this.mouseX = x
+		this.mouseY = y
+	}
+	getTimeFromHeight(height) {
+		return (
+			(height * this.renderDimensions.noteToHeightConst) /
+			(this.renderDimensions.windowHeight -
+				this.renderDimensions.whiteKeyHeight) /
+			1000
+		)
+	}
+	onMenuHeightChanged(menuHeight) {
+		this.menuHeight = menuHeight
+		this.getProgressBarCanvas().style.top = menuHeight + "px"
+		this.noteRender.setMenuHeight(menuHeight)
 	}
 }

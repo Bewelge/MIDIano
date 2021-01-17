@@ -1,5 +1,7 @@
 import { formatTime } from "../Util.js"
-
+/**
+ * Renders the progress bar of the song
+ */
 export class ProgressBarRender {
 	constructor(ctx, renderDimensions) {
 		this.ctx = ctx

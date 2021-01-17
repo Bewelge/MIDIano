@@ -1,3 +1,6 @@
+/**
+ * Particles handler
+ */
 export class ParticleRender {
 	constructor(ctx, renderDimensions) {
 		this.ctx = ctx

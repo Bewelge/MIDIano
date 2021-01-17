@@ -1,9 +1,10 @@
+/**
+ * Class to render measure lines on the main canvas.
+ */
 export class MeasureLinesRender {
-	constructor(ctx, renderDimensions, lookBackTime, lookAheadTime) {
+	constructor(ctx, renderDimensions) {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
-		this.lookBackTime = lookBackTime
-		this.lookAheadTime = lookAheadTime
 	}
 	render(playerState, settings) {
 		this.settings = settings
@@ -13,8 +14,6 @@ export class MeasureLinesRender {
 			? playerState.song.getMeasureLines()
 			: []
 		let ctx = this.ctx
-		let height =
-			this.renderDimensions.windowHeight - this.renderDimensions.whiteKeyHeight
 
 		ctx.strokeStyle = "rgba(255,255,255,0.3)"
 

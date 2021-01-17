@@ -1,4 +1,7 @@
 import { isBlack } from "../Util.js"
+/**
+ * Class that renders the background of the main canvas
+ */
 export class BackgroundRender {
 	constructor(ctx, renderDimensions) {
 		this.ctx = ctx
