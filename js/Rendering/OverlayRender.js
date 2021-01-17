@@ -42,6 +42,7 @@ export class OverlayRender {
 				this.windowHeight / 4 + i * 40
 			)
 		}
+		this.ctx.globalAlpha = 1
 	}
 
 	setAlphaForOverlay(overlay) {
