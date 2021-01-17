@@ -17,6 +17,8 @@ const MIN_HEIGHT = 560
 const LOOK_BACK_TIME = 4
 const LOOK_AHEAD_TIME = 10
 
+const PROGRESS_BAR_CANVAS_HEIGHT = 20
+
 /**
  * Class that handles all rendering
  */
@@ -66,14 +68,6 @@ export class Render {
 
 		this.playerState = player.getState()
 	}
-	addStartingOverlayMessage() {
-		this.overlayRender.addOverlay("MIDiano", 150)
-		this.overlayRender.addOverlay("A Javascript MIDI-Player", 150)
-		this.overlayRender.addOverlay(
-			"Example song by Bernd Krueger from piano-midi.de",
-			150
-		)
-	}
 
 	/**
 	 * Main rendering function
@@ -103,6 +97,30 @@ export class Render {
 		if (this.settings.showNoteDebugInfo) {
 			this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
 		}
+
+		if (this.settings.showBPM) {
+			this.drawBPM(playerState)
+		}
+	}
+	drawBPM(playerState) {
+		this.ctx.font = "20px Arial black"
+		this.ctx.fillStyle = "rgba(255,255,255,0.8)"
+		this.ctx.textBaseline = "top"
+		console.log(this.menuHeight)
+		this.ctx.fillText(
+			Math.round(playerState.bpm) + " BPM",
+			20,
+			this.menuHeight + PROGRESS_BAR_CANVAS_HEIGHT + 12
+		)
+	}
+
+	addStartingOverlayMessage() {
+		this.overlayRender.addOverlay("MIDiano", 150)
+		this.overlayRender.addOverlay("A Javascript MIDI-Player", 150)
+		this.overlayRender.addOverlay(
+			"Example song by Bernd Krueger from piano-midi.de",
+			150
+		)
 	}
 
 	/**
@@ -165,7 +183,7 @@ export class Render {
 		if (!this.progressBarCanvas) {
 			this.progressBarCanvas = DomHelper.createCanvas(
 				this.renderDimensions.windowWidth,
-				20,
+				PROGRESS_BAR_CANVAS_HEIGHT,
 				{}
 			)
 			this.progressBarCanvas.id = "progressBarCanvas"

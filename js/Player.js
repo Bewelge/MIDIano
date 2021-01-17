@@ -40,13 +40,15 @@ export class Player {
 		this.settings = settings
 	}
 	getState() {
+		let time = this.getTime()
 		return {
-			time: this.getTime(),
+			time: time,
 			end: this.song ? this.song.getEnd() : 0,
 			loading: this.loading,
 			song: this.song,
 			tracks: this.tracks,
-			inputActiveNotes: this.inputActiveNotes
+			inputActiveNotes: this.inputActiveNotes,
+			bpm: this.getBPM(time)
 		}
 	}
 	addNewSongCallback(callback) {
@@ -243,14 +245,17 @@ export class Player {
 			return
 		}
 	}
-	getCurrentBPM(time) {
+	getBPM(time) {
 		let val = 0
-		console.log(this.song.beatInfo)
-		for (let i = 1; i < this.song.beatInfo.bpms.length; i++) {
-			if (time < this.song.beatInfo.bpms[i].timestamp) {
-				return this.song.beatInfo.bpms[i - 1].bpm
+		if (this.song) {
+			for (let i = this.song.temporalData.bpms.length - 1; i >= 0; i--) {
+				if (time * 1000 > this.song.temporalData.bpms[i].timestamp) {
+					val = this.song.temporalData.bpms[i].bpm
+					break
+				}
 			}
 		}
+		return val
 	}
 	play() {
 		if (this.scrolling != 0) {
@@ -407,9 +412,9 @@ export class Player {
 		const startTime = contextTime + delay
 		let endTime =
 			startTime + note.duration / 1000 / this.playbackSpeed + delayCorrection
-		let sustainEndTime =
+		let sustainOffTime =
 			startTime + note.sustainDuration / 1000 / this.playbackSpeed
-		const isSustained = endTime < sustainEndTime
+		const isSustained = endTime < sustainOffTime
 
 		let attack = 0.02
 		let sustain = 0.8
@@ -434,21 +439,21 @@ export class Player {
 			gainNode.gain.setTargetAtTime(clampedGain, endTime, 0.05)
 			//Release
 			gainNode.gain.exponentialRampToValueAtTime(0.001, endTime + releaseKey)
-			gainNode.gain.setTargetAtTime(0, endTime + +releaseKey + 0.001, 0.05)
+			gainNode.gain.setTargetAtTime(0, endTime + releaseKey + 0.001, 0.05)
 		} else {
 			let decayedGain =
 				clampedGain *
-				Math.pow(0.999, Math.max(1, (sustainEndTime - startTime) / 10))
+				Math.pow(0.999, Math.max(1, (sustainOffTime - startTime) / 10))
 			//Sustain
-			gainNode.gain.linearRampToValueAtTime(decayedGain, sustainEndTime)
+			gainNode.gain.linearRampToValueAtTime(decayedGain, sustainOffTime)
 			//Release
 			gainNode.gain.exponentialRampToValueAtTime(
 				0.001,
-				sustainEndTime + releasePedal
+				sustainOffTime + releasePedal
 			)
 			gainNode.gain.setTargetAtTime(
 				0,
-				sustainEndTime + releasePedal + 0.001,
+				sustainOffTime + releasePedal + 0.001,
 				0.05
 			)
 		}
@@ -456,7 +461,7 @@ export class Player {
 		gainNode.connect(this.context.destination)
 
 		source.start(Math.max(0, startTime))
-		source.stop(isSustained ? note.sustainEndTime + 1 : endTime + 1)
+		source.stop(isSustained ? note.sustainOffTime + 1 : endTime + 1)
 
 		this.sources.push(source)
 	}

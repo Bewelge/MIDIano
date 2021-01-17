@@ -8,12 +8,13 @@ export class UI {
 	constructor(player, render, isMobile) {
 		this.settings = {
 			soundfontName: "MusyngKite",
-			showParticles: true,
 			sustainEnabled: true,
 			showSustainOnOffs: true,
 			showSustainPeriods: true,
 			showSustainedNotes: true,
 			sustainedNotesOpacity: 50,
+			showBPM: true,
+			showParticles: true,
 			particleAmount: 40,
 			particleSize: 2,
 			particleLife: 12,
@@ -44,22 +45,18 @@ export class UI {
 		document.body.addEventListener("mousemove", this.mouseMoved.bind(this))
 
 		this.createControlMenu()
-		this.resize()
-	}
 
-	/**
-	 * Sets all dimensions dependent on window size
-	 */
-	resize() {
 		this.menuHeight = 200
+
 		document
 			.querySelectorAll(".innerMenuDiv")
 			.forEach(
 				el =>
 					(el.style.height =
-						"calc(100% - " + this.getNavBar().clientHeight + "px)")
+						"calc(100% - " + (this.getNavBar().clientHeight + 25) + "px)")
 			)
 	}
+
 	fireInitialListeners() {
 		//Todo: or preload glyphs somehow. . .
 		window.setTimeout(
@@ -344,6 +341,15 @@ export class UI {
 			}
 		)
 		settingsDivs.push(sustainedNotesOpacitySlider.container)
+
+		let showBPMCheckbox = DomHelper.createCheckbox(
+			"Show BPM",
+			ev => {
+				this.settings.showBPM = ev.target.checked
+			},
+			this.settings.showBPM
+		)
+		settingsDivs.push(showBPMCheckbox)
 
 		let showParticlesCheckbox = DomHelper.createCheckbox(
 			"Show Particles",
