@@ -1,6 +1,6 @@
 import { SoundfontLoader } from "./SoundfontLoader.js"
-
 import { CONST } from "./CONST.js"
+
 export class AudioPlayer {
 	constructor(tracks, settings) {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext
