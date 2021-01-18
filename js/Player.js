@@ -2,7 +2,7 @@ import { MidiLoader } from "./MidiLoader.js"
 import { Song } from "./Song.js"
 import { CONST } from "./CONST.js"
 import { MidiInputHandler } from "./MidiInputHandler.js"
-import { AudioPlayer } from "./AudioPlayer.js"
+import { AudioPlayer } from "./AudioContextPlayer.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {

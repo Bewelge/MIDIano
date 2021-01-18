@@ -90,7 +90,7 @@ export class AudioPlayer {
 	}
 	async switchSoundfont(soundfontName, currentSong, setLoadMessage) {
 		this.soundfontName = soundfontName
-		setLoadMessage("Loading Instruments for Song")
+		setLoadMessage("Loading Instruments")
 		await this.loadInstrumentsForSong(currentSong)
 		setLoadMessage("Loading Buffers")
 		return await this.loadBuffers()
