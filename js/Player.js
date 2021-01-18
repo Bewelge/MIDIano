@@ -1,25 +1,21 @@
 import { MidiLoader } from "./MidiLoader.js"
 import { Song } from "./Song.js"
-import { SoundfontLoader } from "./SoundfontLoader.js"
 import { CONST } from "./CONST.js"
 import { MidiInputHandler } from "./MidiInputHandler.js"
+import { AudioPlayer } from "./AudioPlayer.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {
-	constructor(buffers) {
-		window.AudioContext = window.AudioContext || window.webkitAudioContext
-		this.soundfontName = "MusyngKite"
-
-		this.buffers = buffers || {}
+	constructor() {
 		this.sources = []
 		this.tracks = {}
+		this.audioPlayer = new AudioPlayer(this.tracks, this.settings)
 
-		this.context = new AudioContext()
 		this.midiInputHandler = new MidiInputHandler()
 		this.midiInputHandler.setNoteOnCallback(this.addInputNoteOn.bind(this))
 		this.midiInputHandler.setNoteOffCallback(this.addInputNoteOff.bind(this))
 		this.startDelay = -2
-		this.lastTime = this.context.currentTime
+		this.lastTime = this.audioPlayer.getContextTime()
 		this.progress = 0
 		this.paused = true
 		this.playing = false
@@ -38,13 +34,14 @@ export class Player {
 	}
 	updateSettings(settings) {
 		this.settings = settings
+		this.audioPlayer.settings = this.settings
 	}
 	getState() {
 		let time = this.getTime()
 		return {
 			time: time,
 			end: this.song ? this.song.getEnd() : 0,
-			loading: this.loading,
+			loading: this.audioPlayer.loading,
 			song: this.song,
 			tracks: this.tracks,
 			inputActiveNotes: this.inputActiveNotes,
@@ -54,19 +51,22 @@ export class Player {
 	addNewSongCallback(callback) {
 		this.newSongCallbacks.push(callback)
 	}
-	switchSoundfont(soundfontName) {
-		this.pause()
-		//TODO: WHY IS THIS NOT PAUSING?! Throws errors, but works...
+	switchSoundfont(soundfontName, setLoadMessage) {
+		this.wasPaused = this.paused
+		this.paused = true
+		this.onloadStartCallbacks.forEach(callback => callback())
+		let nowTime = window.performance.now()
 		this.soundfontName = soundfontName
-		this.loadSoundfont()
+		this.audioPlayer
+			.switchSoundfont(soundfontName, this.currentSong, setLoadMessage)
+			.then(resolve => {
+				window.setTimeout(() => {
+					this.paused = this.wasPaused
+					this.onloadStopCallbacks.forEach(callback => callback())
+				}, Math.max(0, 500 - (window.performance.now() - nowTime)))
+			})
 	}
-	async loadSoundfont() {
-		await this.loadInstrumentsForSong()
-		await this.loadBuffers()
-	}
-	getContext() {
-		return this.context
-	}
+
 	getTimeWithScrollOffset(scrollOffset) {
 		return this.progress + this.startDelay - scrollOffset
 	}
@@ -103,31 +103,17 @@ export class Player {
 			}
 			this.tracks[t].color = CONST.TRACK_COLORS[t % 4]
 		}
+		this.audioPlayer.tracks = this.tracks
 	}
 
-	async loadBuffers() {
-		return await SoundfontLoader.getBuffers(
-			this.context,
-			this.soundfontName
-		).then(buffers => {
-			console.log("Buffers loaded")
-			this.setBuffers(buffers)
-			this.onloadStopCallbacks.forEach(callback => callback())
-			this.loading = false
-		})
-	}
 	async loadSong(theSong, fileName, setLoadMessage) {
 		setLoadMessage("Loading " + fileName + ".")
-		if (this.context.state == "running") {
-			this.context.suspend()
+		if (this.audioPlayer.isRunning()) {
+			this.audioPlayer.suspend()
 		}
 
 		this.onloadStartCallbacks.forEach(callback => callback())
 
-		this.playing = false
-		this.progress = 0
-		this.scrollOffset = 0
-		this.paused = true
 		this.loading = true
 
 		setLoadMessage("Parsing Midi File.")
@@ -138,40 +124,22 @@ export class Player {
 		this.setSong(this.currentSong)
 		this.loadedSongs.add(this.currentSong)
 
-		await this.loadInstrumentsForSong()
+		await this.audioPlayer.loadInstrumentsForSong(this.currentSong)
 
 		this.setupTracks()
 		this.newSongCallbacks.forEach(callback => callback())
 		setLoadMessage("Creating Buffers")
-		return this.loadBuffers()
-	}
-	async loadInstrumentsForSong() {
-		if (!this.buffers.hasOwnProperty(this.soundfontName)) {
-			this.buffers[this.soundfontName] = {}
-		}
-		//filter instruments we've loaded already and directly map onto promise
-		let neededInstruments = this.currentSong
-			.getAllInstruments()
-			.filter(
-				instrument =>
-					!this.buffers[this.soundfontName].hasOwnProperty(instrument)
-			)
-			.map(instrument =>
-				SoundfontLoader.loadInstrument(instrument, this.soundfontName)
-			)
-		if (neededInstruments.length == 0) {
-			return Promise.resolve()
-		}
-		await Promise.all(neededInstruments)
+		let onloadStopCallbacks = this.onloadStopCallbacks
+		return this.audioPlayer
+			.loadBuffers()
+			.then(v => onloadStopCallbacks.forEach(callback => callback()))
 	}
 
-	setBuffers(buffers) {
-		this.buffers[this.soundfontName] = buffers
-	}
 	setSong(song) {
 		this.pause()
 		this.playing = false
 		this.paused = true
+		this.wasPaused = true
 		this.progress = 0
 		this.scrollOffset = 0
 		this.song = song
@@ -181,10 +149,11 @@ export class Player {
 
 		console.log("Starting Song")
 		this.paused = false
+		this.wasPaused = false
 		this.playing = true
 		this.resetNoteSequence()
-		this.lastTime = this.context.currentTime
-		this.context.resume()
+		this.lastTime = this.audioPlayer.getContextTime()
+		this.audioPlayer.resume()
 		this.play()
 		return true
 	}
@@ -194,7 +163,7 @@ export class Player {
 				this.scrolling = 0
 				return
 			}
-			this.lastTime = this.context.currentTime
+			this.lastTime = this.audioPlayer.getContextTime()
 			let newScrollOffset = this.scrollOffset + 0.01 * this.scrolling
 			//get hypothetical time with new scrollOffset.
 			let oldTime = this.getTimeWithScrollOffset(this.scrollOffset)
@@ -260,15 +229,16 @@ export class Player {
 	play() {
 		if (this.scrolling != 0) {
 		}
+		let currentContextTime = this.audioPlayer.getContextTime()
 
-		let delta = (this.context.currentTime - this.lastTime) * this.playbackSpeed
+		let delta = (currentContextTime - this.lastTime) * this.playbackSpeed
 		//cap max framerate.
 		if (delta < 0.0069) {
 			window.requestAnimationFrame(this.play.bind(this))
 			return
 		}
 		let oldProgress = this.progress
-		this.lastTime = this.context.currentTime
+		this.lastTime = currentContextTime
 		if (!this.paused) {
 			this.progress += delta
 		} else {
@@ -278,7 +248,7 @@ export class Player {
 
 		let currentTime = this.getTime()
 
-		if (this.isSongEnded(currentTime)) {
+		if (this.isSongEnded(currentTime - 0.5)) {
 			this.pause()
 			return
 		}
@@ -370,8 +340,9 @@ export class Player {
 		if (!this.song) return
 		console.log("Resuming Song")
 		this.paused = false
+		this.wasPaused = false
 		this.resetNoteSequence()
-		this.context.resume()
+		this.audioPlayer.resume()
 		this.play()
 	}
 	resetNoteSequence() {
@@ -386,6 +357,7 @@ export class Player {
 		console.log("Pausing Song")
 		this.pauseTime = this.getTime()
 		this.paused = true
+		this.wasPaused = true
 	}
 
 	playNote(note) {
@@ -393,98 +365,23 @@ export class Player {
 			return
 		}
 		let currentTime = this.getTime()
-		let contextTime = this.context.currentTime
-		let delay = (note.timestamp / 1000 - currentTime) / this.playbackSpeed
+		let delayUntilNote =
+			(note.timestamp / 1000 - currentTime) / this.playbackSpeed
 		let delayCorrection = 0
-		if (delay < 0) {
+		if (delayUntilNote < 0) {
 			if (!this.isPlayalong()) return
 			console.log("negative delay")
-			delayCorrection = -1 * (delay - 0.1)
-			delay = 0.1
+			delayCorrection = -1 * (delayUntilNote - 0.1)
+			delayUntilNote = 0.1
 		}
 
-		let buffer = this.getBufferForNote(note.noteNumber, note.instrument)
-		let clampedGain = this.getClampedGain(note)
-		if (clampedGain == 0) {
-			return
-		}
-
-		const startTime = contextTime + delay
-		let endTime =
-			startTime + note.duration / 1000 / this.playbackSpeed + delayCorrection
-		let sustainOffTime =
-			startTime + note.sustainDuration / 1000 / this.playbackSpeed
-		const isSustained = endTime < sustainOffTime
-
-		let attack = 0.02
-		let sustain = 0.8
-		let decay = 0.5
-		let releasePedal = 0.1
-		let releaseKey = 0.2
-
-		let source = this.context.createBufferSource()
-		let gainNode = this.context.createGain()
-		source.buffer = buffer
-		source.connect(gainNode)
-
-		gainNode.value = 0
-		//start at zero
-		gainNode.gain.setTargetAtTime(0, contextTime, 0.05)
-		gainNode.gain.setTargetAtTime(0, Math.max(contextTime, startTime), 0.05)
-		//Attack //TODO implement Harmonic scale if sustained?
-		gainNode.gain.linearRampToValueAtTime(clampedGain, startTime + attack, 0.05)
-
-		if (!isSustained || !this.settings.sustainEnabled) {
-			//Sustain
-			gainNode.gain.setTargetAtTime(clampedGain, endTime, 0.05)
-			//Release
-			gainNode.gain.exponentialRampToValueAtTime(0.001, endTime + releaseKey)
-			gainNode.gain.setTargetAtTime(0, endTime + releaseKey + 0.001, 0.05)
-		} else {
-			let decayedGain =
-				clampedGain *
-				Math.pow(0.999, Math.max(1, (sustainOffTime - startTime) / 10))
-			//Sustain
-			gainNode.gain.linearRampToValueAtTime(decayedGain, sustainOffTime)
-			//Release
-			gainNode.gain.exponentialRampToValueAtTime(
-				0.001,
-				sustainOffTime + releasePedal
-			)
-			gainNode.gain.setTargetAtTime(
-				0,
-				sustainOffTime + releasePedal + 0.001,
-				0.05
-			)
-		}
-
-		gainNode.connect(this.context.destination)
-
-		source.start(Math.max(0, startTime))
-		source.stop(isSustained ? note.sustainOffTime + 1 : endTime + 1)
-
-		this.sources.push(source)
-	}
-	getBufferForNote(noteNumber, noteInstrument) {
-		let key = CONST.NOTE_TO_KEY[noteNumber]
-		let buffer
-		try {
-			buffer = this.buffers[this.soundfontName][noteInstrument][key]
-		} catch (e) {
-			console.error(e)
-		}
-		return buffer
-	}
-
-	getClampedGain(note) {
-		let track = this.tracks[note.track]
-		let gain =
-			(2 + ((note.velocity / 127) * 2 * note.channelVolume) / 127) *
-			(track.volume / 100) *
-			(this.volume / 100)
-
-		let clampedGain = Math.min(5.0, Math.max(-1.0, gain))
-		return clampedGain
+		this.audioPlayer.playNote(
+			delayUntilNote,
+			delayCorrection,
+			note,
+			this.playbackSpeed,
+			this.volume
+		)
 	}
 
 	startNoteAndGetNodes(noteNumber) {
