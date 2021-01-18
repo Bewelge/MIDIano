@@ -106,7 +106,6 @@ export class Render {
 		this.ctx.font = "20px Arial black"
 		this.ctx.fillStyle = "rgba(255,255,255,0.8)"
 		this.ctx.textBaseline = "top"
-		console.log(this.menuHeight)
 		this.ctx.fillText(
 			Math.round(playerState.bpm) + " BPM",
 			20,

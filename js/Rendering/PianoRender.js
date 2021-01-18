@@ -201,7 +201,7 @@ export class PianoRender {
 		ctx.lineTo(x + 1, y + height - radius)
 		ctx.lineTo(x + 1, y)
 
-		ctx.fillStyle = "white"
+		ctx.fillStyle = "rgba(255,255,255,1)"
 		ctx.fill()
 
 		let rgr = ctx.createLinearGradient(
@@ -223,7 +223,7 @@ export class PianoRender {
 			whiteKeyHeight
 		)
 		rgr2.addColorStop(1, "rgba(255,255,255,0.5)")
-		rgr2.addColorStop(0, "rgba(0,0,0,0.6)")
+		rgr2.addColorStop(0, "rgba(0,0,0,0.5)")
 		ctx.fillStyle = rgr2
 		ctx.fill()
 

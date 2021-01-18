@@ -194,7 +194,9 @@ export class InputListeners {
 			player.handleScroll()
 			this.grabSpeed = []
 		}
-		player.paused = player.wasPaused
+		if (this.grabbedProgressBar || this.grabbedMainCanvas) {
+			player.paused = player.wasPaused
+		}
 		this.grabbedProgressBar = false
 		this.grabbedMainCanvas = false
 		this.lastYGrabbed = false
