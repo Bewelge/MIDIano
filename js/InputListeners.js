@@ -75,9 +75,13 @@ export class InputListeners {
 
 			let alreadyScrolling = player.scrolling != 0
 
+			//Because Firefox does not set .wheeldata
+			let wheelDelta = event.wheelDelta ? event.wheelDelta : -1 * event.deltaY
+
 			let evDel =
-				((event.wheelDelta + 1) / (Math.abs(event.wheelDelta) + 1)) *
-				Math.min(500, Math.abs(event.wheelDelta))
+				((wheelDelta + 1) / (Math.abs(wheelDelta) + 1)) *
+				Math.min(500, Math.abs(wheelDelta))
+
 			var wheel = (evDel / Math.abs(evDel)) * 500
 
 			player.scrolling -= 0.001 * wheel
