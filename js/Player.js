@@ -365,22 +365,13 @@ export class Player {
 			return
 		}
 		let currentTime = this.getTime()
-		let delayUntilNote =
-			(note.timestamp / 1000 - currentTime) / this.playbackSpeed
-		let delayCorrection = 0
-		if (delayUntilNote < 0) {
-			if (!this.isPlayalong()) return
-			console.log("negative delay")
-			delayCorrection = -1 * (delayUntilNote - 0.1)
-			delayUntilNote = 0.1
-		}
 
 		this.audioPlayer.playNote(
-			delayUntilNote,
-			delayCorrection,
+			currentTime,
 			note,
 			this.playbackSpeed,
-			this.volume
+			this.volume,
+			this.isPlayalong()
 		)
 	}
 

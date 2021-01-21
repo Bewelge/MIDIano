@@ -26,24 +26,35 @@ export class AudioPlayer {
 	suspend() {
 		this.context.suspend()
 	}
-	playNote(delayUntilNote, delayCorrection, note, playbackSpeed, volume) {
+	playNote(currentTime, note, playbackSpeed, volume, isPlayAlong) {
+		let delayUntilNote = (note.timestamp / 1000 - currentTime) / playbackSpeed
+		let delayCorrection = 0
+		if (delayUntilNote < 0) {
+			if (!isPlayAlong) return
+			console.log("negative delay")
+			delayCorrection = -1 * (delayUntilNote - 0.1)
+			delayUntilNote = 0.1
+		}
+
 		const contextTime = this.getContextTime()
 		let buffer = this.getBufferForNote(note.noteNumber, note.instrument)
 		let clampedGain = this.getClampedGain(note, volume)
 		if (clampedGain == 0) {
 			return
 		}
-		const startTime = contextTime + delayUntilNote
+		let startTime = contextTime + delayUntilNote
 		let endTime =
 			startTime + note.duration / 1000 / playbackSpeed + delayCorrection
+
 		let sustainOffTime = startTime + note.sustainDuration / 1000 / playbackSpeed
 		const isSustained = endTime < sustainOffTime
 
-		let attack = 0.02
+		let attack = Math.min(0.001, (endTime - startTime) / 2)
 		let sustain = 0.8
 		let decay = 0.5
 		let releasePedal = 0.1
-		let releaseKey = 0.2
+		let releaseKey = 0.1
+		const timeConst = 0.05
 
 		let source = this.context.createBufferSource()
 		let gainNode = this.context.createGain()
@@ -52,32 +63,44 @@ export class AudioPlayer {
 
 		gainNode.value = 0
 		//start at zero
-		gainNode.gain.setTargetAtTime(0, contextTime, 0.05)
-		gainNode.gain.setTargetAtTime(0, Math.max(contextTime, startTime), 0.05)
+		gainNode.gain.setTargetAtTime(0, 0, timeConst)
+		gainNode.gain.linearRampToValueAtTime(
+			0,
+			Math.max(contextTime, startTime),
+			timeConst
+		)
 		//Attack //TODO implement Harmonic scale if sustained?
-		gainNode.gain.linearRampToValueAtTime(clampedGain, startTime + attack, 0.05)
+		gainNode.gain.linearRampToValueAtTime(
+			clampedGain,
+			startTime + attack,
+			timeConst
+		)
 
 		if (!isSustained || !this.settings.sustainEnabled) {
 			//Sustain
-			gainNode.gain.setTargetAtTime(clampedGain, endTime, 0.05)
+			gainNode.gain.linearRampToValueAtTime(clampedGain, endTime, timeConst)
 			//Release
-			gainNode.gain.exponentialRampToValueAtTime(0.0001, endTime + releaseKey)
-			gainNode.gain.setTargetAtTime(0, endTime + releaseKey + 0.001, 0.05)
+			gainNode.gain.exponentialRampToValueAtTime(0.001, endTime + releaseKey)
+			gainNode.gain.linearRampToValueAtTime(
+				0,
+				endTime + releaseKey + 0.001,
+				timeConst
+			)
 		} else {
 			let decayedGain =
 				clampedGain *
 				Math.pow(0.999, Math.max(1, (sustainOffTime - startTime) / 10))
 			//Sustain
-			gainNode.gain.linearRampToValueAtTime(decayedGain, sustainOffTime)
+			gainNode.gain.linearRampToValueAtTime(clampedGain, sustainOffTime)
 			//Release
 			gainNode.gain.exponentialRampToValueAtTime(
-				0.0001,
+				0.001,
 				sustainOffTime + releasePedal
 			)
-			gainNode.gain.setTargetAtTime(
+			gainNode.gain.linearRampToValueAtTime(
 				0,
 				sustainOffTime + releasePedal + 0.001,
-				0.05
+				timeConst
 			)
 		}
 
@@ -109,11 +132,13 @@ export class AudioPlayer {
 	getClampedGain(note, volume) {
 		let track = this.tracks[note.track]
 		let gain =
-			(2 + ((note.velocity / 127) * 2 * note.channelVolume) / 127) *
+			2 *
+			(note.velocity / 127) *
+			(note.channelVolume / 127) *
 			(track.volume / 100) *
 			(volume / 100)
 
-		let clampedGain = Math.min(5.0, Math.max(-1.0, gain))
+		let clampedGain = Math.min(2.0, Math.max(-1.0, gain))
 		return clampedGain
 	}
 
