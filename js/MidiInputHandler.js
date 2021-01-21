@@ -26,7 +26,11 @@ export class MidiInputHandler {
 		return false
 	}
 	getAvailableDevices() {
-		return Array.from(this.midiAccess.inputs.values())
+		try {
+			return Array.from(this.midiAccess.inputs.values())
+		} catch (e) {
+			return []
+		}
 	}
 	setNoteOnCallback(callback) {
 		this.noteOnCallback = callback
