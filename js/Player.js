@@ -89,6 +89,18 @@ export class Player {
 			return this.channels[this.song.activeTracks[track].notes[0].channel]
 		}
 	}
+	getTrackCurrentInstrument(trackIndex) {
+		let i = 0
+		let noteSeq = this.currentSong.getNoteSequence()
+		let nextNote = noteSeq[i]
+		while (nextNote.track != trackIndex && i < noteSeq.length - 1) {
+			i++
+			nextNote = noteSeq[i]
+		}
+		if (nextNote.track == trackIndex) {
+			return nextNote.instrument
+		}
+	}
 	setupTracks() {
 		this.tracks = {}
 		for (let t in this.song.activeTracks) {
@@ -98,7 +110,8 @@ export class Player {
 					color: CONST.TRACK_COLORS[t % 4],
 					volume: 100,
 					name: this.song.activeTracks[t].name || "Track " + t,
-					requiredToPlay: false
+					requiredToPlay: false,
+					index: t
 				}
 			}
 			this.tracks[t].color = CONST.TRACK_COLORS[t % 4]

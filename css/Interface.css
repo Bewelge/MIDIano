@@ -8,7 +8,6 @@
 html,
 body {
 	box-sizing: border-box;
-	/* background-color: rgba(0, 0, 0, 1); */
 	width: 100%;
 	height: 100%;
 	overflow-y: hidden;
@@ -147,6 +146,11 @@ input[type="text"] {
 	width: 100%;
 	text-align: l;
 }
+.instrumentName {
+	width: 100%;
+	text-align: left;
+	font-size: 0.7em;
+}
 .divider {
 	border: 0;
 	border: 1px solid var(--buttonColor);
@@ -186,7 +190,6 @@ input[type="text"] {
 .btn {
 	font-family: "Source Sans Pro", sans-serif !important;
 	transition: all 0.2s c cubic-bezier(0.175, 0.885, 0.32, 1.275);
-	/* box-shadow: 0em 0em 2px 1px rgba(0, 0, 0, 0.5); */
 	box-sizing: border-box;
 	text-align: center;
 	padding: 0.5em;
@@ -203,11 +206,9 @@ input[type="text"] {
 }
 .btn:hover:active {
 	background-color: #9e9e9e;
-	/* box-shadow: 0em 0.1em 0.2em 0.1em rgba(0, 0, 0, 0.5); */
 }
 .btn:hover {
 	background-color: #e0e0e0;
-	/* box-shadow: 0em 0em 1px 2px rgba(0, 0, 0, 0.5); */
 }
 .btn-select-line {
 	border-bottom: 4px solid #607d8b;

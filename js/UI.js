@@ -799,6 +799,15 @@ export class UI {
 		this.hideAllDialogs()
 		DomHelper.addClassToElement("selected", this.tracksButton)
 		this.tracksShown = true
+		//instrument of a track could theoretically change during the song.
+		document
+			.querySelectorAll(".instrumentName")
+			.forEach(
+				el =>
+					(el.innerHTML = this.player.getTrackCurrentInstrument(
+						el.id.split("instrumentName")[1]
+					))
+			)
 		this.showDiv(this.getTrackMenuDiv())
 	}
 
@@ -1008,7 +1017,7 @@ export class UI {
 		Object.keys(this.player.tracks).forEach(track => {
 			this.createTrackDiv(track)
 		})
-		// Pickr wants a querySelector not an element :/
+		// Pickr wants a querySelector not an element :-/
 		Object.keys(this.player.tracks).forEach(track => {
 			this.initColorPickers(track, "white")
 			this.initColorPickers(track, "black")
@@ -1127,6 +1136,7 @@ export class UI {
 			muteButton,
 			hideButton,
 			trackName,
+			instrumentName,
 			requireToPlayAlongButton
 
 		let trackDiv = DomHelper.createDivWithIdAndClass(
@@ -1140,6 +1150,23 @@ export class UI {
 			"trackName"
 		)
 		trackName.innerHTML = trackObj.name || "Track " + track
+
+		//Instrument
+		let currentInstrument = this.player.getTrackCurrentInstrument(
+			trackObj.index
+		)
+		instrumentName = DomHelper.createDivWithIdAndClass(
+			"instrumentName" + trackObj.index,
+			"instrumentName"
+		)
+		instrumentName.innerHTML = currentInstrument
+		window.setInterval(
+			() =>
+				(instrumentName.innerHTML = this.player.getTrackCurrentInstrument(
+					trackObj.index
+				)),
+			2000
+		)
 
 		let btnGrp = DomHelper.createButtonGroup(false)
 
@@ -1226,7 +1253,6 @@ export class UI {
 				}
 			}
 		)
-		let clearDiv = DomHelper.createElement("p", { clear: "both" })
 
 		let colorPickerWhite = DomHelper.createGlyphiconTextButton(
 			"whiteTrackDivColorPicker" + track,
@@ -1249,13 +1275,16 @@ export class UI {
 		DomHelper.appendChildren(btnGrp, [
 			hideButton,
 			muteButton,
+			DomHelper.getDivider(),
 			requireToPlayAlongButton,
+			DomHelper.getDivider(),
 			colorPickerWhite,
 			colorPickerBlack
 		])
 
 		DomHelper.appendChildren(trackDiv, [
 			trackName,
+			instrumentName,
 			DomHelper.getDivider(),
 			volumeSlider.container,
 			btnGrp
