@@ -1,4 +1,5 @@
 import { DomHelper } from "./DomHelper.js"
+import { replaceAllString } from "./Util.js"
 
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
@@ -552,11 +553,11 @@ export class UI {
 	}
 	createSongDiv(song) {
 		let wrapper = DomHelper.createDivWithIdAndClass(
-			"songWrap" + song.fileName.replaceAll(" ", "_"),
+			"songWrap" + replaceAllString(song.fileName, " ", "_"),
 			"innerMenuContDiv"
 		)
 		song.div = DomHelper.createButton(
-			"song" + song.fileName.replaceAll(" ", "_"),
+			"song" + replaceAllString(song.fileName, " ", "_"),
 			() => this.player.setSong(song)
 		)
 		song.div.innerHTML = song.fileName

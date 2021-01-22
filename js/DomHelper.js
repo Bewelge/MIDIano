@@ -1,3 +1,5 @@
+import replaceAllString from "../Util.js"
+
 export class DomHelper {
 	static createCanvas(width, height, styles) {
 		return DomHelper.createElement("canvas", styles, {
@@ -145,7 +147,7 @@ export class DomHelper {
 		return DomHelper.createElement("input", styles, attributes)
 	}
 	static createCheckbox(text, onChange, value) {
-		let id = text.replaceAll(" ", "") + "checkbox"
+		let id = replaceAllString(text, " ", "") + "checkbox"
 		let cont = DomHelper.createDivWithIdAndClass(id, "checkboxCont")
 		let checkbox = DomHelper.createElementWithClass("checkboxInput", "input")
 		checkbox.setAttribute("type", "checkbox")

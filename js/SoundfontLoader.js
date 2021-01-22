@@ -1,3 +1,4 @@
+import replaceAllString from "../Util.js"
 export class SoundfontLoader {
 	constructor(audioCtx) {
 		this.buffers = {}
@@ -29,7 +30,7 @@ export class SoundfontLoader {
 				let scr = document.createElement("script")
 				scr.language = "javascript"
 				scr.type = "text/javascript"
-				let newData = data.replaceAll("Soundfont", soundfontName)
+				let newData = replaceAllString(data, "Soundfont", soundfontName)
 				scr.text = newData
 				document.body.appendChild(scr)
 			})
