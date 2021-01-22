@@ -1,4 +1,4 @@
-import replaceAllString from "./Util.js"
+import { replaceAllString } from "./Util.js"
 export class SoundfontLoader {
 	constructor(audioCtx) {
 		this.buffers = {}
