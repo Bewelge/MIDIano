@@ -1152,7 +1152,7 @@ export class UI {
 		trackName.innerHTML = trackObj.name || "Track " + track
 
 		//Instrument
-		let currentInstrument = this.player.getTrackCurrentInstrument(
+		let currentInstrument = this.player.getCurrentTrackInstrument(
 			trackObj.index
 		)
 		instrumentName = DomHelper.createDivWithIdAndClass(
@@ -1162,7 +1162,7 @@ export class UI {
 		instrumentName.innerHTML = currentInstrument
 		window.setInterval(
 			() =>
-				(instrumentName.innerHTML = this.player.getTrackCurrentInstrument(
+				(instrumentName.innerHTML = this.player.getCurrentTrackInstrument(
 					trackObj.index
 				)),
 			2000

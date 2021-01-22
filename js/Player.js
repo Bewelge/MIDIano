@@ -89,7 +89,7 @@ export class Player {
 			return this.channels[this.song.activeTracks[track].notes[0].channel]
 		}
 	}
-	getTrackCurrentInstrument(trackIndex) {
+	getCurrentTrackInstrument(trackIndex) {
 		let i = 0
 		let noteSeq = this.currentSong.getNoteSequence()
 		let nextNote = noteSeq[i]
@@ -240,19 +240,19 @@ export class Player {
 		return val
 	}
 	play() {
-		if (this.scrolling != 0) {
-		}
 		let currentContextTime = this.audioPlayer.getContextTime()
 
 		let delta = (currentContextTime - this.lastTime) * this.playbackSpeed
+
 		//cap max framerate.
 		if (delta < 0.0069) {
 			window.requestAnimationFrame(this.play.bind(this))
 			return
 		}
+
 		let oldProgress = this.progress
 		this.lastTime = currentContextTime
-		if (!this.paused) {
+		if (!this.paused && this.scrolling == 0) {
 			this.progress += delta
 		} else {
 			window.setTimeout(this.play.bind(this), 20)
@@ -290,25 +290,8 @@ export class Player {
 			}
 		}
 
-		// if (!this.paused) {
 		window.requestAnimationFrame(this.play.bind(this))
-		// }
 	}
-	// setChannelVolumes(currentTime) {
-	// 	let currentSecond = Math.floor(currentTime)
-	// 	for (let i = 0; i < currentSecond; i++) {
-	// 		if (!this.song.controlEvents.hasOwnProperty(i)) continue
-
-	// 		for (let c in this.song.controlEvents[i]) {
-	// 			let controlEvent = this.song.controlEvents[i][c]
-	// 			if (controlEvent.timestamp <= currentTime) {
-	// 				if (controlEvent.controllerType == 7) {
-	// 					this.channels[controlEvent.channel].volume = controlEvent.value
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 	isInputKeyPressed(noteNumber) {
 		if (
 			this.inputActiveNotes.hasOwnProperty(noteNumber) &&
@@ -408,7 +391,7 @@ export class Player {
 			console.log("NOTE ALREADY PLAING")
 			return
 		}
-		let audioNote = { wasUsed: false } //this.startNoteAndGetNodes(noteNumber)
+		let audioNote = { wasUsed: false }
 
 		this.inputActiveNotes[noteNumber] = audioNote
 	}
@@ -417,8 +400,6 @@ export class Player {
 			console.log("NOTE NOT PLAYING")
 			return
 		}
-		// this.inputActiveNotes[noteNumber].gainNode.gain.setTargetAtTime(0, 0, 0.05)
-		// this.inputActiveNotes[noteNumber].source.stop(0)
 		delete this.inputActiveNotes[noteNumber]
 	}
 }
