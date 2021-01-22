@@ -68,8 +68,8 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
 	ctx.closePath()
 }
 
-function replaceAllString(text, this, withThat) {
-	return text.replace(new RegExp(this, "g"), withThat)
+function replaceAllString(text, replaceThis, withThat) {
+	return text.replace(new RegExp(replaceThis, "g"), withThat)
 }
 
 export { formatTime, isBlack, sum, drawRoundRect, replaceAllString }
