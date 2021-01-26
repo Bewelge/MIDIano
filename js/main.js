@@ -9,6 +9,11 @@ import { InputListeners } from "./InputListeners.js"
  * - channel menu
  * - accessability
  * - load from URL
+ * - fix track ui
+ * - added song info to "loaded songs"
+ * - fix the minimize button
+ * - add more starting colors
+ * -
  *
  * - implement configurable ADSR + maybe custom wave functions
  * - make instrument choosable for tracks
@@ -18,7 +23,8 @@ import { InputListeners } from "./InputListeners.js"
  * - settings for playalong:
  * 		- accuracy needed
  * 		- different modes
- * 		-
+ *
+ *
  * - click piano = hit key
  * - render note keys on each note/ on piano
  * - Metronome
