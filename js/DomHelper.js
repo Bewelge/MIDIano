@@ -27,7 +27,7 @@ export class DomHelper {
 	static removeClass(className, element) {
 		element.className = element.className.replace(className, "")
 	}
-	static createSliderWithLabel(id, label, val, min, max, onChange) {
+	static createSliderWithLabel(id, label, val, min, max, step, onChange) {
 		let cont = DomHelper.createElement(
 			"div",
 			{},
@@ -38,12 +38,20 @@ export class DomHelper {
 			{},
 			{ id: id + "label", className: "sliderLabel", innerHTML: label }
 		)
-		let slider = DomHelper.createSlider(id, val, min, max, onChange)
+		let slider = DomHelper.createSlider(id, val, min, max, step, onChange)
 		cont.appendChild(labelDiv)
 		cont.appendChild(slider)
 		return { slider: slider, container: cont }
 	}
-	static createSliderWithLabelAndField(id, label, val, min, max, onChange) {
+	static createSliderWithLabelAndField(
+		id,
+		label,
+		val,
+		min,
+		max,
+		step,
+		onChange
+	) {
 		let displayDiv = DomHelper.createElement(
 			"div",
 			{},
@@ -65,7 +73,14 @@ export class DomHelper {
 			{},
 			{ id: id + "label", className: "sliderLabel", innerHTML: label }
 		)
-		let slider = DomHelper.createSlider(id, val, min, max, onChangeInternal)
+		let slider = DomHelper.createSlider(
+			id,
+			val,
+			min,
+			max,
+			step,
+			onChangeInternal
+		)
 		cont.appendChild(labelDiv)
 		cont.appendChild(displayDiv)
 		cont.appendChild(slider)
@@ -126,7 +141,7 @@ export class DomHelper {
 			{ className: "glyphicon glyphicon-" + name }
 		)
 	}
-	static createSlider(id, val, min, max, onChange) {
+	static createSlider(id, val, min, max, step, onChange) {
 		return DomHelper.createElement(
 			"input",
 			{},
@@ -136,7 +151,8 @@ export class DomHelper {
 				type: "range",
 				value: val,
 				min: min,
-				max: max
+				max: max,
+				step: step
 			}
 		)
 	}
@@ -154,17 +170,23 @@ export class DomHelper {
 		checkbox.checked = value
 		checkbox.setAttribute("name", id)
 		checkbox.onchange = onChange
+
 		let label = DomHelper.createElementWithClass(
 			"checkboxlabel",
-			"div",
+			"label",
 			{},
-			{ innerHTML: text }
+			{ innerHTML: text, for: id }
 		)
 
 		label.setAttribute("for", id)
 
 		cont.appendChild(checkbox)
 		cont.appendChild(label)
+		cont.addEventListener("click", ev => {
+			if (ev.target != checkbox) {
+				checkbox.click()
+			}
+		})
 		return cont
 	}
 	static addClassToElements(className, elements) {

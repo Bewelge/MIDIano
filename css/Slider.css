@@ -1,7 +1,6 @@
 .sliderContainer {
 	/* margin-top: 5px;
-	margin-bottom: 5px;
-	position: relative; */
+	margin-bottom: 5px; */
 }
 .inputSelect {
 	float: right;
@@ -10,20 +9,74 @@
 .inputSelectLabel,
 .sliderLabel,
 .checkboxlabel {
-	color: #424242a3;
+	display: inline-block;
+	color: var(--fontColor);
 	z-index: 15;
 	pointer-events: none;
 	font-size: 0.75rem;
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
+.checkboxlabel {
+	color: var(--fontWeakenedColor);
+	transition: all 0.15s ease-out;
+}
+.checkboxInput:checked + label {
+	color: var(--fontColor);
 }
 
 .checkboxInput {
 	float: right;
+	width: 1.5em;
+	height: 1.5em;
+	margin-top: 0em;
+	border-radius: 0;
+	border: 1px solid var(--borderColor);
+
+	background-color: none;
+	box-shadow: inset 0em 0em 0em 1em var(--inputBgColor),
+		inset 0em 0em 0em 0.75em var(--inputFontColor);
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+
+	transition: all 0.15s ease-out;
 }
+
+.checkboxInput:checked {
+	box-shadow: inset 0em 0em 0em 0.3em var(--inputBgColor),
+		inset 0em 0em 0em 0.75em var(--inputFontColor);
+}
+.checkboxInput:active {
+	border: 1px solid var(--borderColor);
+}
+.checkboxInput:focus {
+	border: 1px solid var(--borderColor);
+	box-shadow: none;
+	outline: none;
+}
+
+input[type="text"] {
+	outline: none;
+	box-sizing: border-box;
+	margin-left: 1px;
+	margin-top: 1px;
+	border-width: 0px;
+	border-radius: 0em;
+	margin-top: 3px;
+	margin-bottom: 3px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	background-color: var(--inputBgColor);
+	color: var(--inputFontColor);
+}
+
 .sliderVal {
 	margin-top: 5px;
 	margin-right: 5px;
 	float: right;
-	color: #424242a3;
+	color: var(--buttonFontColor);
 	z-index: 15;
 	pointer-events: none;
 	font-size: 0.75rem;
@@ -35,6 +88,7 @@ input[type="range"] {
 	padding-left: 1px;
 	padding-right: 1px;
 	transition: all 1s ease-out;
+	background-color: rgba(0, 0, 0, 0);
 }
 input[type="range"]:focus {
 	outline: none;
@@ -43,42 +97,42 @@ input[type="range"]::-webkit-slider-runnable-track {
 	width: 100%;
 	height: 16px;
 	cursor: pointer;
-	background: #fafafa;
+	background: var(--inputBgColor);
 	border-radius: 8px;
-	border: 1px solid #e8eaed;
+	border: 1px solid var(--borderColor);
 	padding-left: 1px;
 	padding-right: 1px;
 }
 input[type="range"]::-webkit-slider-thumb {
-	border: 0px solid #fafafa;
+	border: 0px solid var(--borderColor);
 	height: 12px;
 	width: 12px;
 	border-radius: 6px;
-	background: var(--buttonColor);
+	background: var(--buttonFontColor);
 	cursor: pointer;
 	-webkit-appearance: none;
 	margin-top: 1px;
 	transition: all 0.2s ease-out;
 }
 input[type="range"]:focus::-webkit-slider-runnable-track {
-	background: #fafafa;
+	background: var(--inputBgColor);
 }
 input[type="range"]::-moz-range-track {
 	width: 100%;
 	height: 16px;
 	cursor: pointer;
-	background: #fafafa;
+	background: var(--inputBgColor);
 	border-radius: 8px;
-	border: 1px solid #e8eaed;
+	border: 1px solid var(--borderColor);
 	padding-left: 2px;
 	padding-right: 2px;
 }
 input[type="range"]::-moz-range-thumb {
-	border: 0px solid #fafafa;
+	border: 0px solid var(--borderColor);
 	height: 12px;
 	width: 12px;
 	border-radius: 6px;
-	background: var(--buttonColor);
+	background: var(--buttonFontColor);
 	cursor: pointer;
 	margin-top: 1px;
 	transition: all 1s ease-out;
@@ -94,27 +148,27 @@ input[type="range"]::-ms-track {
 	padding-right: 1px;
 }
 input[type="range"]::-ms-fill-lower {
-	background: #fafafa;
-	border: 1px solid #e8eaed;
+	background: var(--inputBgColor);
+	border: 1px solid var(--borderColor);
 	border-radius: 16px;
 }
 input[type="range"]::-ms-fill-upper {
-	background: #fafafa;
-	border: 1px solid #e8eaed;
+	background: var(--inputBgColor);
+	border: 1px solid var(--borderColor);
 	border-radius: 16px;
 }
 input[type="range"]::-ms-thumb {
-	border: 0px solid #fafafa;
+	border: 0px solid var(--borderColor);
 	height: 12px;
 	width: 12px;
 	border-radius: 6px;
-	background: var(--buttonColor);
+	background: var(--buttonFontColor);
 	cursor: pointer;
 	margin-top: 1px;
 }
 input[type="range"]:focus::-ms-fill-lower {
-	background: #fafafa;
+	background: var(--inputBgColor);
 }
 input[type="range"]:focus::-ms-fill-upper {
-	background: #fafafa;
+	background: var(--inputBgColor);
 }
