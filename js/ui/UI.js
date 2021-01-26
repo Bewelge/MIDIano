@@ -33,11 +33,7 @@ export class UI {
 	}
 
 	fireInitialListeners() {
-		//Todo: or preload glyphs somehow. . .
-		window.setTimeout(
-			() => this.onMenuHeightChange(this.getNavBar().clientHeight),
-			500
-		)
+		this.onMenuHeightChange(this.getNavBar().clientHeight)
 	}
 	createControlMenu() {
 		let topGroupsContainer = DomHelper.createDivWithClass("container")
@@ -138,7 +134,7 @@ export class UI {
 			this.minimizeButton.style.fontSize = "0.5em"
 		}
 		let navbarHeight = this.navMinimized ? 0 : this.getNavBar().clientHeight
-		this.minimizeButton.style.top = navbarHeight + 20 + "px"
+		this.minimizeButton.style.top = navbarHeight + 23 + "px"
 		return this.minimizeButton
 	}
 
