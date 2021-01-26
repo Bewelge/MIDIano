@@ -69,7 +69,6 @@ canvas {
 	background-color: var(--inputBgColor);
 	box-sizing: border-box;
 	left: 0px;
-	top: 150px;
 	position: absolute;
 	border-bottom: 4px solid var(--borderColor);
 	float: left;
