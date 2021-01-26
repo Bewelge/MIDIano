@@ -3,13 +3,15 @@ import { Song } from "./Song.js"
 import { CONST } from "./CONST.js"
 import { MidiInputHandler } from "./MidiInputHandler.js"
 import { AudioPlayer } from "./AudioPlayer.js"
+import { getLoader } from "./ui/Loader.js"
+import { getSetting } from "./settings/Settings.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {
 	constructor() {
 		this.sources = []
 		this.tracks = {}
-		this.audioPlayer = new AudioPlayer(this.tracks, this.settings)
+		this.audioPlayer = new AudioPlayer(this.tracks)
 
 		this.midiInputHandler = new MidiInputHandler()
 		this.midiInputHandler.setNoteOnCallback(this.addInputNoteOn.bind(this))
@@ -24,17 +26,12 @@ export class Player {
 		this.muted = false
 		this.volume = 100
 		this.mutedAtVolume = 100
+		this.soundfontName = getSetting("soundfontName")
 
 		this.newSongCallbacks = []
 		this.inputActiveNotes = {}
-		this.onloadStartCallbacks = []
-		this.onloadStopCallbacks = []
 
 		this.playbackSpeed = 1
-	}
-	updateSettings(settings) {
-		this.settings = settings
-		this.audioPlayer.settings = this.settings
 	}
 	getState() {
 		let time = this.getTime()
@@ -51,18 +48,18 @@ export class Player {
 	addNewSongCallback(callback) {
 		this.newSongCallbacks.push(callback)
 	}
-	switchSoundfont(soundfontName, setLoadMessage) {
+	switchSoundfont(soundfontName) {
 		this.wasPaused = this.paused
 		this.paused = true
-		this.onloadStartCallbacks.forEach(callback => callback())
+		getLoader().startLoad()
 		let nowTime = window.performance.now()
 		this.soundfontName = soundfontName
 		this.audioPlayer
-			.switchSoundfont(soundfontName, this.currentSong, setLoadMessage)
+			.switchSoundfont(soundfontName, this.currentSong)
 			.then(resolve => {
 				window.setTimeout(() => {
 					this.paused = this.wasPaused
-					this.onloadStopCallbacks.forEach(callback => callback())
+					getLoader().stopLoad()
 				}, Math.max(0, 500 - (window.performance.now() - nowTime)))
 			})
 	}
@@ -119,20 +116,19 @@ export class Player {
 		this.audioPlayer.tracks = this.tracks
 	}
 
-	async loadSong(theSong, fileName, setLoadMessage) {
-		setLoadMessage("Loading " + fileName + ".")
+	async loadSong(theSong, fileName) {
+		getLoader().startLoad()
+		getLoader().setLoadMessage("Loading " + fileName + ".")
 		if (this.audioPlayer.isRunning()) {
 			this.audioPlayer.suspend()
 		}
 
-		this.onloadStartCallbacks.forEach(callback => callback())
-
 		this.loading = true
 
-		setLoadMessage("Parsing Midi File.")
+		getLoader().setLoadMessage("Parsing Midi File.")
 		let midiFile = await MidiLoader.loadFile(theSong)
 		this.currentSong = new Song(midiFile, fileName)
-		setLoadMessage("Loading Instruments")
+		getLoader().setLoadMessage("Loading Instruments")
 
 		this.setSong(this.currentSong)
 		this.loadedSongs.add(this.currentSong)
@@ -141,11 +137,8 @@ export class Player {
 
 		this.setupTracks()
 		this.newSongCallbacks.forEach(callback => callback())
-		setLoadMessage("Creating Buffers")
-		let onloadStopCallbacks = this.onloadStopCallbacks
-		return this.audioPlayer
-			.loadBuffers()
-			.then(v => onloadStopCallbacks.forEach(callback => callback()))
+		getLoader().setLoadMessage("Creating Buffers")
+		return this.audioPlayer.loadBuffers().then(v => getLoader().stopLoad())
 	}
 
 	setSong(song) {
@@ -256,6 +249,12 @@ export class Player {
 			this.progress += delta
 		} else {
 			window.setTimeout(this.play.bind(this), 20)
+			return
+		}
+
+		let soundfontName = getSetting("soundfontName")
+		if (soundfontName != this.soundfontName) {
+			this.switchSoundfont(soundfontName)
 			return
 		}
 

@@ -1,15 +1,17 @@
 import { SoundfontLoader } from "./SoundfontLoader.js"
 import { CONST } from "./CONST.js"
+import { getLoader } from "./ui/Loader.js"
+import { getSetting } from "./settings/Settings.js"
 
 export class AudioPlayer {
-	constructor(tracks, settings) {
+	constructor(tracks) {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext
+
 		this.context = new AudioContext()
 		this.buffers = {}
 		this.sources = []
 		this.tracks = tracks
 		this.soundfontName = "MusyngKite"
-		this.settings = settings
 	}
 	getContextTime() {
 		return this.context.currentTime
@@ -76,7 +78,7 @@ export class AudioPlayer {
 			timeConst
 		)
 
-		if (!isSustained || !this.settings.sustainEnabled) {
+		if (!isSustained || !getSetting("sustainEnabled")) {
 			//Sustain
 			gainNode.gain.linearRampToValueAtTime(clampedGain, endTime, timeConst)
 			//Release
@@ -111,11 +113,11 @@ export class AudioPlayer {
 
 		this.sources.push(source)
 	}
-	async switchSoundfont(soundfontName, currentSong, setLoadMessage) {
+	async switchSoundfont(soundfontName, currentSong) {
 		this.soundfontName = soundfontName
-		setLoadMessage("Loading Instruments")
+		getLoader().setLoadMessage("Loading Instruments")
 		await this.loadInstrumentsForSong(currentSong)
-		setLoadMessage("Loading Buffers")
+		getLoader().setLoadMessage("Loading Buffers")
 		return await this.loadBuffers()
 	}
 	getBufferForNote(noteNumber, noteInstrument) {

@@ -8,6 +8,7 @@ import { RenderDimensions } from "./RenderDimensions.js"
 import { BackgroundRender } from "./BackgroundRender.js"
 import { MeasureLinesRender } from "./MeasureLinesRender.js"
 import { ProgressBarRender } from "./ProgressBarRender.js"
+import { getSetting } from "../settings/Settings.js"
 
 const DEBUG = true
 
@@ -86,19 +87,19 @@ export class Render {
 		let renderInfos = []
 		if (!playerState.loading && playerState.song) {
 			this.progressBarRender.render(playerState)
-			this.measureLinesRender.render(playerState, this.settings)
-			this.sustainRender.render(playerState, this.settings)
+			this.measureLinesRender.render(playerState)
+			this.sustainRender.render(playerState)
 
-			renderInfos = this.noteRender.render(playerState, this.settings)
+			renderInfos = this.noteRender.render(playerState)
 		}
 
 		this.overlayRender.render()
 
-		if (this.settings.showNoteDebugInfo) {
+		if (getSetting("showNoteDebugInfo")) {
 			this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
 		}
 
-		if (this.settings.showBPM) {
+		if (getSetting("showBPM")) {
 			this.drawBPM(playerState)
 		}
 	}
@@ -196,9 +197,6 @@ export class Render {
 		return !tracks[note.track] || !tracks[note.track].draw
 	}
 
-	updateSettings(settingsObj) {
-		this.settings = settingsObj
-	}
 	isOnMainCanvas(position) {
 		return (
 			position.x > this.menuHeight &&
@@ -213,7 +211,7 @@ export class Render {
 	}
 	getTimeFromHeight(height) {
 		return (
-			(height * this.renderDimensions.noteToHeightConst) /
+			(height * this.renderDimensions.getNoteToHeightConst()) /
 			(this.renderDimensions.windowHeight -
 				this.renderDimensions.whiteKeyHeight) /
 			1000

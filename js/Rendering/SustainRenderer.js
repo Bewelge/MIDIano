@@ -1,3 +1,5 @@
+import { getSetting } from "../settings/Settings.js"
+
 /**
  * Class to render the sustain events in the midi-song. Can fill the sustain periods or draw lines for the individual control-events.
  */
@@ -13,15 +15,14 @@ export class SustainRender {
 		this.sustainOffStrokeStyle = "rgba(155,55,55,0.6)"
 		this.sustainOnOffFont = "12px Arial black"
 	}
-	render(playerState, settings) {
-		this.settings = settings
+	render(playerState) {
 		let sustainsBySecond = playerState.song.sustainsBySecond
 		let time = playerState.time
 
-		if (this.settings.showSustainOnOffs) {
+		if (getSetting("showSustainOnOffs")) {
 			this.renderSustainOnOffs(time, sustainsBySecond)
 		}
-		if (this.settings.showSustainPeriods) {
+		if (getSetting("showSustainPeriods")) {
 			this.renderSustainPeriods(time, playerState.song.sustainPeriods)
 		}
 	}

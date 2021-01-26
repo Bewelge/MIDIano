@@ -1,3 +1,5 @@
+import { getSetting } from "../settings/Settings.js"
+
 /**
  * Particles handler
  */
@@ -8,14 +10,14 @@ export class ParticleRender {
 		this.particles = new Map()
 	}
 	createParticles(x, y, w, h, color) {
-		for (let i = 0; i < Math.random() * this.settings.particleAmount; i++) {
+		for (let i = 0; i < Math.random() * getSetting("particleAmount"); i++) {
 			let rndX = x + w * 0.5 + w * 0.5 * (Math.random() - Math.random()) // / 2 - (w / 2) * (Math.random() - Math.random())
 
-			let motX = (Math.random() - Math.random()) * this.settings.particleSpeed
-			let motY = -Math.random() * this.settings.particleSpeed
-			let radius = Math.random() * this.settings.particleSize + 0.5
+			let motX = (Math.random() - Math.random()) * getSetting("particleSpeed")
+			let motY = -Math.random() * getSetting("particleSpeed")
+			let radius = Math.random() * getSetting("particleSize") + 0.5
 			rndX -= radius / 2
-			let lifeTime = Math.random() * this.settings.particleLife + 2
+			let lifeTime = Math.random() * getSetting("particleLife") + 2
 			this.createParticle(rndX, y, motX, motY, radius, color, lifeTime)
 		}
 	}
@@ -56,18 +58,23 @@ export class ParticleRender {
 		//particle lifetime
 		particle[5]--
 	}
-	render(settings) {
-		this.settings = settings
+	render() {
 		this.updateParticles()
-		this.strokeStyle = "rgba(255,255,255,0.2)"
+		let stroke = getSetting("particleStroke")
 		this.ctx.globalAlpha = 0.5
-
+		if (stroke) {
+			this.ctx.strokeStyle = "rgba(255,255,255,0.8)"
+			this.ctx.lineWidth = 0.5
+		}
 		this.particles.forEach((particleArray, color) => {
 			let c = this.ctx
 			c.fillStyle = color
 			c.beginPath()
 			particleArray.forEach(particle => this.renderParticle(particle))
 			c.fill()
+			if (stroke) {
+				c.stroke()
+			}
 			c.closePath()
 		})
 		this.ctx.globalAlpha = 0.5

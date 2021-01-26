@@ -1,33 +1,12 @@
-import { DomHelper } from "./DomHelper.js"
-import { replaceAllString } from "./Util.js"
-
+import { DomHelper } from "../DomHelper.js"
+import { replaceAllString } from "../Util.js"
+import { getSettingsDiv } from "../settings/Settings.js"
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
  * Callback-bindings for some events are created in  the constructor
  */
 export class UI {
 	constructor(player, render, isMobile) {
-		this.settings = {
-			soundfontName: "MusyngKite",
-			sustainEnabled: true,
-			showSustainOnOffs: true,
-			showSustainPeriods: true,
-			showSustainedNotes: true,
-			sustainedNotesOpacity: 50,
-			showBPM: true,
-			showParticles: true,
-			particleAmount: 40,
-			particleSize: 2,
-			particleLife: 12,
-			particleSpeed: 4,
-			showHitKeys: true,
-			showPianoKeys: true,
-			strokeNotes: true,
-			roundedNotes: true,
-			fadeInNotes: true,
-			renderOffset: 0,
-			showNoteDebugInfo: false
-		}
 		this.midiInputHandler = player.midiInputHandler
 		this.player = player
 
@@ -37,11 +16,6 @@ export class UI {
 
 		//add callbacks to the player
 		player.newSongCallbacks.push(this.newSongCallback.bind(this))
-		player.onloadStartCallbacks.push(this.startLoad.bind(this))
-		player.onloadStopCallbacks.push(this.stopLoad.bind(this))
-
-		render.updateSettings(this.settings)
-		player.updateSettings(this.settings)
 
 		document.body.addEventListener("mousemove", this.mouseMoved.bind(this))
 
@@ -54,7 +28,7 @@ export class UI {
 			.forEach(
 				el =>
 					(el.style.height =
-						"calc(100% - " + (this.getNavBar().clientHeight + 25) + "px)")
+						"calc(100% - " + (this.getNavBar().clientHeight + 24) + "px)")
 			)
 	}
 
@@ -79,6 +53,7 @@ export class UI {
 			fileGrp,
 			songSpeedGrp,
 			songControlGrp,
+			volumeGrp,
 			trackGrp
 		])
 
@@ -86,21 +61,32 @@ export class UI {
 		let middleTop = DomHelper.createElementWithClass("topContainer")
 		let rightTop = DomHelper.createElementWithClass("topContainer")
 
-		DomHelper.appendChildren(leftTop, [fileGrp, songSpeedGrp])
+		DomHelper.appendChildren(leftTop, [fileGrp, trackGrp])
 		DomHelper.appendChildren(middleTop, [songControlGrp])
-		DomHelper.appendChildren(rightTop, [volumeGrp, trackGrp, settingsGrpRight])
+		DomHelper.appendChildren(rightTop, [
+			songSpeedGrp,
+			volumeGrp,
+			settingsGrpRight
+		])
 
 		DomHelper.appendChildren(topGroupsContainer, [leftTop, middleTop, rightTop])
+		this.getNavBar().appendChild(topGroupsContainer)
 
 		let minimizeButton = this.getMinimizeButton()
 		let zoomDiv = this.getZoomDiv()
 
-		document.body.appendChild(minimizeButton)
-		this.getNavBar().appendChild(topGroupsContainer)
+		let innerMenuDivsContainer = DomHelper.createElementWithClass(
+			"innerMenuDivsContainer"
+		)
+		DomHelper.appendChildren(innerMenuDivsContainer, [
+			this.getTrackMenuDiv(),
+			this.getLoadedSongsDiv(),
+			this.getSettingsDiv()
+		])
 
-		this.getTrackMenuDiv()
-		this.getLoadedSongsDiv()
-		this.getSettingsDiv()
+		document.body.appendChild(minimizeButton)
+		document.body.appendChild(this.getNavBar())
+		document.body.appendChild(innerMenuDivsContainer)
 
 		this.createFileDragArea()
 	}
@@ -221,8 +207,6 @@ export class UI {
 					className: "navbar navbar-wrapper"
 				}
 			)
-
-			document.body.appendChild(this.navBar)
 		}
 		return this.navBar
 	}
@@ -243,12 +227,12 @@ export class UI {
 		return this.settingsButton
 	}
 	hideDiv(div) {
-		div.style.visibility = "hidden"
-		div.style.opacity = "0"
+		div.classList.add("hidden")
+		div.classList.remove("unhidden")
 	}
 	showDiv(div) {
-		div.style.visibility = "visible"
-		div.style.opacity = "1"
+		div.classList.remove("hidden")
+		div.classList.add("unhidden")
 	}
 	hideSettings() {
 		DomHelper.removeClass("selected", this.getSettingsButton())
@@ -268,215 +252,12 @@ export class UI {
 				"innerMenuDiv"
 			)
 			this.hideDiv(this.settingsDiv)
-			this.getSettingsContent().forEach(element =>
-				this.settingsDiv.appendChild(element)
-			)
-			document.body.appendChild(this.settingsDiv)
+			this.settingsDiv.appendChild(this.getSettingsContent())
 		}
 		return this.settingsDiv
 	}
 	getSettingsContent() {
-		let settingsDivs = []
-
-		let loadMessage = this.setLoadMessage.bind(this)
-		let soundfontSelect = DomHelper.createInputSelect(
-			"Soundfont",
-			["MusyngKite", "FluidR3_GM", "FatBoy"],
-			function (newVal) {
-				this.player.switchSoundfont(newVal, loadMessage)
-			}.bind(this)
-		)
-		settingsDivs.push(soundfontSelect)
-
-		let enableSustainCheckbox = DomHelper.createCheckbox(
-			"Enable Sustain",
-			ev => {
-				this.settings.sustainEnabled = ev.target.checked
-				if (!this.settings.sustainEnabled) {
-					//TODO
-					//if sustain gets disabled in the audio, lets also turn off all rendering of sustains
-					// this.settings.showSustainOnOffs = false
-					// this.settings.showSustainPeriods = false
-					// this.settings.showSustainedNotes = false
-				}
-			},
-			this.settings.sustainEnabled
-		)
-		settingsDivs.push(enableSustainCheckbox)
-
-		let drawSustainOnOffsCheckbox = DomHelper.createCheckbox(
-			"Draw Sustain On/Off Events",
-			ev => {
-				this.settings.showSustainOnOffs = ev.target.checked
-			},
-			this.settings.showSustainOnOffs
-		)
-		settingsDivs.push(drawSustainOnOffsCheckbox)
-
-		let drawSustainPeriodsCheckbox = DomHelper.createCheckbox(
-			"Draw Sustain Periods",
-			ev => {
-				this.settings.showSustainPeriods = ev.target.checked
-			},
-			this.settings.showSustainPeriods
-		)
-		settingsDivs.push(drawSustainPeriodsCheckbox)
-
-		let drawSustainedNotesCheckbox = DomHelper.createCheckbox(
-			"Draw Sustained Notes",
-			ev => {
-				this.settings.showSustainedNotes = ev.target.checked
-			},
-			this.settings.showSustainedNotes
-		)
-		settingsDivs.push(drawSustainedNotesCheckbox)
-
-		let sustainedNotesOpacitySlider = DomHelper.createSliderWithLabelAndField(
-			"sustainedNotesOpacitySlider",
-			"Sustained Notes Opacity (%)",
-			this.settings.sustainedNotesOpacity,
-			0,
-			100,
-			value => {
-				this.settings.sustainedNotesOpacity = value
-			}
-		)
-		settingsDivs.push(sustainedNotesOpacitySlider.container)
-
-		let showBPMCheckbox = DomHelper.createCheckbox(
-			"Show BPM",
-			ev => {
-				this.settings.showBPM = ev.target.checked
-			},
-			this.settings.showBPM
-		)
-		settingsDivs.push(showBPMCheckbox)
-
-		let showParticlesCheckbox = DomHelper.createCheckbox(
-			"Show Particles",
-			ev => {
-				this.settings.showParticles = ev.target.checked
-			},
-			this.settings.showParticles
-		)
-		settingsDivs.push(showParticlesCheckbox)
-
-		let particleAmountSlider = DomHelper.createSliderWithLabelAndField(
-			"particleAmountSlider",
-			"Particle Amount",
-			this.settings.particleAmount,
-			0,
-			200,
-			value => {
-				this.settings.particleAmount = value
-			}
-		)
-		settingsDivs.push(particleAmountSlider.container)
-		let particleSizeSlider = DomHelper.createSliderWithLabelAndField(
-			"particleSizeSlider",
-			"Particle Size",
-			this.settings.particleSize,
-			0,
-			10,
-			value => {
-				this.settings.particleSize = value
-			}
-		)
-		settingsDivs.push(particleSizeSlider.container)
-
-		let particleSpeedSlider = DomHelper.createSliderWithLabelAndField(
-			"particleSpeedSlider",
-			"Particle Speed",
-			this.settings.particleSpeed,
-			1,
-			15,
-			value => {
-				this.settings.particleSpeed = value
-			}
-		)
-		settingsDivs.push(particleSpeedSlider.container)
-
-		let particleLifeSlider = DomHelper.createSliderWithLabelAndField(
-			"particleDurationSlider",
-			"Particle Duration",
-			this.settings.particleLife,
-			1,
-			30,
-			value => {
-				this.settings.particleLife = value
-			}
-		)
-		settingsDivs.push(particleLifeSlider.container)
-
-		let showHitKeysCheckbox = DomHelper.createCheckbox(
-			"Hit Key Effect",
-			ev => {
-				this.settings.showHitKeys = ev.target.checked
-			},
-			this.settings.showHitKeys
-		)
-		settingsDivs.push(showHitKeysCheckbox)
-
-		let strokeNotesCheckbox = DomHelper.createCheckbox(
-			"Stroke Notes",
-			ev => {
-				this.settings.strokeNotes = ev.target.checked
-			},
-			this.settings.strokeNotes
-		)
-		settingsDivs.push(strokeNotesCheckbox)
-
-		let roundedNotesCheckbox = DomHelper.createCheckbox(
-			"Rounded Corners Notes",
-			ev => {
-				this.settings.roundedNotes = ev.target.checked
-			},
-			this.settings.roundedNotes
-		)
-		settingsDivs.push(roundedNotesCheckbox)
-
-		let fadeInNotesCheckbox = DomHelper.createCheckbox(
-			"Fade in Notes",
-			ev => {
-				this.settings.fadeInNotes = ev.target.checked
-			},
-			this.settings.fadeInNotes
-		)
-		settingsDivs.push(fadeInNotesCheckbox)
-
-		let showPianoKeysCheckbox = DomHelper.createCheckbox(
-			"Show Notes on Piano",
-			ev => {
-				this.settings.showPianoKeys = ev.target.checked
-			},
-			this.settings.showPianoKeys
-		)
-		settingsDivs.push(showPianoKeysCheckbox)
-
-		let renderOffsetSlider = DomHelper.createSliderWithLabelAndField(
-			"renderOffsetSlider",
-			"Render Offset (ms)",
-			this.settings.renderOffset,
-			-250,
-			250,
-			value => {
-				this.settings.renderOffset = value
-			}
-		)
-		settingsDivs.push(renderOffsetSlider.container)
-
-		let showNoteDebugInfo = DomHelper.createCheckbox(
-			"Show Note Debug Info",
-			ev => {
-				this.settings.showNoteDebugInfo = ev.target.checked
-			},
-			this.settings.showNoteDebugInfo
-		)
-		settingsDivs.push(showNoteDebugInfo)
-
-		settingsDivs.forEach(div => div.classList.add("innerMenuContDiv"))
-
-		return settingsDivs
+		return getSettingsDiv()
 	}
 	getFullscreenButton() {
 		if (!this.fullscreenButton) {
@@ -542,7 +323,6 @@ export class UI {
 		if (!this.loadedSongsDiv) {
 			this.loadedSongsDiv = DomHelper.createDivWithClass("innerMenuDiv")
 			this.hideDiv(this.loadedSongsDiv)
-			document.body.appendChild(this.loadedSongsDiv)
 		}
 		this.player.loadedSongs.forEach(song => {
 			if (!song.div) {
@@ -653,58 +433,11 @@ export class UI {
 		let reader = new FileReader()
 		let fileName = file.name
 		reader.onload = function (theFile) {
-			this.player.loadSong(
-				reader.result,
-				fileName,
-				this.setLoadMessage.bind(this)
-			)
+			this.player.loadSong(reader.result, fileName)
 		}.bind(this)
 		reader.readAsDataURL(file)
 	}
-	startLoad() {
-		this.getLoadingDiv().style.display = "block"
-		this.getLoadingText().innerHTML = "Loading"
-		this.loading = true
-		this.loadAnimation()
-	}
-	stopLoad() {
-		this.getLoadingDiv().style.display = "none"
-		this.loading = false
-	}
-	loadAnimation() {
-		let currentText = this.getLoadingText().innerHTML
-		currentText = currentText.replace("...", " ..")
-		currentText = currentText.replace(" ..", ". .")
-		currentText = currentText.replace(". .", ".. ")
-		currentText = currentText.replace(".. ", "...")
-		this.getLoadingText().innerHTML = currentText
-		if (this.loading) {
-			window.requestAnimationFrame(this.loadAnimation.bind(this))
-		}
-	}
-	setLoadMessage(msg) {
-		this.getLoadingText().innerHTML = msg + "..."
-	}
-	getLoadingText() {
-		if (!this.loadingText) {
-			this.loadingText = DomHelper.createElement("p")
-			this.getLoadingDiv().appendChild(this.loadingText)
-		}
-		return this.loadingText
-	}
-	getLoadingDiv() {
-		if (!this.loadingDiv) {
-			this.loadingDiv = DomHelper.createDivWithIdAndClass(
-				"loadingDiv",
-				"fullscreen"
-			)
 
-			let spinner = DomHelper.createSpinner()
-			this.loadingDiv.appendChild(spinner)
-			document.body.appendChild(this.loadingDiv)
-		}
-		return this.loadingDiv
-	}
 	getSpeedDiv() {
 		if (!this.speedDiv) {
 			this.speedDiv = DomHelper.createDivWithClass(
@@ -804,7 +537,7 @@ export class UI {
 			.querySelectorAll(".instrumentName")
 			.forEach(
 				el =>
-					(el.innerHTML = this.player.getTrackCurrentInstrument(
+					(el.innerHTML = this.player.getCurrentTrackInstrument(
 						el.id.split("instrumentName")[1]
 					))
 			)
@@ -904,6 +637,7 @@ export class UI {
 				this.player.volume,
 				0,
 				100,
+				1,
 				ev => {
 					if (this.player.volume == 0 && parseInt(ev.target.value) != 0) {
 						DomHelper.replaceGlyph(
@@ -1125,7 +859,6 @@ export class UI {
 				"innerMenuDiv"
 			)
 			this.hideDiv(this.trackMenuDiv)
-			document.body.appendChild(this.trackMenuDiv)
 		}
 		return this.trackMenuDiv
 	}
@@ -1177,6 +910,7 @@ export class UI {
 			trackObj.volume,
 			0,
 			100,
+			1,
 			ev => {
 				if (trackObj.volume == 0 && parseInt(ev.target.value) > 0) {
 					DomHelper.replaceGlyph(muteButton, "volume-off", "volume-up")

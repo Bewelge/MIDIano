@@ -1,4 +1,5 @@
 import { isBlack } from "../Util.js"
+import { getSetting } from "../settings/Settings.js"
 
 /**
  * Class to handle all the calculation of dimensions of the Notes & Keys on Screen-
@@ -15,7 +16,6 @@ export class RenderDimensions {
 	resize() {
 		this.windowWidth = Math.max(1040, Math.floor(window.innerWidth))
 		this.windowHeight = Math.floor(window.innerHeight)
-		this.noteToHeightConst = this.windowHeight * 3
 
 		this.keyDimensions = {}
 		this.computeKeyDimensions()
@@ -82,7 +82,7 @@ export class RenderDimensions {
 	 */
 	getYForTime(time) {
 		const height = this.windowHeight - this.whiteKeyHeight
-		return height - (time / this.noteToHeightConst) * height
+		return height - (time / this.getNoteToHeightConst()) * height
 	}
 
 	/**
@@ -107,27 +107,42 @@ export class RenderDimensions {
 		const keyBlack = isBlack(noteNumber)
 		const x = this.getKeyX(noteNumber, keyBlack)
 
-		const h =
-			(dur / this.noteToHeightConst) * (this.windowHeight - this.whiteKeyHeight)
+		let h =
+			(dur / this.getNoteToHeightConst()) *
+			(this.windowHeight - this.whiteKeyHeight)
+
+		let hCorrection = 0
+		let minNoteHeight = getSetting("minNoteHeight")
+		if (h < minNoteHeight) {
+			hCorrection = minNoteHeight - h
+			h = minNoteHeight
+		}
 		const y = this.getYForTime(noteEndTime - currentTime)
 
 		let sustainY = 0
 		let sustainH = 0
 		if (sustainOffTime > noteEndTime) {
 			sustainH =
-				((sustainOffTime - noteStartTime) / this.noteToHeightConst) *
+				((sustainOffTime - noteStartTime) / this.getNoteToHeightConst()) *
 				(this.windowHeight - this.whiteKeyHeight)
 			sustainY = this.getYForTime(sustainOffTime - currentTime)
 		}
 
 		return {
 			x: x,
-			y: y + 1,
+			y: y - hCorrection + 1,
 			w: keyBlack ? this.blackKeyWidth : this.whiteKeyWidth,
 			h: h - 2,
 			sustainH: sustainH,
 			sustainY: sustainY,
 			black: keyBlack
 		}
+	}
+
+	getNoteToHeightConst() {
+		return getSetting("noteToHeightConst") * this.windowHeight
+	}
+	getSecondsDisplayed() {
+		return Math.ceil(this.getNoteToHeightConst() / 1000)
 	}
 }
