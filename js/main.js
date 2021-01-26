@@ -1,6 +1,6 @@
 import { Render } from "./Rendering/Render.js"
 import { Player } from "./Player.js"
-import { UI } from "./UI.js"
+import { UI } from "./ui/UI.js"
 import { InputListeners } from "./InputListeners.js"
 
 /**
