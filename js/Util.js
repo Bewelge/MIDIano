@@ -1,8 +1,13 @@
-function formatTime(seconds) {
+function formatTime(seconds, showMilis) {
 	seconds = Math.max(seconds, 0)
 	let date = new Date(seconds * 1000)
+	let timeStrLength = showMilis ? 11 : 8
 	try {
-		return date.toISOString().substr(11, 8)
+		let timeStr = date.toISOString().substr(11, timeStrLength)
+		if (timeStr.substr(0, 2) == "00") {
+			timeStr = timeStr.substr(3)
+		}
+		return timeStr
 	} catch (e) {
 		console.error(e)
 		//ignore this. only seems to happend when messing with breakpoints in devtools
@@ -72,4 +77,20 @@ function replaceAllString(text, replaceThis, withThat) {
 	return text.replace(new RegExp(replaceThis, "g"), withThat)
 }
 
-export { formatTime, isBlack, sum, drawRoundRect, replaceAllString }
+function groupArrayBy(arr, keyFunc) {
+	let keys = {}
+	arr.forEach(el => (keys[keyFunc(el)] = []))
+	Object.keys(keys).forEach(key => {
+		arr.forEach(el => (keyFunc(el) == key ? keys[keyFunc(el)].push(el) : null))
+	})
+	return keys
+}
+
+export {
+	formatTime,
+	isBlack,
+	sum,
+	drawRoundRect,
+	replaceAllString,
+	groupArrayBy
+}
