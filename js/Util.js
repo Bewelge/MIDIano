@@ -35,7 +35,7 @@ function sum(arr) {
  * @param {Number} height
  * @param {Number} radius
  */
-function drawRoundRect(ctx, x, y, width, height, radius) {
+function drawRoundRect(ctx, x, y, width, height, radius, isRounded) {
 	// radius = radius * 2 < ( Math.min( height, width ) ) ? radius : ( Math.min( height, width ) ) / 2
 	if (typeof radius === "undefined") {
 		radius = 0
@@ -60,16 +60,32 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
 	}
 
 	ctx.beginPath()
-	ctx.moveTo(x + radius.tl, y)
-	ctx.lineTo(x + width - radius.tr, y)
-	ctx.lineTo(x + width, y + radius.tr)
-	ctx.lineTo(x + width, y + height - radius.br)
-	ctx.lineTo(x + width - radius.br, y + height)
-	ctx.lineTo(x + radius.bl, y + height)
-	ctx.lineTo(x, y + height - radius.bl)
-	ctx.lineTo(x, y + radius.tl)
-	ctx.lineTo(x + radius.tl, y)
-
+	if (!isRounded) {
+		ctx.moveTo(x + radius.tl, y)
+		ctx.lineTo(x + width - radius.tr, y)
+		ctx.lineTo(x + width, y + radius.tr)
+		ctx.lineTo(x + width, y + height - radius.br)
+		ctx.lineTo(x + width - radius.br, y + height)
+		ctx.lineTo(x + radius.bl, y + height)
+		ctx.lineTo(x, y + height - radius.bl)
+		ctx.lineTo(x, y + radius.tl)
+		ctx.lineTo(x + radius.tl, y)
+	} else {
+		ctx.moveTo(x + radius.tl, y)
+		ctx.lineTo(x + width - radius.tr, y)
+		ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr)
+		ctx.lineTo(x + width, y + height - radius.br)
+		ctx.quadraticCurveTo(
+			x + width,
+			y + height,
+			x + width - radius.br,
+			y + height
+		)
+		ctx.lineTo(x + radius.bl, y + height)
+		ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl)
+		ctx.lineTo(x, y + radius.tl)
+		ctx.quadraticCurveTo(x, y, x + radius.tl, y)
+	}
 	ctx.closePath()
 }
 

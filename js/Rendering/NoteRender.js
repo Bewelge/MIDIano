@@ -228,10 +228,10 @@ export class NoteRender {
 		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
 		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
 		noteDoneRatio *= isOn
-		let rad = (noteDims.w / 10) * (1 - noteDoneRatio)
+		// let rad = (noteDims.w / 10) * (1 - noteDoneRatio)
+		let rad = (getSetting("noteBorderRadius") / 100) * noteDims.w
 		if (noteDims.h < rad * 2) {
-			let diff = rad - noteDims.h
-			rad = noteDims.h / 4
+			rad = noteDims.h / 2
 		}
 		let keyBlack = isBlack(note.noteNumber - 21)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
@@ -261,14 +261,15 @@ export class NoteRender {
 		}
 	}
 	strokeNote(renderInfo) {
-		if (getSetting("roundedNotes")) {
+		if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
 			drawRoundRect(
 				this.ctx,
 				renderInfo.x,
 				renderInfo.y,
 				renderInfo.w,
 				renderInfo.h,
-				renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4
+				renderInfo.rad + renderInfo.rad * renderInfo.noteDoneRatio * 4,
+				getSetting("roundedNotes")
 			)
 		} else {
 			this.ctx.beginPath()
@@ -291,14 +292,15 @@ export class NoteRender {
 		let h = renderInfos.h
 
 		if (renderInfos.sustainH && renderInfos.sustainY) {
-			if (getSetting("roundedNotes")) {
+			if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
 				drawRoundRect(
 					ctx,
 					x + w / 2,
 					renderInfos.sustainY,
 					w,
 					renderInfos.sustainH,
-					rad
+					rad,
+					getSetting("roundedNotes")
 				)
 			} else {
 				ctx.beginPath()
@@ -315,7 +317,7 @@ export class NoteRender {
 	drawNote(renderInfos) {
 		let ctx = this.ctx
 
-		let rad = renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 4
+		let rad = renderInfos.rad
 		let x = renderInfos.x
 		let y = renderInfos.y
 		let w = renderInfos.w
@@ -326,33 +328,10 @@ export class NoteRender {
 			fadeInAlpha = this.getAlphaFromY(y + h)
 		}
 
-		// if (
-		// 	renderInfos.sustainH &&
-		// 	renderInfos.sustainY &&
-		// 	getSetting("showSustainedNotes")
-		// ) {
-		// 	ctx.globalAlpha =
-		// 		(fadeInAlpha * getSetting("sustainedNotesOpacity")) / 100
-		// 	if (getSetting("roundedNotes")) {
-		// 		drawRoundRect(
-		// 			ctx,
-		// 			x,
-		// 			renderInfos.sustainY,
-		// 			w,
-		// 			renderInfos.sustainH,
-		// 			rad
-		// 		)
-		// 	} else {
-		// 		ctx.beginPath()
-		// 		ctx.rect(x, renderInfos.sustainY, w, renderInfos.sustainH)
-		// 		ctx.closePath()
-		// 	}
-		// 	ctx.fill()
-		// }
 		ctx.globalAlpha = fadeInAlpha
 
-		if (getSetting("roundedNotes")) {
-			drawRoundRect(ctx, x, y, w, h, rad)
+		if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
+			drawRoundRect(ctx, x, y, w, h, rad, getSetting("roundedNotes"))
 		} else {
 			ctx.beginPath()
 			ctx.rect(x, y, w, h)
@@ -384,14 +363,15 @@ export class NoteRender {
 			this.renderDimensions.whiteKeyWidth / 2,
 			1 + renderInfos.noteDoneRatio
 		)
-		if (getSetting("roundedNotes")) {
+		if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
 			drawRoundRect(
 				ctx,
 				renderInfos.x - wOffset / 2,
 				renderInfos.y,
 				renderInfos.w + wOffset,
 				renderInfos.h,
-				renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10
+				renderInfos.rad + renderInfos.rad * renderInfos.noteDoneRatio * 10,
+				getSetting("roundedNotes")
 			)
 		} else {
 			ctx.beginPath()

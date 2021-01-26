@@ -89,6 +89,16 @@ const defaultSettings = {
 				onChange: ev => setSetting("roundedNotes", ev.target.checked)
 			},
 			{
+				type: "slider",
+				id: "noteBorderRadius",
+				label: "Note border radius (%)",
+				value: 15,
+				min: 0,
+				max: 50,
+				step: 1,
+				onChange: value => setSetting("noteBorderRadius", value)
+			},
+			{
 				type: "checkbox",
 				id: "fadeInNotes",
 				label: "Enable fade in effect",
