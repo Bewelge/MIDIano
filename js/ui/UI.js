@@ -34,6 +34,10 @@ export class UI {
 
 	fireInitialListeners() {
 		this.onMenuHeightChange(this.getNavBar().clientHeight)
+		window.setTimeout(
+			() => this.onMenuHeightChange(this.getNavBar().clientHeight),
+			500
+		)
 	}
 	createControlMenu() {
 		let topGroupsContainer = DomHelper.createDivWithClass("container")
@@ -451,7 +455,7 @@ export class UI {
 				"speedUp",
 				"triangle-top",
 				ev => {
-					this.player.playbackSpeed += 0.05
+					this.player.increaseSpeed(0.05)
 					this.updateSpeed()
 				}
 			)
@@ -461,7 +465,7 @@ export class UI {
 	}
 	updateSpeed() {
 		this.getSpeedDisplayField().value =
-			Math.floor(this.player.playbackSpeed * 100) + "%"
+			Math.round(this.player.playbackSpeed * 100) + "%"
 	}
 	getSpeedDisplayField() {
 		if (!this.speedDisplay) {
@@ -492,7 +496,7 @@ export class UI {
 				"speedUp",
 				"triangle-bottom",
 				ev => {
-					this.player.playbackSpeed -= 0.05
+					this.player.increaseSpeed(-0.05)
 					this.updateSpeed()
 				}
 			)

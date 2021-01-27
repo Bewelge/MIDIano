@@ -102,11 +102,11 @@ export class InputListeners {
 					ui.clickPlay(e)
 				}
 			} else if (e.code == "ArrowUp") {
-				player.playbackSpeed += 0.05
+				player.increaseSpeed(0.05)
 				ui.getSpeedDisplayField().value =
 					Math.floor(player.playbackSpeed * 100) + "%"
 			} else if (e.code == "ArrowDown") {
-				player.playbackSpeed -= 0.05
+				player.increaseSpeed(-0.05)
 				ui.getSpeedDisplayField().value =
 					Math.floor(player.playbackSpeed * 100) + "%"
 			} else if (e.code == "ArrowLeft") {
