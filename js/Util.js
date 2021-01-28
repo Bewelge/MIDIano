@@ -13,6 +13,10 @@ function formatTime(seconds, showMilis) {
 		//ignore this. only seems to happend when messing with breakpoints in devtools
 	}
 }
+/**
+ *  Checks whether a note Number corresponds to a black piano key
+ * @param {Number} noteNumber (0-88)
+ */
 function isBlack(noteNumber) {
 	return (noteNumber + 11) % 12 == 0 ||
 		(noteNumber + 8) % 12 == 0 ||
