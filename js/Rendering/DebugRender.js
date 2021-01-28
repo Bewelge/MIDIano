@@ -1,8 +1,9 @@
 import { CONST } from "../CONST.js"
+import { getSetting } from "../settings/Settings.js"
 import { formatTime } from "../Util.js"
 
 /**
- * Class to render some debug-info when mouse is hovered over a note.
+ * Class to render some general debug-info or when mouse is hovered over a note.
  */
 export class DebugRender {
 	constructor(active, ctx, renderDimensions) {
@@ -10,26 +11,45 @@ export class DebugRender {
 		this.active = active
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
+
+		this.fpsFilterStrength = 20
+		this.frameTime = 0
+		this.lastTimestamp = window.performance.now()
 	}
 	addNote(note) {
 		this.noteInfoBoxesToDraw.push(note)
 	}
 	render(renderInfos, mouseX, mouseY) {
-		if (!this.active) return
+		this.thisTimestamp = window.performance.now()
+		if (getSetting("showFps")) {
+			let timePassed = this.thisTimestamp - this.lastTimestamp
+			this.frameTime += (timePassed - this.frameTime) / this.fpsFilterStrength
+			this.ctx.font = "20px Arial black"
+			this.ctx.fillStyle = "rgba(255,255,255,0.8)"
+			this.ctx.fillText((1000 / this.frameTime).toFixed(0) + " FPS", 20, 200)
+		}
 
-		let amountOfNotesDrawn = 0
-		renderInfos.forEach(renderInfo => {
-			if (
-				mouseX > renderInfo.x &&
-				mouseX < renderInfo.x + renderInfo.w &&
-				mouseY > renderInfo.y &&
-				mouseY < renderInfo.y + renderInfo.h
-			) {
-				this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
-				amountOfNotesDrawn++
-			}
-		})
+		this.lastTimestamp = this.thisTimestamp
+
+		this.renderNoteDebugInfo(renderInfos, mouseX, mouseY)
 	}
+	renderNoteDebugInfo(renderInfos, mouseX, mouseY) {
+		if (getSetting("showNoteDebugInfo")) {
+			let amountOfNotesDrawn = 0
+			renderInfos.forEach(renderInfo => {
+				if (
+					mouseX > renderInfo.x &&
+					mouseX < renderInfo.x + renderInfo.w &&
+					mouseY > renderInfo.y &&
+					mouseY < renderInfo.y + renderInfo.h
+				) {
+					this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
+					amountOfNotesDrawn++
+				}
+			})
+		}
+	}
+
 	drawNoteInfoBox(note, mouseX, mouseY, amountOfNotesDrawn) {
 		let c = this.ctx
 		c.fillStyle = "white"
@@ -40,9 +60,11 @@ export class DebugRender {
 
 		let lines = [
 			"Note: " + CONST.NOTE_TO_KEY[note.noteNumber],
-			"Start: " + formatTime(note.timestamp / 1000),
-			"End: " + formatTime(note.offTime / 1000),
-			"Duration: " + formatTime(note.duration / 1000),
+			"NoteNumber: " + note.noteNumber,
+			"Start: " + note.timestamp,
+			"End: " + note.offTime,
+			"Duration: " + note.duration,
+			"Velocity: " + note.velocity,
 			"Instrument: " + note.instrument,
 			"Track: " + note.track,
 			"Channel: " + note.channel

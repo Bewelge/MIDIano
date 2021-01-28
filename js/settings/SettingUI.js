@@ -31,6 +31,7 @@ export class SettingUI {
 		cont
 			.querySelectorAll(".settingsTabContent" + this.activeTab)
 			.forEach(el => (el.style.display = "block"))
+		cont.querySelector("#" + this.activeTab + "Tab").classList.add("selected")
 
 		return cont
 	}
@@ -44,7 +45,13 @@ export class SettingUI {
 		return cont
 	}
 	createTabButton(tabName) {
-		return DomHelper.createTextButton(tabName + "Tab", tabName, ev => {
+		let butEl = DomHelper.createTextButton(tabName + "Tab", tabName, ev => {
+			document
+				.querySelectorAll(".settingsTabButton")
+				.forEach(el => el.classList.remove("selected"))
+
+			butEl.classList.add("selected")
+
 			document
 				.querySelectorAll(".settingsTabContentContainer")
 				.forEach(settingEl => (settingEl.style.display = "none"))
@@ -52,6 +59,7 @@ export class SettingUI {
 				.querySelectorAll(".settingsTabContent" + tabName)
 				.forEach(settingEl => (settingEl.style.display = "block"))
 		})
+		return butEl
 	}
 	getContentDiv(settings) {
 		let cont = DomHelper.createDivWithClass("settingsContentContainer")
@@ -98,6 +106,8 @@ export class SettingUI {
 				return this.createCheckboxSettingDiv(setting)
 			case "slider":
 				return this.createSliderSettingDiv(setting)
+			case "color":
+				return this.createColorSettingDiv(setting)
 		}
 	}
 	createListSettingDiv(setting) {
@@ -130,5 +140,71 @@ export class SettingUI {
 		).container
 		el.classList.add("settingContainer")
 		return el
+	}
+	createColorSettingDiv(setting) {
+		let cont = DomHelper.createDivWithClass("settingContainer")
+
+		let label = DomHelper.createDivWithClass(
+			"colorLabel settingLabel",
+			{},
+			{ innerHTML: setting.label }
+		)
+
+		let colorButtonContainer = DomHelper.createDivWithClass(
+			"colorPickerButtonContainer"
+		)
+		let colorButton = DomHelper.createDivWithClass("colorPickerButton")
+		colorButtonContainer.appendChild(colorButton)
+
+		cont.appendChild(label)
+		cont.appendChild(colorButtonContainer)
+
+		let colorPicker = Pickr.create({
+			el: colorButton,
+			theme: "nano",
+			components: {
+				hue: true,
+				preview: true,
+				opacity: true,
+				interaction: {
+					input: true
+				}
+			}
+		})
+		cont.onclick = () => colorPicker.show()
+		colorButtonContainer.style.backgroundColor = setting.value
+		colorPicker.on("init", () => colorPicker.setColor(setting.value))
+		colorPicker.on("change", color => {
+			setting.onChange(color.toRGBA().toString())
+			colorButtonContainer.style.backgroundColor = colorPicker
+				.getColor()
+				.toRGBA()
+				.toString()
+		})
+
+		return cont
+	}
+
+	initColorPicker(setting, colorPickerEl) {
+		const colorPicker = Pickr.create({
+			el: colorPickerEl,
+			theme: "nano",
+			components: {
+				hue: true,
+				preview: true,
+				opacity: true,
+				interaction: {
+					input: true
+				}
+			}
+		})
+		colorPicker.on("init", () => {
+			colorPicker.setColor(setting.value)
+			colorPickerEl.style.backgroundColor = "green"
+			colorPicker.on("change", color => {
+				let colorString = color.toRGBA().toString()
+				setting.onChange(colorString)
+			})
+		})
 	}
 }

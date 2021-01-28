@@ -1,3 +1,4 @@
+import { getSetting } from "../settings/Settings.js"
 import { isBlack } from "../Util.js"
 /**
  * Class that renders the background of the main canvas
@@ -9,6 +10,15 @@ export class BackgroundRender {
 		this.renderDimensions.registerResizeCallback(this.render.bind(this))
 		this.render()
 	}
+	renderIfColorsChanged() {
+		if (
+			this.col1 != getSetting("bgCol1") ||
+			this.col2 != getSetting("bgCol2") ||
+			this.col3 != getSetting("bgCol3")
+		) {
+			this.render()
+		}
+	}
 	render() {
 		let c = this.ctx
 		c.clearRect(
@@ -17,18 +27,18 @@ export class BackgroundRender {
 			this.renderDimensions.windowWidth,
 			this.renderDimensions.windowHeight
 		)
-		const col1 = "rgba(25,25,25,1)"
-		const col3 = "rgba(50,50,50,1)"
-		const col2 = "rgba(40,40,40,0.8)"
+		const col1 = getSetting("bgCol1")
+		const col2 = getSetting("bgCol2")
+		const col3 = getSetting("bgCol3")
 		c.strokeStyle = col1
 		c.fillStyle = col2
 		let whiteKey = 0
 		for (let i = 0; i < 88; i++) {
 			if (!isBlack(i)) {
-				c.strokeStyle = i % 2 ? col1 : col1
-				c.fillStyle = (i + 2) % 2 ? col3 : col2
+				c.strokeStyle = col3
+				c.fillStyle = (i + 2) % 2 ? col1 : col2
 				c.lineWidth = 1
-				//c.globalAlpha = 0.25  + (i+9)%3 / 4  + (i + 9) % 12 / 48
+
 				let dim = this.renderDimensions.getKeyDimensions(i)
 				c.fillRect(dim.x, dim.y, dim.w, this.renderDimensions.windowHeight)
 				c.strokeRect(dim.x, dim.y, dim.w, this.renderDimensions.windowHeight)
@@ -44,5 +54,8 @@ export class BackgroundRender {
 				whiteKey++
 			}
 		}
+		this.col1 = col1
+		this.col2 = col2
+		this.col3 = col3
 	}
 }

@@ -111,6 +111,13 @@ const defaultSettings = {
 				label: "Enable debug info on hover over note",
 				value: false,
 				onChange: ev => setSetting("showNoteDebugInfo", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showFps",
+				label: "Show FPS",
+				value: true,
+				onChange: ev => setSetting("showFps", ev.target.checked)
 			}
 		],
 		Sustain: [
@@ -202,6 +209,35 @@ const defaultSettings = {
 				max: 15,
 				step: 1,
 				onChange: value => setSetting("particleSpeed", value)
+			}
+		],
+		Background: [
+			{
+				type: "color",
+				id: "bgCol1",
+				label: "Background fill color 1",
+				value: "rgba(40,40,40,0.8)",
+				onChange: value => {
+					setSetting("bgCol1", value)
+				}
+			},
+			{
+				type: "color",
+				id: "bgCol2",
+				label: "Background fill color 2",
+				value: "rgba(25,25,25,1)",
+				onChange: value => {
+					setSetting("bgCol2", value)
+				}
+			},
+			{
+				type: "color",
+				id: "bgCol3",
+				label: "Background stroke color",
+				value: "rgba(10,10,10,0.5)",
+				onChange: value => {
+					setSetting("bgCol3", value)
+				}
 			}
 		]
 	},
