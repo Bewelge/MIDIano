@@ -239,7 +239,7 @@ export class Player {
 
 		let delta = (currentContextTime - this.lastTime) * this.playbackSpeed
 
-		//cap max framerate.
+		//cap max updaterate.
 		if (delta < 0.0069) {
 			window.requestAnimationFrame(this.play.bind(this))
 			return
@@ -248,7 +248,7 @@ export class Player {
 		let oldProgress = this.progress
 		this.lastTime = currentContextTime
 		if (!this.paused && this.scrolling == 0) {
-			this.progress += delta
+			this.progress += Math.min(0.1, delta)
 		} else {
 			window.setTimeout(this.play.bind(this), 7)
 			return
