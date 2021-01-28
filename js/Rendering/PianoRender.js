@@ -127,6 +127,18 @@ export class PianoRender {
 	}
 
 	drawPiano(ctxWhite, ctxBlack) {
+		ctxWhite.clearRect(
+			0,
+			0,
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.whiteKeyHeight
+		)
+		ctxBlack.clearRect(
+			0,
+			0,
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.whiteKeyHeight
+		)
 		//Background
 		ctxWhite.fillStyle = "rgba(0,0,0,1)"
 		ctxWhite.fillRect(
@@ -146,14 +158,20 @@ export class PianoRender {
 		ctxWhite.shadowBlur = 2
 		ctxWhite.lineWidth = 4
 		ctxWhite.beginPath()
-		ctxWhite.moveTo(52 * this.renderDimensions.whiteKeyWidth, 2)
+		ctxWhite.moveTo(this.renderDimensions.windowWidth, 2)
 		ctxWhite.lineTo(0, 2)
 		ctxWhite.closePath()
 		ctxWhite.stroke()
+		ctxWhite.shadowColor = "rgba(0,0,0,0)"
+		ctxWhite.shadowBlur = 0
 	}
 
 	drawWhiteKeys(ctxWhite) {
-		for (let i = 0; i < 88; i++) {
+		for (
+			let i = this.renderDimensions.minNoteNumber - 21;
+			i <= this.renderDimensions.maxNoteNumber - 21;
+			i++
+		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (!isBlack(i)) {
 				this.drawWhiteKey(ctxWhite, dims)
@@ -162,18 +180,14 @@ export class PianoRender {
 	}
 
 	drawBlackKeys(ctxBlack) {
-		let rgr2 = ctxBlack.createLinearGradient(
-			this.renderDimensions.windowWidth / 2,
-			-this.renderDimensions.windowHeight * 0.05,
-			this.renderDimensions.windowWidth / 2,
-			this.renderDimensions.windowHeight * 0.1
-		)
-		rgr2.addColorStop(1, "rgba(30,30,30,1)")
-		rgr2.addColorStop(0, "black")
-		ctxBlack.fillStyle = rgr2
-		for (let i = 0; i < 88; i++) {
+		for (
+			let i = this.renderDimensions.minNoteNumber - 21;
+			i <= this.renderDimensions.maxNoteNumber - 21;
+			i++
+		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (isBlack(i)) {
+				console.log(dims)
 				this.drawBlackKey(ctxBlack, dims)
 			}
 		}
@@ -269,6 +283,7 @@ export class PianoRender {
 					zIndex: 99
 				}
 			)
+			this.pianoCanvasWhite.className = "pianoCanvas"
 			document.body.appendChild(this.pianoCanvasWhite)
 			this.ctxWhite = this.pianoCanvasWhite.getContext("2d")
 		}
@@ -285,6 +300,7 @@ export class PianoRender {
 					zIndex: 99
 				}
 			)
+			this.playedKeysCanvasWhite.className = "pianoCanvas"
 			document.body.appendChild(this.playedKeysCanvasWhite)
 			this.playedKeysCtxWhite = this.playedKeysCanvasWhite.getContext("2d")
 		}
@@ -302,6 +318,7 @@ export class PianoRender {
 					boxShadow: "0px -3px 15px 5px rgba(0,0,0,0.4)"
 				}
 			)
+			this.pianoCanvasBlack.className = "pianoCanvas"
 			document.body.appendChild(this.pianoCanvasBlack)
 			this.ctxBlack = this.pianoCanvasBlack.getContext("2d")
 		}
@@ -318,6 +335,7 @@ export class PianoRender {
 					zIndex: 99
 				}
 			)
+			this.playedKeysCanvasBlack.className = "pianoCanvas"
 			document.body.appendChild(this.playedKeysCanvasBlack)
 			this.playedKeysCtxBlack = this.playedKeysCanvasBlack.getContext("2d")
 		}

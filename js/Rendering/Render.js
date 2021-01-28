@@ -13,9 +13,6 @@ import { isBlack } from "../Util.js"
 
 const DEBUG = true
 
-const MIN_WIDTH = 1040
-const MIN_HEIGHT = 560
-
 const LOOK_BACK_TIME = 4
 const LOOK_AHEAD_TIME = 10
 

@@ -1,6 +1,12 @@
 import { isBlack } from "../Util.js"
 import { getSetting } from "../settings/Settings.js"
 
+const MAX_MIDI_NOTE_NUMBER = 108
+const MIN_MIDI_NOTE_NUMBER = 21
+
+const MIN_WIDTH = 1040
+const MIN_HEIGHT = 560
+
 /**
  * Class to handle all the calculation of dimensions of the Notes & Keys on Screen-
  */
@@ -8,13 +14,18 @@ export class RenderDimensions {
 	constructor() {
 		window.addEventListener("resize", this.resize.bind(this))
 		this.resizeCallbacks = []
+		this.numberOfWhiteKeysShown = 52
+		this.minNoteNumber = MIN_MIDI_NOTE_NUMBER
+		this.maxNoteNumber = MAX_MIDI_NOTE_NUMBER
 		this.resize()
+
+		// this.setZoom(37, 86)
 	}
 	/**
 	 * Recompute all dimensions dependent on Screen Size
 	 */
 	resize() {
-		this.windowWidth = Math.max(1040, Math.floor(window.innerWidth))
+		this.windowWidth = Math.max(MIN_WIDTH, Math.floor(window.innerWidth))
 		this.windowHeight = Math.floor(window.innerHeight)
 
 		this.keyDimensions = {}
@@ -29,8 +40,14 @@ export class RenderDimensions {
 	 * Computes the key dimensions. Should be called on resize.
 	 */
 	computeKeyDimensions() {
-		this.whiteKeyWidth = Math.max(20, this.windowWidth / 52)
-		this.whiteKeyHeight = this.whiteKeyWidth * 4.5
+		this.whiteKeyWidth = Math.max(
+			20,
+			this.windowWidth / this.numberOfWhiteKeysShown
+		)
+		this.whiteKeyHeight = Math.min(
+			Math.floor(this.windowHeight * 0.2),
+			this.whiteKeyWidth * 4.5
+		)
 		this.blackKeyWidth = Math.floor(this.whiteKeyWidth * 0.5829787234)
 		this.blackKeyHeight = Math.floor((this.whiteKeyHeight * 2) / 3)
 	}
@@ -38,12 +55,12 @@ export class RenderDimensions {
 	/**
 	 * Returns the dimensions for the piano-key of the given note
 	 *
-	 * @param {Number} noteNumber
+	 * @param {Number} noteNumber (0-88)
 	 */
 	getKeyDimensions(noteNumber) {
 		if (!this.keyDimensions.hasOwnProperty(noteNumber)) {
 			let isNoteBlack = isBlack(noteNumber)
-			let x = this.getKeyX(noteNumber, isNoteBlack)
+			let x = this.getKeyX(noteNumber)
 
 			this.keyDimensions[noteNumber] = {
 				x: x,
@@ -59,19 +76,29 @@ export class RenderDimensions {
 	/**
 	 * Returns x-value  of the given Notenumber
 	 *
-	 * @param {Integer} noteNumber
-	 * @param {boolean} isNoteBlack
+	 * @param {Integer} noteNumber (0-88)
 	 */
 	getKeyX(noteNumber) {
 		return (
-			(noteNumber -
-				Math.floor(Math.max(0, noteNumber + 11) / 12) -
-				Math.floor(Math.max(0, noteNumber + 8) / 12) -
-				Math.floor(Math.max(0, noteNumber + 6) / 12) -
-				Math.floor(Math.max(0, noteNumber + 3) / 12) -
-				Math.floor(Math.max(0, noteNumber + 1) / 12)) *
+			(this.getWhiteKeyNumber(noteNumber) -
+				this.getWhiteKeyNumber(this.minNoteNumber - 21)) *
 				this.whiteKeyWidth +
 			(this.whiteKeyWidth - this.blackKeyWidth / 2) * isBlack(noteNumber)
+		)
+	}
+
+	/**
+	 * Returns the "white key index" of the note number. Ignores if the key itself is black
+	 * @param {Number} noteNumber
+	 */
+	getWhiteKeyNumber(noteNumber) {
+		return (
+			noteNumber -
+			Math.floor(Math.max(0, noteNumber + 11) / 12) -
+			Math.floor(Math.max(0, noteNumber + 8) / 12) -
+			Math.floor(Math.max(0, noteNumber + 6) / 12) -
+			Math.floor(Math.max(0, noteNumber + 3) / 12) -
+			Math.floor(Math.max(0, noteNumber + 1) / 12)
 		)
 	}
 
@@ -88,7 +115,7 @@ export class RenderDimensions {
 	/**
      *Returns rendering x/y-location & size for the given note & time-info
      
-	 * @param {Integer} noteNumber
+	 * @param {Integer} noteNumber (21-108)
 	 * @param {Number} currentTime
 	 * @param {Number} noteStartTime
 	 * @param {Number} noteEndTime
@@ -105,7 +132,7 @@ export class RenderDimensions {
 
 		const dur = noteEndTime - noteStartTime
 		const keyBlack = isBlack(noteNumber)
-		const x = this.getKeyX(noteNumber, keyBlack)
+		const x = this.getKeyX(noteNumber)
 
 		let h =
 			(dur / this.getNoteToHeightConst()) *
@@ -123,7 +150,7 @@ export class RenderDimensions {
 		let sustainH = 0
 		if (sustainOffTime > noteEndTime) {
 			sustainH =
-				((sustainOffTime - noteStartTime) / this.getNoteToHeightConst()) *
+				((sustainOffTime - noteEndTime) / this.getNoteToHeightConst()) *
 				(this.windowHeight - this.whiteKeyHeight)
 			sustainY = this.getYForTime(sustainOffTime - currentTime)
 		}
@@ -144,5 +171,117 @@ export class RenderDimensions {
 	}
 	getSecondsDisplayed() {
 		return Math.ceil(this.getNoteToHeightConst() / 1000)
+	}
+
+	//ZOOM
+	showAll() {
+		this.setZoom(MIN_MIDI_NOTE_NUMBER, MAX_MIDI_NOTE_NUMBER)
+	}
+	fitSong(range) {
+		while (
+			isBlack(range.min - MIN_MIDI_NOTE_NUMBER) &&
+			range.min > MIN_MIDI_NOTE_NUMBER
+		) {
+			range.min--
+		}
+		while (
+			isBlack(range.max - MIN_MIDI_NOTE_NUMBER) &&
+			range.max < MAX_MIDI_NOTE_NUMBER
+		) {
+			range.max++
+		}
+		this.setZoom(range.min, range.max)
+	}
+	zoomIn() {
+		this.minNoteNumber++
+		this.maxNoteNumber--
+		while (
+			isBlack(this.minNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.minNoteNumber < this.maxNoteNumber
+		) {
+			this.minNoteNumber++
+		}
+		while (
+			isBlack(this.maxNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.maxNoteNumber > this.minNoteNumber
+		) {
+			this.maxNoteNumber--
+		}
+		this.setZoom(this.minNoteNumber, this.maxNoteNumber)
+	}
+	zoomOut() {
+		this.minNoteNumber--
+		this.maxNoteNumber++
+		while (
+			isBlack(this.minNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.minNoteNumber > MIN_MIDI_NOTE_NUMBER
+		) {
+			this.minNoteNumber--
+		}
+		while (
+			isBlack(this.maxNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.maxNoteNumber < MAX_MIDI_NOTE_NUMBER
+		) {
+			this.maxNoteNumber++
+		}
+		this.setZoom(
+			Math.max(MIN_MIDI_NOTE_NUMBER, this.minNoteNumber),
+			Math.min(MAX_MIDI_NOTE_NUMBER, this.maxNoteNumber)
+		)
+	}
+	moveViewLeft() {
+		if (this.minNoteNumber == MIN_MIDI_NOTE_NUMBER) return
+		this.minNoteNumber--
+		this.maxNoteNumber--
+		while (
+			isBlack(this.minNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.minNoteNumber > MIN_MIDI_NOTE_NUMBER
+		) {
+			this.minNoteNumber--
+		}
+		while (isBlack(this.maxNoteNumber - MIN_MIDI_NOTE_NUMBER)) {
+			this.maxNoteNumber--
+		}
+		this.setZoom(
+			Math.max(MIN_MIDI_NOTE_NUMBER, this.minNoteNumber),
+			this.maxNoteNumber
+		)
+	}
+	moveViewRight() {
+		if (this.maxNoteNumber == MAX_MIDI_NOTE_NUMBER) return
+		this.minNoteNumber++
+		this.maxNoteNumber++
+		while (isBlack(this.minNoteNumber - MIN_MIDI_NOTE_NUMBER)) {
+			this.minNoteNumber++
+		}
+		while (
+			isBlack(this.maxNoteNumber - MIN_MIDI_NOTE_NUMBER) &&
+			this.maxNoteNumber < MAX_MIDI_NOTE_NUMBER
+		) {
+			this.maxNoteNumber++
+		}
+
+		this.setZoom(
+			this.minNoteNumber,
+			Math.min(MAX_MIDI_NOTE_NUMBER, this.maxNoteNumber)
+		)
+	}
+
+	/**
+	 *
+	 * @param {Number} minNoteNumber (21-108)
+	 * @param {Number} maxNoteNumber  (21-108)
+	 */
+	setZoom(minNoteNumber, maxNoteNumber) {
+		let numOfWhiteKeysInRange = 0
+		for (let i = minNoteNumber; i <= maxNoteNumber; i++) {
+			numOfWhiteKeysInRange += isBlack(i - MIN_MIDI_NOTE_NUMBER) ? 0 : 1
+		}
+		console.log(minNoteNumber, maxNoteNumber)
+		this.minNoteNumber = minNoteNumber
+		this.maxNoteNumber = maxNoteNumber
+		this.numberOfWhiteKeysShown = numOfWhiteKeysInRange
+
+		this.resize()
 	}
 }

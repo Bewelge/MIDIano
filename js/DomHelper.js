@@ -11,8 +11,12 @@ export class DomHelper {
 		return DomHelper.createDivWithIdAndClass("loadSpinner", "loader")
 	}
 	static setCanvasSize(cnv, width, height) {
-		cnv.width = width
-		cnv.height = height
+		if (cnv.width != width) {
+			cnv.width = width
+		}
+		if (cnv.height != height) {
+			cnv.height = height
+		}
 	}
 	static replaceGlyph(element, oldIcon, newIcon) {
 		element.children.forEach(childNode => {

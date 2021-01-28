@@ -21,8 +21,6 @@ export class Song {
 		this.channels = this.getDefaultChannels()
 
 		this.processEvents(midiData)
-
-		console.log(this)
 	}
 	getStart() {
 		return this.getNoteSequence()[0].timestamp
@@ -237,6 +235,20 @@ export class Song {
 				.sort((a, b) => a.timestamp - b.timestamp)
 		}
 		return this.noteSequence.slice(0)
+	}
+	getNoteRange() {
+		let seq = this.getNoteSequence()
+		let min = 108
+		let max = 21
+		seq.forEach(note => {
+			if (note.noteNumber > max) {
+				max = note.noteNumber
+			}
+			if (note.noteNumber < min) {
+				min = note.noteNumber
+			}
+		})
+		return { min, max }
 	}
 	setNoteSustainTimestamps(notes) {
 		for (let i = 0; i < notes.length; i++) {

@@ -1,6 +1,7 @@
 import { DomHelper } from "../DomHelper.js"
 import { replaceAllString } from "../Util.js"
 import { getSettingsDiv } from "../settings/Settings.js"
+import { ZoomUI } from "./ZoomUI.js"
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
  * Callback-bindings for some events are created in  the constructor
@@ -30,6 +31,8 @@ export class UI {
 					(el.style.height =
 						"calc(100% - " + (this.getNavBar().clientHeight + 24) + "px)")
 			)
+
+		document.body.appendChild(new ZoomUI().getContentDiv(player, render))
 	}
 
 	fireInitialListeners() {

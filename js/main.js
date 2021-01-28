@@ -5,8 +5,11 @@ import { InputListeners } from "./InputListeners.js"
 import { getLoader } from "./ui/Loader.js"
 
 /**
+ * DONES:
+ * - piano zoom - 29.1 Done - Implement fit to song on new song callback
+ * - clean up getRenderInfos - DONE 29.01
+ *
  * TODOs:
- * - piano zoom
  * - channel menu
  * - accessability
  * - load from URL
@@ -29,7 +32,6 @@ import { getLoader } from "./ui/Loader.js"
  * - Metronome
  *
  * bugs:
- * - clean up getRenderInfos -> refactor into class thats called in Render.js before rendering and passed to all renderers as necessary
  * - fix track ui
  * - fix the minimize button
  * - Fix iOS
