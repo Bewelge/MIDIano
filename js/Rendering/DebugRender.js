@@ -36,38 +36,53 @@ export class DebugRender {
 	renderNoteDebugInfo(renderInfos, mouseX, mouseY) {
 		if (getSetting("showNoteDebugInfo")) {
 			let amountOfNotesDrawn = 0
-			renderInfos.forEach(renderInfo => {
-				if (
-					mouseX > renderInfo.x &&
-					mouseX < renderInfo.x + renderInfo.w &&
-					mouseY > renderInfo.y &&
-					mouseY < renderInfo.y + renderInfo.h
-				) {
-					this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
-					amountOfNotesDrawn++
-				}
+			Object.keys(renderInfos).forEach(trackIndex => {
+				renderInfos[trackIndex].black
+					.filter(renderInfo =>
+						this.isMouseInRenderInfo(renderInfo, mouseX, mouseY)
+					)
+					.forEach(renderInfo => {
+						this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
+						amountOfNotesDrawn++
+					})
+				renderInfos[trackIndex].white
+					.filter(renderInfo =>
+						this.isMouseInRenderInfo(renderInfo, mouseX, mouseY)
+					)
+					.forEach(renderInfo => {
+						this.drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn)
+						amountOfNotesDrawn++
+					})
 			})
 		}
 	}
+	isMouseInRenderInfo(renderInfo, mouseX, mouseY) {
+		return (
+			mouseX > renderInfo.x &&
+			mouseX < renderInfo.x + renderInfo.w &&
+			mouseY > renderInfo.y &&
+			mouseY < renderInfo.y + renderInfo.h
+		)
+	}
 
-	drawNoteInfoBox(note, mouseX, mouseY, amountOfNotesDrawn) {
+	drawNoteInfoBox(renderInfo, mouseX, mouseY, amountOfNotesDrawn) {
 		let c = this.ctx
 		c.fillStyle = "white"
 		c.font = "12px Arial black"
 		c.textBaseline = "top"
-		c.strokeStyle = note.fillStyle
+		c.strokeStyle = renderInfo.fillStyle
 		c.lineWidth = 4
 
 		let lines = [
-			"Note: " + CONST.NOTE_TO_KEY[note.noteNumber],
-			"NoteNumber: " + note.noteNumber,
-			"Start: " + note.timestamp,
-			"End: " + note.offTime,
-			"Duration: " + note.duration,
-			"Velocity: " + note.velocity,
-			"Instrument: " + note.instrument,
-			"Track: " + note.track,
-			"Channel: " + note.channel
+			"Note: " + CONST.NOTE_TO_KEY[renderInfo.noteNumber],
+			"NoteNumber: " + renderInfo.noteNumber,
+			"Start: " + renderInfo.timestamp,
+			"End: " + renderInfo.offTime,
+			"Duration: " + renderInfo.duration,
+			"Velocity: " + renderInfo.velocity,
+			"Instrument: " + renderInfo.instrument,
+			"Track: " + renderInfo.track,
+			"Channel: " + renderInfo.channel
 		]
 		let left = mouseX > this.renderDimensions.windowWidth / 2 ? -160 : 60
 		let top =

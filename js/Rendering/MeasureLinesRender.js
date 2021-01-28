@@ -6,17 +6,13 @@ export class MeasureLinesRender {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
 	}
-	render(playerState) {
-		let currentTime = playerState.time
-		let measureLines = playerState.song
-			? playerState.song.getMeasureLines()
-			: []
+	render(time, measureLines) {
 		let ctx = this.ctx
 
 		ctx.strokeStyle = "rgba(255,255,255,0.3)"
 
 		ctx.lineWidth = 0.5
-		let currentSecond = Math.floor(currentTime)
+		let currentSecond = Math.floor(time)
 		ctx.beginPath()
 		for (
 			let i = currentSecond;
@@ -27,9 +23,7 @@ export class MeasureLinesRender {
 				continue
 			}
 			measureLines[i].forEach(tempoLine => {
-				let ht = this.renderDimensions.getYForTime(
-					tempoLine - currentTime * 1000
-				)
+				let ht = this.renderDimensions.getYForTime(tempoLine - time * 1000)
 
 				ctx.moveTo(0, ht)
 				ctx.lineTo(this.renderDimensions.windowWidth, ht)

@@ -9,6 +9,7 @@ import { BackgroundRender } from "./BackgroundRender.js"
 import { MeasureLinesRender } from "./MeasureLinesRender.js"
 import { ProgressBarRender } from "./ProgressBarRender.js"
 import { getSetting } from "../settings/Settings.js"
+import { isBlack } from "../Util.js"
 
 const DEBUG = true
 
@@ -84,24 +85,133 @@ export class Render {
 
 		this.pianoRender.clearPlayedKeysCanvases()
 
-		let renderInfos = []
-		if (!playerState.loading && playerState.song) {
-			this.progressBarRender.render(playerState)
-			this.measureLinesRender.render(playerState)
-			this.sustainRender.render(playerState)
+		this.backgroundRender.renderIfColorsChanged()
 
-			renderInfos = this.noteRender.render(playerState)
+		let renderInfos = []
+		let renderInfosByTrackMap = this.getRenderInfoByTrackMap(playerState)
+		const time = this.getRenderTime(playerState)
+		const end = playerState.end
+		if (!playerState.loading && playerState.song) {
+			const measureLines = playerState.song
+				? playerState.song.getMeasureLines()
+				: []
+
+			this.progressBarRender.render(time, end)
+			this.measureLinesRender.render(time, measureLines)
+			this.sustainRender.render(
+				time,
+				playerState.song.sustainsBySecond,
+				playerState.song.sustainPeriods
+			)
+
+			this.noteRender.render(
+				time,
+				renderInfosByTrackMap,
+				playerState.inputActiveNotes
+			)
 		}
 
 		this.overlayRender.render()
 
-		if (getSetting("showNoteDebugInfo")) {
-			this.debugRender.render(renderInfos, this.mouseX, this.mouseY)
-		}
+		this.debugRender.render(renderInfosByTrackMap, this.mouseX, this.mouseY)
 
 		if (getSetting("showBPM")) {
 			this.drawBPM(playerState)
 		}
+	}
+	/**
+	 * Returns current time adjusted for the render-offset from the settings
+	 * @param {Object} playerState
+	 */
+	getRenderTime(playerState) {
+		return playerState.time + getSetting("renderOffset") / 1000
+	}
+	getRenderInfoByTrackMap(playerState) {
+		let renderInfoByTrackMap = {}
+		if (playerState)
+			if (playerState.song) {
+				playerState.song.activeTracks.forEach((track, trackIndex) => {
+					if (
+						playerState.tracks[trackIndex] &&
+						playerState.tracks[trackIndex].draw
+					) {
+						renderInfoByTrackMap[trackIndex] = { black: [], white: [] }
+
+						let time = this.getRenderTime(playerState)
+						let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
+						let lookAheadTime = Math.ceil(
+							time + this.renderDimensions.getSecondsDisplayed()
+						)
+
+						for (let i = lookBackTime; i < lookAheadTime; i++) {
+							if (track.notesBySeconds[i]) {
+								track.notesBySeconds[i]
+									.filter(note => note.instrument != "percussion")
+									.map(note => this.getNoteRenderInfo(note, time))
+									.forEach(renderInfo =>
+										renderInfo.keyBlack
+											? renderInfoByTrackMap[trackIndex].black.push(renderInfo)
+											: renderInfoByTrackMap[trackIndex].white.push(renderInfo)
+									)
+							}
+						}
+					}
+				})
+			}
+		return renderInfoByTrackMap
+	}
+	getNoteRenderInfo(note, time) {
+		time *= 1000
+		let noteDims = this.renderDimensions.getNoteDimensions(
+			note.noteNumber,
+			time,
+			note.timestamp,
+			note.offTime,
+			note.sustainOffTime
+		)
+		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
+		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
+		noteDoneRatio *= isOn
+		let rad = (getSetting("noteBorderRadius") / 100) * noteDims.w
+		if (noteDims.h < rad * 2) {
+			rad = noteDims.h / 2
+		}
+		let keyBlack = isBlack(note.noteNumber - 21)
+		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
+		return {
+			noteNumber: note.noteNumber,
+			timestamp: note.timestamp,
+			offTime: note.offTime,
+			duration: note.duration,
+			instrument: note.instrument,
+			track: note.track,
+			channel: note.channel,
+			fillStyle: keyBlack
+				? this.getTrackColor(note.track).black
+				: this.getTrackColor(note.track).white,
+			currentTime: time,
+			keyBlack: keyBlack,
+			noteDims: noteDims,
+			isOn: isOn,
+			noteDoneRatio: noteDoneRatio,
+			rad: rad,
+			x: noteDims.x + 1,
+			y: noteDims.y,
+			w: noteDims.w - 2,
+			h: noteDims.h,
+			sustainH: noteDims.sustainH,
+			sustainY: noteDims.sustainY,
+			velocity: note.velocity
+		}
+	}
+	/**
+	 *
+	 * @param {Number} trackIndex
+	 */
+	getTrackColor(trackIndex) {
+		return this.playerState.tracks
+			? this.playerState.tracks[trackIndex].color
+			: "rgba(0,0,0,0)"
 	}
 	drawBPM(playerState) {
 		this.ctx.font = "20px Arial black"

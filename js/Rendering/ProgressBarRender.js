@@ -8,7 +8,7 @@ export class ProgressBarRender {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
 	}
-	render(playerState) {
+	render(time, end) {
 		this.ctx.clearRect(
 			0,
 			0,
@@ -16,10 +16,8 @@ export class ProgressBarRender {
 			this.renderDimensions.windowHeight
 		)
 		let ctx = this.ctx
-		let progressPercent = playerState.time / (playerState.end / 1000)
+		let progressPercent = time / (end / 1000)
 		ctx.fillStyle = "rgba(80,80,80,0.8)"
-		let ht =
-			this.renderDimensions.windowHeight - this.renderDimensions.whiteKeyHeight
 		ctx.fillRect(this.renderDimensions.windowWidth * progressPercent, 0, 2, 20)
 		ctx.fillStyle = "rgba(50,150,50,0.8)"
 		ctx.fillRect(0, 0, this.renderDimensions.windowWidth * progressPercent, 20)
@@ -27,9 +25,7 @@ export class ProgressBarRender {
 		ctx.fillStyle = "rgba(0,0,0,1)"
 		let showMilis = getSetting("showMiliseconds")
 		let text =
-			formatTime(playerState.time, showMilis) +
-			" / " +
-			formatTime(playerState.end / 1000, showMilis)
+			formatTime(time, showMilis) + " / " + formatTime(end / 1000, showMilis)
 		let wd = ctx.measureText(text).width
 		ctx.font = "14px Arial black"
 		ctx.fillText(text, this.renderDimensions.windowWidth / 2 - wd / 2, 15)

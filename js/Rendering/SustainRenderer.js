@@ -15,15 +15,12 @@ export class SustainRender {
 		this.sustainOffStrokeStyle = "rgba(155,55,55,0.6)"
 		this.sustainOnOffFont = "12px Arial black"
 	}
-	render(playerState) {
-		let sustainsBySecond = playerState.song.sustainsBySecond
-		let time = playerState.time
-
+	render(time, sustainsBySecond, sustainPeriods) {
 		if (getSetting("showSustainOnOffs")) {
 			this.renderSustainOnOffs(time, sustainsBySecond)
 		}
 		if (getSetting("showSustainPeriods")) {
-			this.renderSustainPeriods(time, playerState.song.sustainPeriods)
+			this.renderSustainPeriods(time, sustainPeriods)
 		}
 	}
 	/**
