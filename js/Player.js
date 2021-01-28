@@ -9,7 +9,6 @@ const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {
 	constructor() {
-		this.sources = []
 		this.tracks = {}
 		this.audioPlayer = new AudioPlayer(this.tracks)
 
@@ -50,7 +49,7 @@ export class Player {
 	}
 	switchSoundfont(soundfontName) {
 		this.wasPaused = this.paused
-		this.paused = true
+		this.pause()
 		getLoader().startLoad()
 		let nowTime = window.performance.now()
 		this.soundfontName = soundfontName
@@ -58,7 +57,9 @@ export class Player {
 			.switchSoundfont(soundfontName, this.currentSong)
 			.then(resolve => {
 				window.setTimeout(() => {
-					this.paused = this.wasPaused
+					if (!this.wasPaused) {
+						this.resume()
+					}
 					getLoader().stopLoad()
 				}, Math.max(0, 500 - (window.performance.now() - nowTime)))
 			})
@@ -74,9 +75,12 @@ export class Player {
 		return this.progress + this.startDelay
 	}
 	setTime(seconds) {
-		this.sources.forEach(source => source.stop(0))
+		this.audioPlayer.stopAllSources()
 		this.progress += seconds - this.getTime()
 		this.resetNoteSequence()
+	}
+	increaseSpeed(val) {
+		this.playbackSpeed = Math.round((this.playbackSpeed + val) * 100) / 100
 	}
 	getSong() {
 		return this.song
@@ -117,6 +121,7 @@ export class Player {
 	}
 
 	async loadSong(theSong, fileName) {
+		this.audioPlayer.stopAllSources()
 		getLoader().startLoad()
 		getLoader().setLoadMessage("Loading " + fileName + ".")
 		if (this.audioPlayer.isRunning()) {
@@ -151,17 +156,14 @@ export class Player {
 		this.song = song
 	}
 	startPlay() {
-		if (!this.song) return false
-
 		console.log("Starting Song")
-		this.paused = false
 		this.wasPaused = false
-		this.playing = true
+
 		this.resetNoteSequence()
 		this.lastTime = this.audioPlayer.getContextTime()
+		this.resume()
 		this.audioPlayer.resume()
 		this.play()
-		return true
 	}
 	handleScroll(stacksize) {
 		if (this.scrolling != 0) {
@@ -248,7 +250,7 @@ export class Player {
 		if (!this.paused && this.scrolling == 0) {
 			this.progress += delta
 		} else {
-			window.setTimeout(this.play.bind(this), 20)
+			window.setTimeout(this.play.bind(this), 7)
 			return
 		}
 
@@ -335,7 +337,6 @@ export class Player {
 		if (!this.song) return
 		console.log("Resuming Song")
 		this.paused = false
-		this.wasPaused = false
 		this.resetNoteSequence()
 		this.audioPlayer.resume()
 		this.play()
@@ -352,7 +353,6 @@ export class Player {
 		console.log("Pausing Song")
 		this.pauseTime = this.getTime()
 		this.paused = true
-		this.wasPaused = true
 	}
 
 	playNote(note) {

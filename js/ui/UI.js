@@ -706,7 +706,7 @@ export class UI {
 		return this.playButton
 	}
 	clickPlay(ev) {
-		if (!this.player.playing) {
+		if (!this.player.playing && this.player.song) {
 			if (this.player.startPlay()) {
 				DomHelper.addClassToElement("selected", this.playButton)
 			}

@@ -29,7 +29,6 @@ import { getLoader } from "./ui/Loader.js"
  * - Metronome
  *
  * bugs:
- * - pause on loading soundfont doesnt seem to work. Clean up all pause calls
  * - clean up getRenderInfos -> refactor into class thats called in Render.js before rendering and passed to all renderers as necessary
  * - fix track ui
  * - fix the minimize button
@@ -72,14 +71,13 @@ async function loadStartingSong() {
 		url = "https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true"
 	}
 
-	loadSongFromURL(url) // Local: "../mz_331_3.mid")
+	loadSongFromURL(url, "Mozart KV 331 3rd Movement") // Local: "../mz_331_3.mid")
 }
-async function loadSongFromURL(url) {
+async function loadSongFromURL(url, title) {
 	getLoader().setLoadMessage("Loading Song from" + url)
 	let response = fetch(url, {
 		method: "GET"
 	}).then(response => {
-		console.log(response.headers)
 		let filename = title || url
 		response.blob().then(blob => {
 			let reader = new FileReader()

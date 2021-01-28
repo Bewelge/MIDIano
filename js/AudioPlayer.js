@@ -28,6 +28,9 @@ export class AudioPlayer {
 	suspend() {
 		this.context.suspend()
 	}
+	stopAllSources() {
+		this.sources.forEach(source => source.stop(0))
+	}
 	playNote(currentTime, note, playbackSpeed, volume, isPlayAlong) {
 		let delayUntilNote = (note.timestamp / 1000 - currentTime) / playbackSpeed
 		let delayCorrection = 0

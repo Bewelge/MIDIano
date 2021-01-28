@@ -123,7 +123,7 @@ export class InputListeners {
 			if (ev.target == render.getProgressBarCanvas()) {
 				this.grabbedProgressBar = true
 				player.wasPaused = player.paused
-				player.paused = true
+				player.pause()
 				let newTime =
 					(ev.clientX / render.renderDimensions.windowWidth) *
 					(player.song.getEnd() / 1000)
@@ -184,7 +184,7 @@ export class InputListeners {
 			player.wasPaused = player.paused
 			ev.preventDefault()
 			this.grabbedMainCanvas = true
-			player.paused = true
+			player.pause()
 		}
 	}
 
@@ -199,7 +199,9 @@ export class InputListeners {
 			this.grabSpeed = []
 		}
 		if (this.grabbedProgressBar || this.grabbedMainCanvas) {
-			player.paused = player.wasPaused
+			if (!player.wasPaused) {
+				player.resume()
+			}
 		}
 		this.grabbedProgressBar = false
 		this.grabbedMainCanvas = false
