@@ -8,7 +8,8 @@
 }
 .inputSelectLabel,
 .sliderLabel,
-.checkboxlabel {
+.checkboxlabel,
+.settingLabel {
 	display: inline-block;
 	color: var(--fontColor);
 	z-index: 15;
@@ -16,6 +17,16 @@
 	font-size: 0.75rem;
 	-ms-user-select: none; /* Internet Explorer/Edge */
 	user-select: none;
+}
+
+.colorPickerButtonContainer {
+	float: right;
+	width: 1.5em;
+	height: 1.5em;
+	margin-top: 0em;
+	border-radius: 0;
+	border: 1px solid var(--borderColor);
+	background-color: rgba(0, 0, 0, 0);
 }
 
 .checkboxlabel {
@@ -33,6 +44,7 @@
 	margin-top: 0em;
 	border-radius: 0;
 	border: 1px solid var(--borderColor);
+	margin: 0;
 
 	background-color: none;
 	box-shadow: inset 0em 0em 0em 1em var(--inputBgColor),
