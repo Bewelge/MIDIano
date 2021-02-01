@@ -50,19 +50,21 @@ export class NoteRender {
 
 	drawSustainedNotes(renderInfoByTrackMap, time) {
 		Object.keys(renderInfoByTrackMap).forEach(trackIndex => {
-			let notesRenderInfoBlack = blackAndWhiteNotes.black
-			let notesRenderInfoWhite = blackAndWhiteNotes.white
-			let colWhite = this.getColor(trackIndex).white
-			let colBlack = this.getColor(trackIndex).black
+			let notesRenderInfoBlack = renderInfoByTrackMap[trackIndex].black
+			let notesRenderInfoWhite = renderInfoByTrackMap[trackIndex].white
 
 			this.ctx.globalAlpha = getSetting("sustainedNotesOpacity") / 100
 			this.ctx.strokeStyle = "rgba(0,0,0,1)"
 			this.ctx.lineWidth = 1
-			this.ctx.fillStyle = colWhite
+			if (notesRenderInfoWhite.length > 0) {
+				this.ctx.fillStyle = notesRenderInfoWhite[0].fillStyle
+			}
 			notesRenderInfoWhite.forEach(renderInfo =>
 				this.drawSustainedNote(renderInfo)
 			)
-			this.ctx.fillStyle = colBlack
+			if (notesRenderInfoBlack.length > 0) {
+				this.ctx.fillStyle = notesRenderInfoBlack[0].fillStyle
+			}
 			notesRenderInfoBlack.forEach(renderInfo =>
 				this.drawSustainedNote(renderInfo)
 			)
