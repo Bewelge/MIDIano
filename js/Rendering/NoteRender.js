@@ -200,7 +200,7 @@ export class NoteRender {
 		ctx.globalAlpha = 1
 	}
 	renderActivePianoKeys(activeNotes) {
-		if (getSetting("showPianoKeys")) {
+		if (getSetting("highlightActivePianoKeys")) {
 			activeNotes.white.forEach(noteRenderInfo =>
 				this.pianoRender.drawActiveKey(noteRenderInfo, noteRenderInfo.fillStyle)
 			)

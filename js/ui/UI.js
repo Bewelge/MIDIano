@@ -42,6 +42,17 @@ export class UI {
 			500
 		)
 	}
+
+	mouseMoved() {
+		this.getMinimizeButton().style.opacity = 1
+		if (!this.fadingOutMinimizeButton) {
+			this.fadingOutMinimizeButton = true
+			window.setTimeout(() => {
+				this.getMinimizeButton().style.opacity = 0
+				this.fadingOutMinimizeButton = false
+			}, 1000)
+		}
+	}
 	createControlMenu() {
 		let topGroupsContainer = DomHelper.createDivWithClass("container")
 
@@ -76,7 +87,6 @@ export class UI {
 		this.getNavBar().appendChild(topGroupsContainer)
 
 		let minimizeButton = this.getMinimizeButton()
-		let zoomDiv = this.getZoomDiv()
 
 		let innerMenuDivsContainer = DomHelper.createElementWithClass(
 			"innerMenuDivsContainer"
@@ -93,19 +103,7 @@ export class UI {
 
 		this.createFileDragArea()
 	}
-	getZoomDiv() {
-		//todo
-	}
-	mouseMoved() {
-		this.getMinimizeButton().style.opacity = 1
-		if (!this.fadingOutMinimizeButton) {
-			this.fadingOutMinimizeButton = true
-			window.setTimeout(() => {
-				this.getMinimizeButton().style.opacity = 0
-				this.fadingOutMinimizeButton = false
-			}, 1000)
-		}
-	}
+
 	getMinimizeButton() {
 		if (!this.minimizeButton) {
 			this.minimizeButton = DomHelper.createGlyphiconButton(
