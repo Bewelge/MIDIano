@@ -1,5 +1,7 @@
+import { CONST } from "../CONST.js"
 import { DomHelper } from "../DomHelper.js"
-import { isBlack } from "../Util.js"
+import { getSetting } from "../settings/Settings.js"
+import { isBlack, replaceAllString } from "../Util.js"
 /**
  * Class to render the piano (and the colored keys played on the piano)
  */
@@ -8,6 +10,8 @@ export class PianoRender {
 		this.renderDimensions = renderDimensions
 		this.resize()
 		this.renderDimensions.registerResizeCallback(this.resize.bind(this))
+		this.clickCallback = null
+		this.setClickCallback(num => console.log(num))
 	}
 	/**
 	 * Resize canvases and redraw piano.
@@ -16,7 +20,21 @@ export class PianoRender {
 		this.resizeCanvases()
 		this.drawPiano(this.ctxWhite, this.ctxBlack)
 	}
-
+	/**
+	 * pass listeners that are called with the note number as argument when piano canvas is clicked.
+	 * @param {Function} onNoteOn
+	 * @param {Function} onNoteOff
+	 */
+	setPianoInputListeners(onNoteOn, onNoteOff) {
+		this.onNoteOn = onNoteOn
+		this.onNoteOff = onNoteOff
+	}
+	/**
+	 * Register a callback to trigger when user clicks the piano Canvas. Callback is called with
+	 */
+	setClickCallback(callback) {
+		this.clickCallback = callback
+	}
 	/**
 	 * Resizes all piano canvases.
 	 */
@@ -63,17 +81,17 @@ export class PianoRender {
 	}
 	/**
 	 *
-	 * @param {Integer} noteNumber
+	 * @param {Integer} midiNoteNumber
 	 */
-	drawActiveInputKey(noteNumber) {
-		let dim = this.renderDimensions.getKeyDimensions(noteNumber - 21)
-		let keyBlack = isBlack(noteNumber - 21)
+	drawActiveInputKey(midiNoteNumber) {
+		let dim = this.renderDimensions.getKeyDimensions(midiNoteNumber - 21)
+		let keyBlack = isBlack(midiNoteNumber - 21)
 		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
-		ctx.fillStyle = "rgba(255,0,0,1)"
+		const activeInputColor = "rgba(40,155,155,0.8)"
 		if (keyBlack) {
-			this.drawBlackKey(ctx, dim, "rgba(255,0,0,1)")
+			this.drawBlackKey(ctx, dim, activeInputColor, true)
 		} else {
-			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
+			this.drawWhiteKey(ctx, dim, activeInputColor, true)
 		}
 	}
 
@@ -84,30 +102,9 @@ export class PianoRender {
 
 		ctx.fillStyle = color
 		if (keyBlack) {
-			ctx.globalAlpha = 0.5
-			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
-			ctx.globalAlpha = 1
+			this.drawBlackKey(ctx, dim, color)
 		} else {
-			ctx.save()
-			ctx.beginPath()
-			ctx.rect(dim.x + 1, dim.y + 4, dim.w - 2, dim.h - 4)
-			ctx.clip()
-			let lgr = ctx.createLinearGradient(
-				dim.x,
-				dim.y + dim.h / 2,
-				dim.x + dim.w,
-				dim.y + dim.h / 2
-			)
-			lgr.addColorStop(0, "rgba(0,0,0,0.7)")
-			lgr.addColorStop(0.4, "rgba(0,0,0,0)")
-			lgr.addColorStop(0.6, "rgba(0,0,0,0)")
-			lgr.addColorStop(1, "rgba(0,0,0,0.7)")
-			ctx.fillStyle = lgr
-			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
-			ctx.fillStyle = color
-			ctx.fillRect(dim.x + 1, dim.y, dim.w - 2, dim.h)
-			ctx.closePath()
-			ctx.restore()
+			this.drawWhiteKey(ctx, dim, color)
 		}
 	}
 
@@ -149,7 +146,13 @@ export class PianoRender {
 		)
 
 		this.drawWhiteKeys(ctxWhite)
+		if (getSetting("showKeyNamesOnPianoWhite")) {
+			this.drawWhiteKeyNames(ctxWhite)
+		}
 		this.drawBlackKeys(ctxBlack)
+		if (getSetting("showKeyNamesOnPianoBlack")) {
+			this.drawBlackKeyNames(ctxBlack)
+		}
 
 		//velvet
 		ctxWhite.strokeStyle = "rgba(155,50,50,1)"
@@ -174,7 +177,7 @@ export class PianoRender {
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (!isBlack(i)) {
-				this.drawWhiteKey(ctxWhite, dims)
+				this.drawWhiteKey(ctxWhite, dims, "rgba(255,255,255,1)")
 			}
 		}
 	}
@@ -187,20 +190,65 @@ export class PianoRender {
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (isBlack(i)) {
-				console.log(dims)
 				this.drawBlackKey(ctxBlack, dims)
 			}
 		}
+	}
+	drawWhiteKeyNames(ctx) {
+		ctx.fillStyle = "black"
+		const fontSize = this.renderDimensions.whiteKeyWidth / 2
+		ctx.font = fontSize + "px Arial black"
+		for (
+			let i = this.renderDimensions.minNoteNumber - 21;
+			i <= this.renderDimensions.maxNoteNumber - 21;
+			i++
+		) {
+			let dims = this.renderDimensions.getKeyDimensions(i)
+			if (!isBlack(i)) {
+				let txt = this.getDisplayKey(CONST.NOTE_TO_KEY[i + 21])
+				let txtWd = ctx.measureText(txt).width
+				ctx.fillText(
+					txt,
+					dims.x + dims.w / 2 - txtWd / 2,
+					this.renderDimensions.whiteKeyHeight - fontSize / 3
+				)
+			}
+		}
+	}
+	drawBlackKeyNames(ctx) {
+		ctx.fillStyle = "white"
+		const fontSize = this.renderDimensions.blackKeyWidth / 2.1
+		ctx.font = Math.ceil(fontSize) + "px Arial black"
+		for (
+			let i = this.renderDimensions.minNoteNumber - 21;
+			i <= this.renderDimensions.maxNoteNumber - 21;
+			i++
+		) {
+			let dims = this.renderDimensions.getKeyDimensions(i)
+			if (isBlack(i)) {
+				let txt = this.getDisplayKey(CONST.NOTE_TO_KEY[i + 21])
+				let txtWd = ctx.measureText(txt).width
+				ctx.fillText(
+					txt,
+					dims.x + dims.w / 2 - txtWd / 2,
+					this.renderDimensions.blackKeyHeight - 2
+				)
+			}
+		}
+	}
+	getDisplayKey(key) {
+		let blackToHash = replaceAllString(key, "b", "#")
+		return blackToHash.replace(/[0-9]/g, "")
 	}
 	/**
 	 *
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Dimensions} dims
 	 */
-	drawWhiteKey(ctx, dims) {
+	drawWhiteKey(ctx, dims, color, isActive) {
 		let radius = 4
 		let x = dims.x
-		let y = dims.y - 2
+		let y = dims.y - 2 + isActive ? 6 : 0
 		let height = dims.h
 		let width = dims.w
 
@@ -215,20 +263,20 @@ export class PianoRender {
 		ctx.lineTo(x + 1, y + height - radius)
 		ctx.lineTo(x + 1, y)
 
-		ctx.fillStyle = "rgba(255,255,255,1)"
+		ctx.fillStyle = color
 		ctx.fill()
 
-		let rgr = ctx.createLinearGradient(
-			x,
-			whiteKeyHeight / 2,
-			x + width,
-			whiteKeyHeight / 2
-		)
-		rgr.addColorStop(0.9, "rgba(0,0,0,0.1)")
-		rgr.addColorStop(0.5, "rgba(0,0,0,0)")
-		rgr.addColorStop(0.1, "rgba(0,0,0,0.1)")
-		ctx.fillStyle = rgr
-		ctx.fill()
+		// let rgr = ctx.createLinearGradient(
+		// 	x,
+		// 	whiteKeyHeight / 2,
+		// 	x + width,
+		// 	whiteKeyHeight / 2
+		// )
+		// rgr.addColorStop(0.9, "rgba(0,0,0,0.1)")
+		// rgr.addColorStop(0.5, "rgba(0,0,0,0)")
+		// rgr.addColorStop(0.1, "rgba(0,0,0,0.1)")
+		// ctx.fillStyle = rgr
+		// ctx.fill()
 
 		let rgr2 = ctx.createLinearGradient(
 			this.renderDimensions.windowWidth / 2,
@@ -236,8 +284,8 @@ export class PianoRender {
 			this.renderDimensions.windowWidth / 2,
 			whiteKeyHeight
 		)
+		rgr2.addColorStop(0, "rgba(0,0,0,0.9)")
 		rgr2.addColorStop(1, "rgba(255,255,255,0.5)")
-		rgr2.addColorStop(0, "rgba(0,0,0,0.5)")
 		ctx.fillStyle = rgr2
 		ctx.fill()
 
@@ -338,7 +386,93 @@ export class PianoRender {
 			this.playedKeysCanvasBlack.className = "pianoCanvas"
 			document.body.appendChild(this.playedKeysCanvasBlack)
 			this.playedKeysCtxBlack = this.playedKeysCanvasBlack.getContext("2d")
+
+			this.playedKeysCanvasBlack.addEventListener(
+				"mousedown",
+				this.onPianoMousedown.bind(this)
+			)
+			this.playedKeysCanvasBlack.addEventListener(
+				"mouseup",
+				this.onPianoMouseup.bind(this)
+			)
+			this.playedKeysCanvasBlack.addEventListener(
+				"mousemove",
+				this.onPianoMousemove.bind(this)
+			)
+			this.playedKeysCanvasBlack.addEventListener(
+				"mouseleave",
+				this.onPianoMouseleave.bind(this)
+			)
 		}
 		return this.playedKeysCanvasBlack
+	}
+	onPianoMousedown(ev) {
+		if (getSetting("clickablePiano")) {
+			let { x, y } = this.getCanvasPosFromMouseEvent(ev)
+			let keyUnderMouse = this.getKeyAtPos(x, y)
+			if (keyUnderMouse >= 0) {
+				this.currentKeyUnderMouse = keyUnderMouse
+				this.isMouseDown = true
+				this.onNoteOn(keyUnderMouse + 21)
+			} else {
+				this.clearCurrentKeyUnderMouse()
+			}
+		}
+	}
+
+	onPianoMouseup(ev) {
+		this.isMouseDown = false
+		this.clearCurrentKeyUnderMouse()
+	}
+	onPianoMouseleave(ev) {
+		this.isMouseDown = false
+		this.clearCurrentKeyUnderMouse()
+	}
+
+	onPianoMousemove(ev) {
+		if (getSetting("clickablePiano")) {
+			let { x, y } = this.getCanvasPosFromMouseEvent(ev)
+			let keyUnderMouse = this.getKeyAtPos(x, y)
+			if (this.isMouseDown && keyUnderMouse >= 0) {
+				if (this.currentKeyUnderMouse != keyUnderMouse) {
+					this.onNoteOff(this.currentKeyUnderMouse + 21)
+					this.onNoteOn(keyUnderMouse + 21)
+					this.currentKeyUnderMouse = keyUnderMouse
+				}
+			} else {
+				this.clearCurrentKeyUnderMouse()
+			}
+		}
+	}
+	clearCurrentKeyUnderMouse() {
+		if (this.currentKeyUnderMouse >= 0) {
+			this.onNoteOff(this.currentKeyUnderMouse + 21)
+		}
+		this.currentKeyUnderMouse = -1
+	}
+	getKeyAtPos(x, y) {
+		let clickedKey = -1
+		for (let i = 0; i <= 87; i++) {
+			let dims = this.renderDimensions.getKeyDimensions(i)
+			if (x > dims.x && x < dims.x + dims.w) {
+				if (y > dims.y && y < dims.y + dims.h) {
+					if (clickedKey == -1) {
+						clickedKey = i
+					} else if (isBlack(i) && !isBlack(clickedKey)) {
+						clickedKey = i
+						break
+					}
+				}
+			}
+		}
+		return clickedKey
+	}
+	getCanvasPosFromMouseEvent(ev) {
+		let x = ev.clientX
+		let y =
+			ev.clientY -
+			(this.renderDimensions.windowHeight -
+				this.renderDimensions.whiteKeyHeight)
+		return { x, y }
 	}
 }

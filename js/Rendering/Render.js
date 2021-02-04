@@ -66,6 +66,13 @@ export class Render {
 		this.mouseY = 0
 
 		this.playerState = player.getState()
+
+		this.showKeyNamesOnPianoWhite = getSetting("showKeyNamesOnPianoWhite")
+		this.showKeyNamesOnPianoBlack = getSetting("showKeyNamesOnPianoBlack")
+	}
+
+	setPianoInputListeners(onNoteOn, onNoteOff) {
+		this.pianoRender.setPianoInputListeners(onNoteOn, onNoteOff)
 	}
 
 	/**
@@ -81,6 +88,14 @@ export class Render {
 		)
 
 		this.pianoRender.clearPlayedKeysCanvases()
+		if (
+			this.showKeyNamesOnPianoWhite != getSetting("showKeyNamesOnPianoWhite") ||
+			this.showKeyNamesOnPianoBlack != getSetting("showKeyNamesOnPianoBlack")
+		) {
+			this.showKeyNamesOnPianoWhite = getSetting("showKeyNamesOnPianoWhite")
+			this.showKeyNamesOnPianoBlack = getSetting("showKeyNamesOnPianoBlack")
+			this.pianoRender.resize()
+		}
 
 		this.backgroundRender.renderIfColorsChanged()
 
