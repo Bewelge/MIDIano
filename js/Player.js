@@ -2,7 +2,7 @@ import { MidiLoader } from "./MidiLoader.js"
 import { Song } from "./Song.js"
 import { CONST } from "./CONST.js"
 import { MidiInputHandler } from "./MidiInputHandler.js"
-import { AudioPlayer } from "./AudioPlayer.js"
+import { AudioPlayer } from "./audio/AudioPlayer.js"
 import { getLoader } from "./ui/Loader.js"
 import { getSetting } from "./settings/Settings.js"
 const LOOK_AHEAD_TIME = 0.2
@@ -26,6 +26,7 @@ export class Player {
 		this.volume = 100
 		this.mutedAtVolume = 100
 		this.soundfontName = getSetting("soundfontName")
+		this.inputInstrument = "acoustic_grand_piano"
 
 		this.newSongCallbacks = []
 		this.inputActiveNotes = {}
@@ -80,7 +81,10 @@ export class Player {
 		this.resetNoteSequence()
 	}
 	increaseSpeed(val) {
-		this.playbackSpeed = Math.round((this.playbackSpeed + val) * 100) / 100
+		this.playbackSpeed = Math.max(
+			0,
+			Math.round((this.playbackSpeed + val) * 100) / 100
+		)
 	}
 	getSong() {
 		return this.song
@@ -370,35 +374,31 @@ export class Player {
 		)
 	}
 
-	startNoteAndGetNodes(noteNumber) {
-		let source = this.context.createBufferSource()
-		let gainNode = this.context.createGain()
-		let buffer = this.getBufferForNote(noteNumber, "acoustic_grand_piano")
-		source.buffer = buffer
-		source.connect(gainNode)
-
-		gainNode.value = 0
-		gainNode.gain.setTargetAtTime(0, 0, 0.1)
-		gainNode.gain.linearRampToValueAtTime(2, 0, 0.1)
-		gainNode.connect(this.context.destination)
-		source.start(0, 0.0)
-		return { source, gainNode }
-	}
-
 	addInputNoteOn(noteNumber) {
 		if (this.inputActiveNotes.hasOwnProperty(noteNumber)) {
 			console.log("NOTE ALREADY PLAING")
-			return
+			this.audioPlayer.noteOffContinuous(
+				this.inputActiveNotes[noteNumber].audioNote
+			)
+			delete this.inputActiveNotes[noteNumber]
 		}
-		let audioNote = { wasUsed: false }
+		let audioNote = this.audioPlayer.createContinuousNote(
+			noteNumber,
+			this.volume,
+			this.inputInstrument
+		)
+		let activeNoteObj = { audioNote: audioNote, wasUsed: false }
 
-		this.inputActiveNotes[noteNumber] = audioNote
+		this.inputActiveNotes[noteNumber] = activeNoteObj
 	}
 	addInputNoteOff(noteNumber) {
 		if (!this.inputActiveNotes.hasOwnProperty(noteNumber)) {
 			console.log("NOTE NOT PLAYING")
 			return
 		}
+		this.audioPlayer.noteOffContinuous(
+			this.inputActiveNotes[noteNumber].audioNote
+		)
 		delete this.inputActiveNotes[noteNumber]
 	}
 }
