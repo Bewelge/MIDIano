@@ -9,6 +9,10 @@ import { getLoader } from "./ui/Loader.js"
  * - piano zoom - 29.1 Done - Implement fit to song on new song callback
  * - clean up getRenderInfos - DONE 29.01
  *
+ * - click piano = hit key - DONE 04.02
+ * - implement configurable ADSR - DONE 04.02
+ * - render note keys on each note/ on piano - DONE 04.02
+ *
  * TODOs:
  * - channel menu
  * - accessability
@@ -17,7 +21,6 @@ import { getLoader } from "./ui/Loader.js"
  * - add more starting colors
  * -
  *
- * - implement configurable ADSR + maybe custom wave functions
  * - make instrument choosable for tracks
  * -
  * - implement control messages of the other two pedals
@@ -26,10 +29,10 @@ import { getLoader } from "./ui/Loader.js"
  * 		- accuracy needed
  * 		- different modes
  *
- *
- * - click piano = hit key
- * - render note keys on each note/ on piano
  * - Metronome
+ *
+ * - Update readme - new screenshot, install/ run instructions
+ * - Choose License
  *
  * bugs:
  * - fix track ui

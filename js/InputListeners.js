@@ -1,4 +1,3 @@
-import { sum } from "./Util.js"
 export class InputListeners {
 	constructor(player, ui, render) {
 		this.grabSpeed = []
@@ -15,6 +14,11 @@ export class InputListeners {
 		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
 
 		ui.fireInitialListeners()
+
+		render.setPianoInputListeners(
+			player.addInputNoteOn.bind(player),
+			player.addInputNoteOff.bind(player)
+		)
 	}
 
 	addMouseAndTouchListeners(render, player, ui) {
@@ -75,7 +79,7 @@ export class InputListeners {
 
 			let alreadyScrolling = player.scrolling != 0
 
-			//Because Firefox does not set .wheeldata
+			//Because Firefox does not set .wheelDelta
 			let wheelDelta = event.wheelDelta ? event.wheelDelta : -1 * event.deltaY
 
 			let evDel =
@@ -94,25 +98,27 @@ export class InputListeners {
 
 	onKeyDown(player, ui) {
 		return e => {
-			if (e.code == "Space") {
-				e.preventDefault()
-				if (!player.paused) {
-					ui.clickPause(e)
-				} else {
-					ui.clickPlay(e)
+			if (!player.isFreeplay) {
+				if (e.code == "Space") {
+					e.preventDefault()
+					if (!player.paused) {
+						ui.clickPause(e)
+					} else {
+						ui.clickPlay(e)
+					}
+				} else if (e.code == "ArrowUp") {
+					player.increaseSpeed(0.05)
+					ui.getSpeedDisplayField().value =
+						Math.floor(player.playbackSpeed * 100) + "%"
+				} else if (e.code == "ArrowDown") {
+					player.increaseSpeed(-0.05)
+					ui.getSpeedDisplayField().value =
+						Math.floor(player.playbackSpeed * 100) + "%"
+				} else if (e.code == "ArrowLeft") {
+					player.setTime(player.getTime() - 5)
+				} else if (e.code == "ArrowRight") {
+					player.setTime(player.getTime() + 5)
 				}
-			} else if (e.code == "ArrowUp") {
-				player.increaseSpeed(0.05)
-				ui.getSpeedDisplayField().value =
-					Math.floor(player.playbackSpeed * 100) + "%"
-			} else if (e.code == "ArrowDown") {
-				player.increaseSpeed(-0.05)
-				ui.getSpeedDisplayField().value =
-					Math.floor(player.playbackSpeed * 100) + "%"
-			} else if (e.code == "ArrowLeft") {
-				player.setTime(player.getTime() - 5)
-			} else if (e.code == "ArrowRight") {
-				player.setTime(player.getTime() + 5)
 			}
 		}
 	}
