@@ -365,12 +365,19 @@ export class Player {
 		}
 		let currentTime = this.getTime()
 
-		this.audioPlayer.playNote(
+		this.audioPlayer.playCompleteNote(
 			currentTime,
 			note,
 			this.playbackSpeed,
-			this.volume,
+			this.getNoteVolume(note),
 			this.isPlayalong()
+		)
+	}
+	getNoteVolume(note) {
+		return (
+			(this.volume / 100) *
+			(this.tracks[note.track].volume / 100) *
+			(note.channelVolume / 127)
 		)
 	}
 

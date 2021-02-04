@@ -9,12 +9,8 @@ const TAB_VIDEO = "Video"
 
 const defaultSettings = {
 	//tabs
-	// General: {
-	// 	//default or subcategory
-	// 	default: []
-	// },
-
-	Video: {
+	General: {
+		//default or subcategory
 		default: [
 			{
 				type: "slider",
@@ -26,6 +22,46 @@ const defaultSettings = {
 				step: 1,
 				onChange: value => setSetting("renderOffset", value)
 			},
+			{
+				type: "checkbox",
+				id: "clickablePiano",
+				label: "Clickable piano",
+				value: true,
+				onChange: ev => setSetting("clickablePiano", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showBPM",
+				label: "Show BPM",
+				value: true,
+				onChange: ev => setSetting("showBPM", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showMiliseconds",
+				label: "Show Miliseconds",
+				value: true,
+				onChange: ev => setSetting("showMiliseconds", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showNoteDebugInfo",
+				label: "Enable debug info on hover over note",
+				value: false,
+				onChange: ev => setSetting("showNoteDebugInfo", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showFps",
+				label: "Show FPS",
+				value: true,
+				onChange: ev => setSetting("showFps", ev.target.checked)
+			}
+		]
+	},
+
+	Video: {
+		default: [
 			{
 				type: "slider",
 				id: "noteToHeightConst",
@@ -48,20 +84,6 @@ const defaultSettings = {
 			},
 			{
 				type: "checkbox",
-				id: "showBPM",
-				label: "Show BPM",
-				value: true,
-				onChange: ev => setSetting("showBPM", ev.target.checked)
-			},
-			{
-				type: "checkbox",
-				id: "showMiliseconds",
-				label: "Show Miliseconds",
-				value: true,
-				onChange: ev => setSetting("showMiliseconds", ev.target.checked)
-			},
-			{
-				type: "checkbox",
 				id: "showHitKeys",
 				label: "Show Hit Notes effect",
 				value: true,
@@ -69,10 +91,26 @@ const defaultSettings = {
 			},
 			{
 				type: "checkbox",
-				id: "showPianoKeys",
+				id: "highlightActivePianoKeys",
 				label: "Color active piano keys",
 				value: true,
 				onChange: ev => setSetting("showPianoKeys", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showKeyNamesOnPianoWhite",
+				label: "Show white key names on piano",
+				value: true,
+				onChange: ev =>
+					setSetting("showKeyNamesOnPianoWhite", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showKeyNamesOnPianoBlack",
+				label: "Show black key names on piano",
+				value: true,
+				onChange: ev =>
+					setSetting("showKeyNamesOnPianoBlack", ev.target.checked)
 			},
 			{
 				type: "checkbox",
@@ -104,20 +142,6 @@ const defaultSettings = {
 				label: "Enable fade in effect",
 				value: true,
 				onChange: ev => setSetting("fadeInNotes", ev.target.checked)
-			},
-			{
-				type: "checkbox",
-				id: "showNoteDebugInfo",
-				label: "Enable debug info on hover over note",
-				value: false,
-				onChange: ev => setSetting("showNoteDebugInfo", ev.target.checked)
-			},
-			{
-				type: "checkbox",
-				id: "showFps",
-				label: "Show FPS",
-				value: true,
-				onChange: ev => setSetting("showFps", ev.target.checked)
 			}
 		],
 		Sustain: [
@@ -259,6 +283,58 @@ const defaultSettings = {
 				onChange: function (ev) {
 					setSetting("sustainEnabled", ev.target.checked)
 				}.bind(this)
+			}
+		],
+		"ADSR Envelope": [
+			{
+				type: "slider",
+				id: "adsrAttack",
+				label: "Attack (Seconds)",
+				value: 0.01,
+				min: 0,
+				max: 2,
+				step: 0.01,
+				onChange: value => setSetting("adsrAttack", value)
+			},
+			{
+				type: "slider",
+				id: "adsrDecay",
+				label: "Decay (Seconds)",
+				value: 0,
+				min: 0,
+				max: 0.5,
+				step: 0.01,
+				onChange: value => setSetting("adsrDecay", value)
+			},
+			{
+				type: "slider",
+				id: "adsrSustain",
+				label: "Sustain (%)",
+				value: 100,
+				min: 0,
+				max: 100,
+				step: 1,
+				onChange: value => setSetting("adsrSustain", value)
+			},
+			{
+				type: "slider",
+				id: "adsrReleaseKey",
+				label: "Release - Key (Seconds)",
+				value: 0.2,
+				min: 0,
+				max: 2,
+				step: 0.01,
+				onChange: value => setSetting("adsrReleaseKey", value)
+			},
+			{
+				type: "slider",
+				id: "adsrReleasePedal",
+				label: "Release - Pedal (Seconds)",
+				value: 0.2,
+				min: 0,
+				max: 2,
+				step: 0.01,
+				onChange: value => setSetting("adsrReleasePedal", value)
 			}
 		]
 	}
