@@ -29,7 +29,9 @@ export class DomHelper {
 		})
 	}
 	static removeClass(className, element) {
-		element.className = element.className.replace(className, "")
+		if (element.classList.contains(className)) {
+			element.classList.remove(className)
+		}
 	}
 	static createSliderWithLabel(id, label, val, min, max, step, onChange) {
 		let cont = DomHelper.createElement(
@@ -198,7 +200,7 @@ export class DomHelper {
 	}
 	static addClassToElement(className, element) {
 		if (!element.classList.contains(className)) {
-			element.className += " " + className
+			element.classList.add(className)
 		}
 	}
 	static createFlexContainer() {

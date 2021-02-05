@@ -707,14 +707,10 @@ export class UI {
 		return this.playButton
 	}
 	clickPlay(ev) {
-		if (!this.player.playing && this.player.song) {
-			if (this.player.startPlay()) {
-				DomHelper.addClassToElement("selected", this.playButton)
-			}
-		} else {
-			this.player.resume()
-			DomHelper.addClassToElement("selected", this.playButton)
+		if (this.player.song) {
 			DomHelper.removeClass("selected", this.getPauseButton())
+			this.player.startPlay()
+			DomHelper.addClassToElement("selected", this.playButton)
 		}
 	}
 	getPauseButton() {
@@ -731,9 +727,8 @@ export class UI {
 	clickPause(ev) {
 		this.player.pause()
 		DomHelper.removeClass("selected", this.getPlayButton())
-		if (this.player.playing) {
-			DomHelper.addClassToElement("selected", this.pauseButton)
-		}
+
+		DomHelper.addClassToElement("selected", this.pauseButton)
 	}
 	getStopButton() {
 		if (!this.stopButton) {

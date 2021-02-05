@@ -32,6 +32,8 @@ export class Player {
 		this.inputActiveNotes = {}
 
 		this.playbackSpeed = 1
+
+		this.playTick()
 	}
 	getState() {
 		let time = this.getTime()
@@ -166,8 +168,6 @@ export class Player {
 		this.resetNoteSequence()
 		this.lastTime = this.audioPlayer.getContextTime()
 		this.resume()
-		this.audioPlayer.resume()
-		this.play()
 	}
 	handleScroll(stacksize) {
 		if (this.scrolling != 0) {
@@ -238,14 +238,14 @@ export class Player {
 		}
 		return val
 	}
-	play() {
+	playTick() {
 		let currentContextTime = this.audioPlayer.getContextTime()
 
 		let delta = (currentContextTime - this.lastTime) * this.playbackSpeed
 
 		//cap max updaterate.
 		if (delta < 0.0069) {
-			window.requestAnimationFrame(this.play.bind(this))
+			this.requestNextTick()
 			return
 		}
 
@@ -254,13 +254,14 @@ export class Player {
 		if (!this.paused && this.scrolling == 0) {
 			this.progress += Math.min(0.1, delta)
 		} else {
-			window.setTimeout(this.play.bind(this), 7)
+			this.requestNextTick()
 			return
 		}
 
 		let soundfontName = getSetting("soundfontName")
 		if (soundfontName != this.soundfontName) {
 			this.switchSoundfont(soundfontName)
+			this.requestNextTick()
 			return
 		}
 
@@ -268,6 +269,7 @@ export class Player {
 
 		if (this.isSongEnded(currentTime - 0.5)) {
 			this.pause()
+			this.requestNextTick()
 			return
 		}
 
@@ -295,8 +297,13 @@ export class Player {
 			}
 		}
 
-		window.requestAnimationFrame(this.play.bind(this))
+		this.requestNextTick()
 	}
+	requestNextTick ()
+	{
+		window.requestAnimationFrame( this.playTick.bind( this ) )
+	}
+
 	isInputKeyPressed(noteNumber) {
 		if (
 			this.inputActiveNotes.hasOwnProperty(noteNumber) &&
@@ -338,12 +345,11 @@ export class Player {
 		this.pause()
 	}
 	resume() {
-		if (!this.song) return
+		if (!this.song || !this.paused) return
 		console.log("Resuming Song")
 		this.paused = false
 		this.resetNoteSequence()
 		this.audioPlayer.resume()
-		this.play()
 	}
 	resetNoteSequence() {
 		this.noteSequence = this.song.getNoteSequence()
