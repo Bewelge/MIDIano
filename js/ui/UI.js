@@ -10,8 +10,6 @@ import { getPlayer } from "../player/Player.js"
  */
 export class UI {
 	constructor(render, isMobile) {
-		this.midiInputHandler = getPlayer().midiInputHandler
-
 		this.isMobile = window.matchMedia(
 			"only screen and (max-width: 1600px)"
 		).matches
@@ -775,7 +773,7 @@ export class UI {
 			this.inputDevicesDiv = DomHelper.createDivWithClass("container")
 			this.midiInputDialog.appendChild(this.inputDevicesDiv)
 		}
-		let devices = this.midiInputHandler.getAvailableDevices()
+		let devices = getPlayer().midiInputHandler.getAvailableDevices()
 		if (devices.length == 0) {
 			this.inputDevicesDiv.innerHTML = "No MIDI-devices found."
 		} else {
@@ -796,14 +794,14 @@ export class UI {
 			() => {
 				if (deviceDiv.classList.contains("selected")) {
 					DomHelper.removeClass("selected", deviceDiv)
-					this.midiInputHandler.clearInput(device)
+					getPlayer().midiInputHandler.clearInput(device)
 				} else {
 					DomHelper.addClassToElement("selected", deviceDiv)
-					this.midiInputHandler.addInput(device)
+					getPlayer().midiInputHandler.addInput(device)
 				}
 			}
 		)
-		if (this.midiInputHandler.isInputActive(device)) {
+		if (getPlayer().midiInputHandler.isInputActive(device)) {
 			DomHelper.addClassToElement("selected", deviceDiv)
 		}
 
@@ -818,18 +816,5 @@ export class UI {
 			this.hideDiv(this.trackMenuDiv)
 		}
 		return this.trackMenuDiv
-	}
-
-	addNotification(message) {
-		let notifEl = DomHelper.createDivWithClass("notification")
-		notifEl.innerHTML = message
-		document.body.appendChild(notifEl)
-		window.setTimeout(() => document.body.removeChild(notifEl), 1500)
-	}
-	highlightElement(element) {
-		element.classList.add("highlighted")
-		window.setTimeout(() => {
-			element.classList.remove("highlighted")
-		}, 1500)
 	}
 }

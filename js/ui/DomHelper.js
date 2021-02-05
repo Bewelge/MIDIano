@@ -168,7 +168,7 @@ export class DomHelper {
 		attributes.onchange = onChange
 		return DomHelper.createElement("input", styles, attributes)
 	}
-	static createCheckbox(text, onChange, value) {
+	static createCheckbox(text, onChange, value, isChecked) {
 		let id = replaceAllString(text, " ", "") + "checkbox"
 		let cont = DomHelper.createDivWithIdAndClass(id, "checkboxCont")
 		let checkbox = DomHelper.createElementWithClass("checkboxInput", "input")
@@ -191,6 +191,9 @@ export class DomHelper {
 		cont.addEventListener("click", ev => {
 			if (ev.target != checkbox) {
 				checkbox.click()
+				if (isChecked) {
+					checkbox.checked = isChecked()
+				}
 			}
 		})
 		return cont

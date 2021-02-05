@@ -6,7 +6,9 @@ import {
 	setTrackColor
 } from "../player/Tracks.js"
 import { getPlayer } from "../player/Player.js"
-import { getSetting } from "../settings/Settings.js"
+import { SettingUI } from "./SettingUI.js"
+import { ElementHighlight } from "./ElementHighlight.js"
+import { Notification } from "./Notification.js"
 
 /**
  *  Handles creation of the Track-Divs that give control over volume, diplay, color...
@@ -77,83 +79,81 @@ export const createTrackDiv = trackId => {
 	)
 
 	//Hide Track
-	hideButton = DomHelper.createGlyphiconButton(
-		"hide" + trackId,
-		"eye-open",
-		ev => {
+	hideButton = SettingUI.createSettingDiv({
+		type: "checkbox",
+		label: "Show track",
+		value: trackObj.draw,
+		onChange: () => {
 			if (trackObj.draw) {
-				DomHelper.replaceGlyph(hideButton, "eye-open", "eye-close")
 				trackObj.draw = false
 			} else {
-				DomHelper.replaceGlyph(hideButton, "eye-close", "eye-open")
 				trackObj.draw = true
 			}
 		}
-	)
+	})
+	// hideButton = DomHelper.createGlyphiconButton(
+	// 	"hide" + trackId,
+	// 	"eye-open",
+	// 	ev => {
+	// 	}
+	// )
 
 	//Mute Track
-	muteButton = DomHelper.createGlyphiconButton(
-		"mute" + trackId,
-		"volume-up",
-		() => {
+	muteButton = SettingUI.createSettingDiv({
+		type: "checkbox",
+		label: "Mute track",
+		value: trackObj.volume == 0,
+		onChange: () => {
 			if (trackObj.volume == 0) {
 				let volume = trackObj.volumeAtMute || 127
 				trackObj.volume = volume
 				volumeSlider.slider.value = volume
-				DomHelper.replaceGlyph(muteButton, "volume-off", "volume-up")
 				trackObj.volumeAtMute = 0
 			} else {
 				trackObj.volumeAtMute = trackObj.volume
 				trackObj.volume = 0
 				volumeSlider.slider.value = 0
-				DomHelper.replaceGlyph(muteButton, "volume-up", "volume-off")
 			}
 		}
-	)
+	})
 
 	//Require Track to play along
-	requireToPlayAlongButton = DomHelper.createGlyphiconTextButton(
-		"require" + trackId,
-		"minus-sign",
-		"Play along",
-		() => {
+	requireToPlayAlongButton = SettingUI.createSettingDiv({
+		type: "checkbox",
+		label: "Require playalong",
+		value: trackObj.requiredToPlay,
+		isChecked: () => trackObj.requiredToPlay,
+		onChange: () => {
+			console.log(trackObj.requiredToPlay)
 			if (!trackObj.requiredToPlay) {
-				if (!this.midiInputHandler.isAnyInputSet()) {
-					this.addNotification(
-						"You have to choose a Midi Input Device to play along."
+				if (!getPlayer().midiInputHandler.isAnyInputSet()) {
+					Notification.create(
+						"You have to choose a Midi Input Device to play along.",
+						5000
 					)
-					this.highlightElement(this.getMidiInputButton())
+					new ElementHighlight(document.querySelector("#midiInput"))
+
 					return
 				}
-				DomHelper.replaceGlyph(
-					requireToPlayAlongButton,
-					"minus-sign",
-					"plus-sign"
-				)
 				trackObj.requiredToPlay = true
 			} else {
 				trackObj.requiredToPlay = false
-				DomHelper.replaceGlyph(
-					requireToPlayAlongButton,
-					"plus-sign",
-					"minus-sign"
-				)
 			}
 		}
-	)
+	})
 
-	let colorPickerWhite = DomHelper.createColorPickerGlyphiconText(
-		"tint",
-		"White",
-		getTrackColor(trackId).white,
-		colorString => setTrackColor(trackId, "white", colorString)
-	)
-	let colorPickerBlack = DomHelper.createColorPickerGlyphiconText(
-		"tint",
-		"Black",
-		getTrackColor(trackId).black,
-		colorString => setTrackColor(trackId, "black", colorString)
-	)
+	let colorPickerWhite = SettingUI.createColorSettingDiv({
+		type: "color",
+		label: "White note color",
+		value: getTrackColor(trackId).white,
+		onChange: colorString => setTrackColor(trackId, "white", colorString)
+	})
+	let colorPickerBlack = SettingUI.createColorSettingDiv({
+		type: "color",
+		label: "Black note color",
+		value: getTrackColor(trackId).black,
+		onChange: colorString => setTrackColor(trackId, "black", colorString)
+	})
 
 	DomHelper.appendChildren(btnGrp, [
 		hideButton,

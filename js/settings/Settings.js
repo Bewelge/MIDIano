@@ -1,5 +1,5 @@
 import { getDefaultSettings } from "./DefaultSettings.js"
-import { SettingUI } from "./SettingUI.js"
+import { SettingUI } from "../ui/SettingUI.js"
 
 class Settings {
 	constructor(ui) {

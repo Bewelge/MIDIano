@@ -94,23 +94,23 @@ export class SettingUI {
 			cont.appendChild(label)
 		}
 		settingsList.forEach(setting =>
-			cont.appendChild(this.createSettingDiv(setting))
+			cont.appendChild(SettingUI.createSettingDiv(setting))
 		)
 		return cont
 	}
-	createSettingDiv(setting) {
+	static createSettingDiv(setting) {
 		switch (setting.type) {
 			case "list":
-				return this.createListSettingDiv(setting)
+				return SettingUI.createListSettingDiv(setting)
 			case "checkbox":
-				return this.createCheckboxSettingDiv(setting)
+				return SettingUI.createCheckboxSettingDiv(setting)
 			case "slider":
-				return this.createSliderSettingDiv(setting)
+				return SettingUI.createSliderSettingDiv(setting)
 			case "color":
-				return this.createColorSettingDiv(setting)
+				return SettingUI.createColorSettingDiv(setting)
 		}
 	}
-	createListSettingDiv(setting) {
+	static createListSettingDiv(setting) {
 		let el = DomHelper.createInputSelect(
 			setting.label,
 			setting.list,
@@ -119,16 +119,17 @@ export class SettingUI {
 		el.classList.add("settingContainer")
 		return el
 	}
-	createCheckboxSettingDiv(setting) {
+	static createCheckboxSettingDiv(setting) {
 		let el = DomHelper.createCheckbox(
 			setting.label,
 			setting.onChange,
-			setting.value
+			setting.value,
+			setting.isChecked
 		)
 		el.classList.add("settingContainer")
 		return el
 	}
-	createSliderSettingDiv(setting) {
+	static createSliderSettingDiv(setting) {
 		let el = DomHelper.createSliderWithLabelAndField(
 			setting.id + "Slider",
 			setting.label,
@@ -141,7 +142,7 @@ export class SettingUI {
 		el.classList.add("settingContainer")
 		return el
 	}
-	createColorSettingDiv(setting) {
+	static createColorSettingDiv(setting) {
 		return DomHelper.createColorPickerText(
 			setting.label,
 			setting.value,
