@@ -77,9 +77,15 @@ export class AudioPlayer {
 		if (!this.buffers.hasOwnProperty(this.soundfontName)) {
 			this.buffers[this.soundfontName] = {}
 		}
+		//For percussion
+		if (!this.buffers.hasOwnProperty("FluidR3_GM")) {
+			this.buffers["FluidR3_GM"] = {}
+		}
+
+		let instrumentsOfSong = currentSong.getAllInstruments()
+
 		//filter instruments we've loaded already and directly map onto promise
-		let neededInstruments = currentSong
-			.getAllInstruments()
+		let neededInstruments = instrumentsOfSong
 			.filter(
 				instrument =>
 					!this.buffers[this.soundfontName].hasOwnProperty(instrument)
@@ -87,6 +93,11 @@ export class AudioPlayer {
 			.map(instrument =>
 				SoundfontLoader.loadInstrument(instrument, this.soundfontName)
 			)
+		if (instrumentsOfSong.includes("percussion")) {
+			neededInstruments.push(
+				SoundfontLoader.loadInstrument("percussion", "FluidR3_GM")
+			)
+		}
 		if (neededInstruments.length == 0) {
 			return Promise.resolve()
 		}

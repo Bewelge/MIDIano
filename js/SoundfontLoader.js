@@ -10,16 +10,12 @@ export class SoundfontLoader {
 	 * @param {String} instrument
 	 */
 	static async loadInstrument(instrument, soundfontName) {
+		let baseUrl = "https://gleitz.github.io/midi-js-soundfonts/"
 		if (instrument == "percussion") {
 			soundfontName = "FluidR3_GM"
+			baseUrl = ""
 		}
-		return fetch(
-			"https://gleitz.github.io/midi-js-soundfonts/" +
-				soundfontName +
-				"/" +
-				instrument +
-				"-ogg.js"
-		)
+		return fetch(baseUrl + soundfontName + "/" + instrument + "-ogg.js")
 			.then(response => {
 				if (response.ok) {
 					return response.text()
@@ -48,33 +44,34 @@ export class SoundfontLoader {
 	}
 	static async getBuffers(ctx, soundfontName) {
 		let sortedBuffers = null
-		let unsortedBuffers = await SoundfontLoader.createBuffers(
-			ctx,
-			soundfontName
-		).then(unsortedBuffers => {
-			let buffers = {}
-			for (let b in unsortedBuffers) {
-				let buffer = unsortedBuffers[b]
-				if (!buffers.hasOwnProperty(buffer.instrument)) {
-					buffers[buffer.instrument] = {}
+		await SoundfontLoader.createBuffers(ctx, soundfontName).then(
+			unsortedBuffers => {
+				let buffers = {}
+				for (let b in unsortedBuffers) {
+					let buffer = unsortedBuffers[b]
+					if (!buffers.hasOwnProperty(buffer.instrument)) {
+						buffers[buffer.instrument] = {}
+					}
+					buffers[buffer.instrument][buffer.note] = buffer.buffer
 				}
-				buffers[buffer.instrument][buffer.note] = buffer.buffer
+				sortedBuffers = buffers
 			}
-			sortedBuffers = buffers
-		})
+		)
 		return sortedBuffers
 	}
-	static async createBuffers(ctx, soundfontName) {
+	static async createBuffers(ctx) {
 		let promises = []
-		for (let instrument in MIDI[soundfontName]) {
-			console.log("Loaded instrument : " + instrument)
-			for (let note in MIDI[soundfontName][instrument]) {
-				let base64Buffer = SoundfontLoader.getBase64Buffer(
-					MIDI[soundfontName][instrument][note]
-				)
-				promises.push(
-					SoundfontLoader.getNotePromise(ctx, base64Buffer, note, instrument)
-				)
+		for (let soundfontName in MIDI) {
+			for (let instrument in MIDI[soundfontName]) {
+				console.log("Loaded instrument : " + instrument)
+				for (let note in MIDI[soundfontName][instrument]) {
+					let base64Buffer = SoundfontLoader.getBase64Buffer(
+						MIDI[soundfontName][instrument][note]
+					)
+					promises.push(
+						SoundfontLoader.getNotePromise(ctx, base64Buffer, note, instrument)
+					)
+				}
 			}
 		}
 		return await Promise.all(promises)
