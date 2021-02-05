@@ -879,7 +879,7 @@ export var CONST = {
 		B7: 107,
 		C8: 108
 	},
-	NOTE_TO_KEY: {
+	MIDI_NOTE_TO_KEY: {
 		21: "A0",
 		22: "Bb0",
 		23: "B0",

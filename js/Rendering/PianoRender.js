@@ -81,11 +81,11 @@ export class PianoRender {
 	}
 	/**
 	 *
-	 * @param {Integer} midiNoteNumber
+	 * @param {Integer} noteNumber
 	 */
-	drawActiveInputKey(midiNoteNumber) {
-		let dim = this.renderDimensions.getKeyDimensions(midiNoteNumber - 21)
-		let keyBlack = isBlack(midiNoteNumber - 21)
+	drawActiveInputKey(noteNumber) {
+		let dim = this.renderDimensions.getKeyDimensions(noteNumber)
+		let keyBlack = isBlack(noteNumber)
 		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
 		const activeInputColor = "rgba(40,155,155,0.8)"
 		if (keyBlack) {
@@ -96,7 +96,7 @@ export class PianoRender {
 	}
 
 	drawActiveKey(renderInfo, color) {
-		let dim = this.renderDimensions.getKeyDimensions(renderInfo.noteNumber - 21)
+		let dim = this.renderDimensions.getKeyDimensions(renderInfo.noteNumber)
 		let keyBlack = renderInfo.keyBlack
 		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
 
@@ -171,8 +171,8 @@ export class PianoRender {
 
 	drawWhiteKeys(ctxWhite) {
 		for (
-			let i = this.renderDimensions.minNoteNumber - 21;
-			i <= this.renderDimensions.maxNoteNumber - 21;
+			let i = this.renderDimensions.minNoteNumber;
+			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
@@ -184,8 +184,8 @@ export class PianoRender {
 
 	drawBlackKeys(ctxBlack) {
 		for (
-			let i = this.renderDimensions.minNoteNumber - 21;
-			i <= this.renderDimensions.maxNoteNumber - 21;
+			let i = this.renderDimensions.minNoteNumber;
+			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
@@ -199,13 +199,13 @@ export class PianoRender {
 		const fontSize = this.renderDimensions.whiteKeyWidth / 2
 		ctx.font = fontSize + "px Arial black"
 		for (
-			let i = this.renderDimensions.minNoteNumber - 21;
-			i <= this.renderDimensions.maxNoteNumber - 21;
+			let i = this.renderDimensions.minNoteNumber;
+			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (!isBlack(i)) {
-				let txt = this.getDisplayKey(CONST.NOTE_TO_KEY[i + 21])
+				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21])
 				let txtWd = ctx.measureText(txt).width
 				ctx.fillText(
 					txt,
@@ -220,13 +220,13 @@ export class PianoRender {
 		const fontSize = this.renderDimensions.blackKeyWidth / 2.1
 		ctx.font = Math.ceil(fontSize) + "px Arial black"
 		for (
-			let i = this.renderDimensions.minNoteNumber - 21;
-			i <= this.renderDimensions.maxNoteNumber - 21;
+			let i = this.renderDimensions.minNoteNumber;
+			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (isBlack(i)) {
-				let txt = this.getDisplayKey(CONST.NOTE_TO_KEY[i + 21])
+				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21])
 				let txtWd = ctx.measureText(txt).width
 				ctx.fillText(
 					txt,
@@ -413,7 +413,7 @@ export class PianoRender {
 			if (keyUnderMouse >= 0) {
 				this.currentKeyUnderMouse = keyUnderMouse
 				this.isMouseDown = true
-				this.onNoteOn(keyUnderMouse + 21)
+				this.onNoteOn(keyUnderMouse)
 			} else {
 				this.clearCurrentKeyUnderMouse()
 			}
@@ -435,8 +435,8 @@ export class PianoRender {
 			let keyUnderMouse = this.getKeyAtPos(x, y)
 			if (this.isMouseDown && keyUnderMouse >= 0) {
 				if (this.currentKeyUnderMouse != keyUnderMouse) {
-					this.onNoteOff(this.currentKeyUnderMouse + 21)
-					this.onNoteOn(keyUnderMouse + 21)
+					this.onNoteOff(this.currentKeyUnderMouse)
+					this.onNoteOn(keyUnderMouse)
 					this.currentKeyUnderMouse = keyUnderMouse
 				}
 			} else {
@@ -446,7 +446,7 @@ export class PianoRender {
 	}
 	clearCurrentKeyUnderMouse() {
 		if (this.currentKeyUnderMouse >= 0) {
-			this.onNoteOff(this.currentKeyUnderMouse + 21)
+			this.onNoteOff(this.currentKeyUnderMouse)
 		}
 		this.currentKeyUnderMouse = -1
 	}

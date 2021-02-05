@@ -144,8 +144,7 @@ export class Render {
 		if (playerState)
 			if (playerState.song) {
 				playerState.song.activeTracks.forEach((track, trackIndex) => {
-					if (isTrackDrawn(trackIndex)
-					) {
+					if (isTrackDrawn(trackIndex)) {
 						renderInfoByTrackMap[trackIndex] = { black: [], white: [] }
 
 						let time = this.getRenderTime(playerState)
@@ -157,7 +156,7 @@ export class Render {
 						for (let i = lookBackTime; i < lookAheadTime; i++) {
 							if (track.notesBySeconds[i]) {
 								track.notesBySeconds[i]
-									.filter(note => note.instrument != "percussion")
+									// .filter(note => note.instrument != "percussion")
 									.map(note => this.getNoteRenderInfo(note, time))
 									.forEach(renderInfo =>
 										renderInfo.keyBlack
@@ -187,7 +186,7 @@ export class Render {
 		if (noteDims.h < rad * 2) {
 			rad = noteDims.h / 2
 		}
-		let keyBlack = isBlack(note.noteNumber - 21)
+		let keyBlack = isBlack(note.noteNumber)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
 		return {
 			noteNumber: note.noteNumber,
@@ -215,7 +214,7 @@ export class Render {
 			velocity: note.velocity
 		}
 	}
-	
+
 	drawBPM(playerState) {
 		this.ctx.font = "20px Arial black"
 		this.ctx.fillStyle = "rgba(255,255,255,0.8)"

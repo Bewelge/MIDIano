@@ -4,11 +4,11 @@ const buffers = {}
 export const getBuffers = () => {
 	return buffers
 }
-export const getBufferForNote = (soundfontName, instrument, midiNoteNumber) => {
-	let key = CONST.NOTE_TO_KEY[midiNoteNumber]
+export const getBufferForNote = (soundfontName, instrument, noteNumber) => {
+	let noteKey = CONST.MIDI_NOTE_TO_KEY[noteNumber + 21]
 	let buffer
 	try {
-		buffer = buffers[soundfontName][instrument][key]
+		buffer = buffers[soundfontName][instrument][noteKey]
 	} catch (e) {
 		console.error(e)
 	}
@@ -18,17 +18,12 @@ export const hasBuffer = (soundfontName, instrument) =>
 	buffers.hasOwnProperty(soundfontName) &&
 	buffers[soundfontName].hasOwnProperty(instrument)
 
-export const setBuffer = (
-	soundfontName,
-	instrument,
-	midiNoteNumber,
-	buffer
-) => {
+export const setBuffer = (soundfontName, instrument, noteKey, buffer) => {
 	if (!buffers.hasOwnProperty(soundfontName)) {
 		buffers[soundfontName] = {}
 	}
 	if (!buffers[soundfontName].hasOwnProperty(instrument)) {
 		buffers[soundfontName][instrument] = {}
 	}
-	buffers[soundfontName][instrument][midiNoteNumber] = buffer
+	buffers[soundfontName][instrument][noteKey] = buffer
 }

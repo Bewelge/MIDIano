@@ -15,7 +15,7 @@ function formatTime(seconds, showMilis) {
 }
 /**
  *  Checks whether a note Number corresponds to a black piano key
- * @param {Number} noteNumber (0-88)
+ * @param {Number} noteNumber
  */
 function isBlack(noteNumber) {
 	return (noteNumber + 11) % 12 == 0 ||

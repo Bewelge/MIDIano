@@ -34,14 +34,14 @@ export class AudioPlayer {
 	stopAllSources() {
 		this.audioNotes.forEach(audioNote => audioNote.source.stop(0))
 	}
-	createContinuousNote(midiNoteNumber, volume, instrument) {
+	createContinuousNote(noteNumber, volume, instrument) {
 		if (this.context.state === "suspended") {
 			this.wasSuspended = true
 			this.context.resume()
 		}
 		let audioNote = createContinuousAudioNote(
 			this.context,
-			getBufferForNote(this.soundfontName, instrument, midiNoteNumber),
+			getBufferForNote(this.soundfontName, instrument, noteNumber),
 			volume / 100
 		)
 

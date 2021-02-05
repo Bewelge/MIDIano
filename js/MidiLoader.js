@@ -231,19 +231,22 @@ function parseTrack(data) {
 			switch (eventType) {
 				case 0x08:
 					event.type = "noteOff"
-					event.noteNumber = param1
+					event.midiNoteNumber = param1
+					event.noteNumber = param1 - 21
 					event.velocity = parser.readUInt8()
 					return event
 				case 0x09:
 					var velocity = parser.readUInt8()
 					event.type = velocity === 0 ? "noteOff" : "noteOn"
-					event.noteNumber = param1
+					event.midiNoteNumber = param1
+					event.noteNumber = param1 - 21
 					event.velocity = velocity
 					if (velocity === 0) event.byte9 = true
 					return event
 				case 0x0a:
 					event.type = "noteAftertouch"
-					event.noteNumber = param1
+					event.midiNoteNumber = param1
+					event.noteNumber = param1 - 21
 					event.amount = parser.readUInt8()
 					return event
 				case 0x0b:

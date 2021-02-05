@@ -1,16 +1,19 @@
 import { MidiLoader } from "../MidiLoader.js"
 import { Song } from "../Song.js"
-import { CONST } from "../CONST.js"
 import { MidiInputHandler } from "../MidiInputHandler.js"
 import { AudioPlayer } from "../audio/AudioPlayer.js"
 import { getLoader } from "../ui/Loader.js"
 import { getSetting } from "../settings/Settings.js"
-import { getTrackVolume, isAnyTrackPlayalong, isTrackRequiredToPlay, setupTracks } from "./Tracks.js"
+import {
+	getTrackVolume,
+	isAnyTrackPlayalong,
+	isTrackRequiredToPlay,
+	setupTracks
+} from "./Tracks.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {
 	constructor() {
-		
 		this.audioPlayer = new AudioPlayer()
 
 		this.midiInputHandler = new MidiInputHandler()
@@ -108,7 +111,6 @@ export class Player {
 			return nextNote.instrument
 		}
 	}
-
 
 	async loadSong(theSong, fileName) {
 		this.audioPlayer.stopAllSources()
@@ -270,7 +272,8 @@ export class Player {
 				this.noteSequence.splice(0, toRemove)
 			}
 
-			if (!isTrackRequiredToPlay(this.noteSequence[0].track) ||
+			if (
+				!isTrackRequiredToPlay(this.noteSequence[0].track) ||
 				this.isInputKeyPressed(this.noteSequence[0].noteNumber)
 			) {
 				this.playNote(this.noteSequence.shift())
@@ -282,9 +285,8 @@ export class Player {
 
 		this.requestNextTick()
 	}
-	requestNextTick ()
-	{
-		window.requestAnimationFrame( this.playTick.bind( this ) )
+	requestNextTick() {
+		window.requestAnimationFrame(this.playTick.bind(this))
 	}
 
 	isInputKeyPressed(noteNumber) {
@@ -311,7 +313,7 @@ export class Player {
 				currentTime + lookahead * this.playbackSpeed
 		)
 	}
-	
+
 	isPlaying() {
 		return this.playing
 	}
@@ -359,7 +361,7 @@ export class Player {
 	getNoteVolume(note) {
 		return (
 			(this.volume / 100) *
-			(getTrackVolume( note.track) / 100) *
+			(getTrackVolume(note.track) / 100) *
 			(note.channelVolume / 127)
 		)
 	}

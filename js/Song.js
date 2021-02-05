@@ -238,8 +238,8 @@ export class Song {
 	}
 	getNoteRange() {
 		let seq = this.getNoteSequence()
-		let min = 108
-		let max = 21
+		let min = 87
+		let max = 0
 		seq.forEach(note => {
 			if (note.noteNumber > max) {
 				max = note.noteNumber

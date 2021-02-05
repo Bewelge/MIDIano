@@ -74,8 +74,9 @@ export class DebugRender {
 		c.lineWidth = 4
 
 		let lines = [
-			"Note: " + CONST.NOTE_TO_KEY[renderInfo.noteNumber],
+			"Note: " + CONST.MIDI_NOTE_TO_KEY[renderInfo.noteNumber],
 			"NoteNumber: " + renderInfo.noteNumber,
+			"MidiNoteNumber: " + renderInfo.midiNoteNumber,
 			"Start: " + renderInfo.timestamp,
 			"End: " + renderInfo.offTime,
 			"Duration: " + renderInfo.duration,
