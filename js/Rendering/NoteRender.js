@@ -24,11 +24,8 @@ export class NoteRender {
 			renderInfoByTrackMap
 		)
 		//Active note effects
-		Object.keys(renderInfoByTrackMap)
-		.filter(trackIndex => activeNotesByTrackMap[trackIndex])
-		.forEach(trackIndex => {
-				this.renderActiveNotesEffects(activeNotesByTrackMap[trackIndex])
-			
+		Object.keys(activeNotesByTrackMap).forEach(trackIndex => {
+			this.renderActiveNotesEffects(activeNotesByTrackMap[trackIndex])
 		})
 
 		//Notes
@@ -39,14 +36,11 @@ export class NoteRender {
 			)
 		})
 		//Active keys on piano + stroking of active notes
-		Object.keys(renderInfoByTrackMap)
-		.filter(trackIndex => activeNotesByTrackMap[trackIndex])
-		.forEach(trackIndex => {
-				this.renderActivePianoKeys(activeNotesByTrackMap[trackIndex])
-	
-				this.strokeActiveNotes(activeNotesByTrackMap[trackIndex])
-				this.createParticles(activeNotesByTrackMap[trackIndex])
-			
+		Object.keys(activeNotesByTrackMap).forEach(trackIndex => {
+			this.renderActivePianoKeys(activeNotesByTrackMap[trackIndex])
+
+			this.strokeActiveNotes(activeNotesByTrackMap[trackIndex])
+			this.createParticles(activeNotesByTrackMap[trackIndex])
 		})
 
 		for (let noteNumber in inputActiveNotes) {
@@ -80,20 +74,13 @@ export class NoteRender {
 	drawSustainedNote(renderInfos) {
 		let ctx = this.ctx
 
-		let rad = renderInfos.rad
 		let x = renderInfos.x
-		let y = renderInfos.sustainY
 		let w = renderInfos.w / 2
-		let h = renderInfos.sustainH
 
 		if (renderInfos.sustainH && renderInfos.sustainY) {
-			// if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
-			// 	drawRoundRect(ctx, x + w / 2, y, w, h, rad, getSetting("roundedNotes"))
-			// } else {
 			ctx.beginPath()
 			ctx.rect(x + w / 2, renderInfos.sustainY, w, renderInfos.sustainH)
 			ctx.closePath()
-			// }
 			ctx.fill()
 		}
 	}
