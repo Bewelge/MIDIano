@@ -5,6 +5,7 @@ import {
 	createContinuousAudioNote,
 	createCompleteAudioNote
 } from "./AudioNote.js"
+import { getBufferForNote } from "./Buffers.js"
 
 export class AudioPlayer {
 	constructor() {
@@ -40,7 +41,7 @@ export class AudioPlayer {
 		}
 		let audioNote = createContinuousAudioNote(
 			this.context,
-			this.getBufferForNote(midiNoteNumber, instrument),
+			getBufferForNote(this.soundfontName, instrument, midiNoteNumber),
 			volume / 100
 		)
 
@@ -51,7 +52,11 @@ export class AudioPlayer {
 	}
 
 	playCompleteNote(currentTime, note, playbackSpeed, volume, isPlayAlong) {
-		const buffer = this.getBufferForNote(note.noteNumber, note.instrument)
+		const buffer = getBufferForNote(
+			this.soundfontName,
+			note.instrument,
+			note.noteNumber
+		)
 
 		let audioNote = createCompleteAudioNote(
 			note,
@@ -77,10 +82,6 @@ export class AudioPlayer {
 		if (!this.buffers.hasOwnProperty(this.soundfontName)) {
 			this.buffers[this.soundfontName] = {}
 		}
-		//For percussion
-		if (!this.buffers.hasOwnProperty("FluidR3_GM")) {
-			this.buffers["FluidR3_GM"] = {}
-		}
 
 		let instrumentsOfSong = currentSong.getAllInstruments()
 
@@ -105,26 +106,9 @@ export class AudioPlayer {
 	}
 
 	async loadBuffers() {
-		return await SoundfontLoader.getBuffers(
-			this.context,
-			this.soundfontName
-		).then(buffers => {
+		return await SoundfontLoader.getBuffers(this.context).then(buffers => {
 			console.log("Buffers loaded")
-			this.setBuffers(buffers)
 			this.loading = false
 		})
-	}
-	setBuffers(buffers) {
-		this.buffers[this.soundfontName] = buffers
-	}
-	getBufferForNote(midiNoteNumber, instrument) {
-		let key = CONST.NOTE_TO_KEY[midiNoteNumber]
-		let buffer
-		try {
-			buffer = this.buffers[this.soundfontName][instrument][key]
-		} catch (e) {
-			console.error(e)
-		}
-		return buffer
 	}
 }

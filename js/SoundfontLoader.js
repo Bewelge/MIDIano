@@ -1,7 +1,7 @@
+import { hasBuffer, setBuffer } from "./audio/Buffers.js"
 import { replaceAllString } from "./Util.js"
 export class SoundfontLoader {
 	constructor(audioCtx) {
-		this.buffers = {}
 		this.ctx = audioCtx
 	}
 
@@ -42,41 +42,54 @@ export class SoundfontLoader {
 				.map(instrument => SoundfontLoader.loadInstrument(instrument))
 		)
 	}
-	static async getBuffers(ctx, soundfontName) {
+	static async getBuffers(ctx) {
 		let sortedBuffers = null
-		await SoundfontLoader.createBuffers(ctx, soundfontName).then(
-			unsortedBuffers => {
-				let buffers = {}
-				for (let b in unsortedBuffers) {
-					let buffer = unsortedBuffers[b]
-					if (!buffers.hasOwnProperty(buffer.instrument)) {
-						buffers[buffer.instrument] = {}
-					}
-					buffers[buffer.instrument][buffer.note] = buffer.buffer
-				}
-				sortedBuffers = buffers
-			}
-		)
+		await SoundfontLoader.createBuffers(ctx).then(unsortedBuffers => {
+			unsortedBuffers.forEach(noteBuffer =>
+				setBuffer(
+					noteBuffer.soundfontName,
+					noteBuffer.instrument,
+					noteBuffer.noteKey,
+					noteBuffer.buffer
+				)
+			)
+		})
 		return sortedBuffers
 	}
 	static async createBuffers(ctx) {
 		let promises = []
 		for (let soundfontName in MIDI) {
 			for (let instrument in MIDI[soundfontName]) {
-				console.log("Loaded instrument : " + instrument)
-				for (let note in MIDI[soundfontName][instrument]) {
-					let base64Buffer = SoundfontLoader.getBase64Buffer(
-						MIDI[soundfontName][instrument][note]
+				if (!hasBuffer(soundfontName, instrument)) {
+					console.log(
+						"Loaded '" + soundfontName + "' instrument : " + instrument
 					)
-					promises.push(
-						SoundfontLoader.getNotePromise(ctx, base64Buffer, note, instrument)
-					)
+					for (let noteKey in MIDI[soundfontName][instrument]) {
+						let base64Buffer = SoundfontLoader.getBase64Buffer(
+							MIDI[soundfontName][instrument][noteKey]
+						)
+						promises.push(
+							SoundfontLoader.getNoteBuffer(
+								ctx,
+								base64Buffer,
+								soundfontName,
+								noteKey,
+								instrument
+							)
+						)
+					}
 				}
 			}
 		}
 		return await Promise.all(promises)
 	}
-	static async getNotePromise(ctx, base64Buffer, note, instrument) {
+	static async getNoteBuffer(
+		ctx,
+		base64Buffer,
+		soundfontName,
+		noteKey,
+		instrument
+	) {
 		let audioBuffer
 		return await ctx
 			.decodeAudioData(base64Buffer, function (decodedBuffer) {
@@ -85,8 +98,9 @@ export class SoundfontLoader {
 			.then(() => {
 				return {
 					buffer: audioBuffer,
-					note: note,
-					instrument: instrument
+					noteKey: noteKey,
+					instrument: instrument,
+					soundfontName: soundfontName
 				}
 			})
 	}
