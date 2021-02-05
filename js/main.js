@@ -1,5 +1,5 @@
 import { Render } from "./Rendering/Render.js"
-import { Player } from "./Player.js"
+import { Player } from "./player/Player.js"
 import { UI } from "./ui/UI.js"
 import { InputListeners } from "./InputListeners.js"
 import { getLoader } from "./ui/Loader.js"
@@ -42,7 +42,10 @@ import { getLoader } from "./ui/Loader.js"
  * - Custom UI for Mobile
  * - fix piano key hightlighting
  */
-var player, ui, player, loading, listeners
+let player
+let ui
+let loading
+let listeners
 
 window.onload = async function () {
 	await init()
@@ -63,15 +66,15 @@ async function init() {
 	loadStartingSong()
 }
 
-var render
+let render
 function renderLoop() {
-	let playerState = player.getState()
+	const playerState = player.getState()
 	render.render(playerState)
 	window.requestAnimationFrame(renderLoop)
 }
 async function loadStartingSong() {
-	let domain = window.location.href
-	let url = "https://midiano.com/mz_331_3.mid?raw=true" //"https://bewelge.github.io/piano-midi.de-Files/midi/alb_esp1.mid?raw=true" //
+	const domain = window.location.href
+	let url = "https://midiano.com/mz_331_3.mid?raw=true" // "https://bewelge.github.io/piano-midi.de-Files/midi/alb_esp1.mid?raw=true" //
 	if (domain.split("github").length > 1) {
 		url = "https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true"
 	}
@@ -79,13 +82,13 @@ async function loadStartingSong() {
 	loadSongFromURL(url, "Mozart KV 331 3rd Movement") // Local: "../mz_331_3.mid")
 }
 async function loadSongFromURL(url, title) {
-	getLoader().setLoadMessage("Loading Song from" + url)
-	let response = fetch(url, {
+	getLoader().setLoadMessage(`Loading Song from${url}`)
+	const response = fetch(url, {
 		method: "GET"
 	}).then(response => {
-		let filename = title || url
+		const filename = title || url
 		response.blob().then(blob => {
-			let reader = new FileReader()
+			const reader = new FileReader()
 			reader.onload = function (theFile) {
 				player.loadSong(reader.result, filename, () => {})
 			}

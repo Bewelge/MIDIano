@@ -1,4 +1,4 @@
-import { DomHelper } from "../DomHelper.js"
+import { DomHelper } from "../ui/DomHelper.js"
 import { groupArrayBy } from "../Util.js"
 /**
  * Class to create the DOM Elements used to manipulate the settings.
@@ -142,69 +142,10 @@ export class SettingUI {
 		return el
 	}
 	createColorSettingDiv(setting) {
-		let cont = DomHelper.createDivWithClass("settingContainer")
-
-		let label = DomHelper.createDivWithClass(
-			"colorLabel settingLabel",
-			{},
-			{ innerHTML: setting.label }
+		return DomHelper.createColorPickerText(
+			setting.label,
+			setting.value,
+			setting.onChange
 		)
-
-		let colorButtonContainer = DomHelper.createDivWithClass(
-			"colorPickerButtonContainer"
-		)
-		let colorButton = DomHelper.createDivWithClass("colorPickerButton")
-		colorButtonContainer.appendChild(colorButton)
-
-		cont.appendChild(label)
-		cont.appendChild(colorButtonContainer)
-
-		let colorPicker = Pickr.create({
-			el: colorButton,
-			theme: "nano",
-			components: {
-				hue: true,
-				preview: true,
-				opacity: true,
-				interaction: {
-					input: true
-				}
-			}
-		})
-		cont.onclick = () => colorPicker.show()
-		colorButtonContainer.style.backgroundColor = setting.value
-		colorPicker.on("init", () => colorPicker.setColor(setting.value))
-		colorPicker.on("change", color => {
-			setting.onChange(color.toRGBA().toString())
-			colorButtonContainer.style.backgroundColor = colorPicker
-				.getColor()
-				.toRGBA()
-				.toString()
-		})
-
-		return cont
-	}
-
-	initColorPicker(setting, colorPickerEl) {
-		const colorPicker = Pickr.create({
-			el: colorPickerEl,
-			theme: "nano",
-			components: {
-				hue: true,
-				preview: true,
-				opacity: true,
-				interaction: {
-					input: true
-				}
-			}
-		})
-		colorPicker.on("init", () => {
-			colorPicker.setColor(setting.value)
-			colorPickerEl.style.backgroundColor = "green"
-			colorPicker.on("change", color => {
-				let colorString = color.toRGBA().toString()
-				setting.onChange(colorString)
-			})
-		})
 	}
 }

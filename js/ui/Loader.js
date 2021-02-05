@@ -1,4 +1,4 @@
-import { DomHelper } from "../DomHelper.js"
+import { DomHelper } from "./DomHelper.js"
 class Loader {
 	startLoad() {
 		this.getLoadingDiv().style.display = "block"

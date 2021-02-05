@@ -1,16 +1,17 @@
-import { MidiLoader } from "./MidiLoader.js"
-import { Song } from "./Song.js"
-import { CONST } from "./CONST.js"
-import { MidiInputHandler } from "./MidiInputHandler.js"
-import { AudioPlayer } from "./audio/AudioPlayer.js"
-import { getLoader } from "./ui/Loader.js"
-import { getSetting } from "./settings/Settings.js"
+import { MidiLoader } from "../MidiLoader.js"
+import { Song } from "../Song.js"
+import { CONST } from "../CONST.js"
+import { MidiInputHandler } from "../MidiInputHandler.js"
+import { AudioPlayer } from "../audio/AudioPlayer.js"
+import { getLoader } from "../ui/Loader.js"
+import { getSetting } from "../settings/Settings.js"
+import { getTrackVolume, isAnyTrackPlayalong, isTrackRequiredToPlay, setupTracks } from "./Tracks.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
 export class Player {
 	constructor() {
-		this.tracks = {}
-		this.audioPlayer = new AudioPlayer(this.tracks)
+		
+		this.audioPlayer = new AudioPlayer()
 
 		this.midiInputHandler = new MidiInputHandler()
 		this.midiInputHandler.setNoteOnCallback(this.addInputNoteOn.bind(this))
@@ -42,7 +43,6 @@ export class Player {
 			end: this.song ? this.song.getEnd() : 0,
 			loading: this.audioPlayer.loading,
 			song: this.song,
-			tracks: this.tracks,
 			inputActiveNotes: this.inputActiveNotes,
 			bpm: this.getBPM(time)
 		}
@@ -108,23 +108,7 @@ export class Player {
 			return nextNote.instrument
 		}
 	}
-	setupTracks() {
-		this.tracks = {}
-		for (let t in this.song.activeTracks) {
-			if (!this.tracks.hasOwnProperty(t)) {
-				this.tracks[t] = {
-					draw: true,
-					color: CONST.TRACK_COLORS[t % 4],
-					volume: 100,
-					name: this.song.activeTracks[t].name || "Track " + t,
-					requiredToPlay: false,
-					index: t
-				}
-			}
-			this.tracks[t].color = CONST.TRACK_COLORS[t % 4]
-		}
-		this.audioPlayer.tracks = this.tracks
-	}
+
 
 	async loadSong(theSong, fileName) {
 		this.audioPlayer.stopAllSources()
@@ -146,7 +130,7 @@ export class Player {
 
 		await this.audioPlayer.loadInstrumentsForSong(this.currentSong)
 
-		this.setupTracks()
+		setupTracks(this.currentSong.activeTracks)
 		this.newSongCallbacks.forEach(callback => callback())
 		getLoader().setLoadMessage("Creating Buffers")
 		return this.audioPlayer.loadBuffers().then(v => getLoader().stopLoad())
@@ -286,8 +270,7 @@ export class Player {
 				this.noteSequence.splice(0, toRemove)
 			}
 
-			if (
-				!this.tracks[this.noteSequence[0].track].requiredToPlay ||
+			if (!isTrackRequiredToPlay(this.noteSequence[0].track) ||
 				this.isInputKeyPressed(this.noteSequence[0].noteNumber)
 			) {
 				this.playNote(this.noteSequence.shift())
@@ -319,7 +302,7 @@ export class Player {
 	}
 
 	isNextNoteReached(currentTime) {
-		let lookahead = this.isPlayalong()
+		let lookahead = isAnyTrackPlayalong()
 			? LOOK_AHEAD_TIME_WHEN_PLAYALONG
 			: LOOK_AHEAD_TIME
 		return (
@@ -328,13 +311,7 @@ export class Player {
 				currentTime + lookahead * this.playbackSpeed
 		)
 	}
-	isPlayalong() {
-		return (
-			Object.keys(this.tracks)
-				.slice(0)
-				.filter(track => this.tracks[track].requiredToPlay).length > 0
-		)
-	}
+	
 	isPlaying() {
 		return this.playing
 	}
@@ -376,13 +353,13 @@ export class Player {
 			note,
 			this.playbackSpeed,
 			this.getNoteVolume(note),
-			this.isPlayalong()
+			isAnyTrackPlayalong()
 		)
 	}
 	getNoteVolume(note) {
 		return (
 			(this.volume / 100) *
-			(this.tracks[note.track].volume / 100) *
+			(getTrackVolume( note.track) / 100) *
 			(note.channelVolume / 127)
 		)
 	}

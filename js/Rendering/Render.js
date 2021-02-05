@@ -1,4 +1,4 @@
-import { DomHelper } from "../DomHelper.js"
+import { DomHelper } from "../ui/DomHelper.js"
 import { PianoRender } from "./PianoRender.js"
 import { DebugRender } from "./DebugRender.js"
 import { OverlayRender } from "./OverlayRender.js"
@@ -10,6 +10,7 @@ import { MeasureLinesRender } from "./MeasureLinesRender.js"
 import { ProgressBarRender } from "./ProgressBarRender.js"
 import { getSetting } from "../settings/Settings.js"
 import { isBlack } from "../Util.js"
+import { getTrackColor, isTrackDrawn } from "../player/Tracks.js"
 
 const DEBUG = true
 
@@ -143,9 +144,7 @@ export class Render {
 		if (playerState)
 			if (playerState.song) {
 				playerState.song.activeTracks.forEach((track, trackIndex) => {
-					if (
-						playerState.tracks[trackIndex] &&
-						playerState.tracks[trackIndex].draw
+					if (isTrackDrawn(trackIndex)
 					) {
 						renderInfoByTrackMap[trackIndex] = { black: [], white: [] }
 
@@ -199,8 +198,8 @@ export class Render {
 			track: note.track,
 			channel: note.channel,
 			fillStyle: keyBlack
-				? this.getTrackColor(note.track).black
-				: this.getTrackColor(note.track).white,
+				? getTrackColor(note.track).black
+				: getTrackColor(note.track).white,
 			currentTime: time,
 			keyBlack: keyBlack,
 			noteDims: noteDims,
@@ -216,15 +215,7 @@ export class Render {
 			velocity: note.velocity
 		}
 	}
-	/**
-	 *
-	 * @param {Number} trackIndex
-	 */
-	getTrackColor(trackIndex) {
-		return this.playerState.tracks
-			? this.playerState.tracks[trackIndex].color
-			: "rgba(0,0,0,0)"
-	}
+	
 	drawBPM(playerState) {
 		this.ctx.font = "20px Arial black"
 		this.ctx.fillStyle = "rgba(255,255,255,0.8)"

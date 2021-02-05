@@ -1,4 +1,4 @@
-import { DomHelper } from "../DomHelper.js"
+import { DomHelper } from "./DomHelper.js"
 
 export class ZoomUI {
 	constructor() {}

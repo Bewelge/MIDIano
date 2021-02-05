@@ -1,4 +1,4 @@
-import { replaceAllString } from "./Util.js"
+import { replaceAllString } from "../Util.js"
 
 export class DomHelper {
 	static createCanvas(width, height, styles) {
@@ -325,5 +325,102 @@ export class DomHelper {
 			callback(selectTag.value)
 		})
 		return selectBox
+	}
+
+	static createColorPickerGlyphiconText(glyph, text, startColor, onChange) {
+		let pickrEl = null
+		let pickrElCont = DomHelper.createDiv()
+		let glyphBut = DomHelper.createGlyphiconTextButton(
+			"colorPickerGlyph" + glyph + replaceAllString(text, " ", "_"),
+			glyph,
+			text,
+			() => {
+				pickrEl.show()
+			}
+		)
+
+		glyphBut.appendChild(pickrElCont)
+
+		pickrEl = Pickr.create({
+			el: pickrElCont,
+			theme: "nano",
+			useAsButton: true,
+			components: {
+				hue: true,
+				preview: true,
+				opacity: true,
+				interaction: {
+					input: true
+				}
+			}
+		})
+
+		let getGlyphEl = () =>
+			glyphBut.querySelector(
+				"#colorPickerGlyph" +
+					glyph +
+					replaceAllString(text, " ", "_") +
+					" .glyphicon"
+			)
+
+		pickrEl.on("init", () => {
+			pickrEl.setColor(startColor)
+			getGlyphEl().style.color = startColor
+		})
+		pickrEl.on("change", color => {
+			let colorString = color.toRGBA().toString()
+			getGlyphEl().style.color = colorString
+			onChange(colorString)
+		})
+		return glyphBut
+	}
+	/**
+	 *
+	 * @param {String} text
+	 * @param {String} startColor
+	 * @param {Function} onChange  A color string of the newly selected color will be passed as argument
+	 */
+	static createColorPickerText(text, startColor, onChange) {
+		let cont = DomHelper.createDivWithClass("settingContainer")
+
+		let label = DomHelper.createDivWithClass(
+			"colorLabel settingLabel",
+			{},
+			{ innerHTML: text }
+		)
+
+		let colorButtonContainer = DomHelper.createDivWithClass(
+			"colorPickerButtonContainer"
+		)
+		let colorButton = DomHelper.createDivWithClass("colorPickerButton")
+		colorButtonContainer.appendChild(colorButton)
+
+		cont.appendChild(label)
+		cont.appendChild(colorButtonContainer)
+
+		let colorPicker = Pickr.create({
+			el: colorButton,
+			theme: "nano",
+			components: {
+				hue: true,
+				preview: true,
+				opacity: true,
+				interaction: {
+					input: true
+				}
+			}
+		})
+		cont.onclick = () => colorPicker.show()
+		colorButtonContainer.style.backgroundColor = startColor
+		colorPicker.on("init", () => colorPicker.setColor(startColor))
+		colorPicker.on("change", color => {
+			colorButtonContainer.style.backgroundColor = colorPicker
+				.getColor()
+				.toRGBA()
+				.toString()
+			onChange(color.toRGBA().toString())
+		})
+
+		return cont
 	}
 }

@@ -24,8 +24,11 @@ export class NoteRender {
 			renderInfoByTrackMap
 		)
 		//Active note effects
-		Object.keys(renderInfoByTrackMap).forEach(trackIndex => {
-			this.renderActiveNotesEffects(activeNotesByTrackMap[trackIndex])
+		Object.keys(renderInfoByTrackMap)
+		.filter(trackIndex => activeNotesByTrackMap[trackIndex])
+		.forEach(trackIndex => {
+				this.renderActiveNotesEffects(activeNotesByTrackMap[trackIndex])
+			
 		})
 
 		//Notes
@@ -36,11 +39,14 @@ export class NoteRender {
 			)
 		})
 		//Active keys on piano + stroking of active notes
-		Object.keys(renderInfoByTrackMap).forEach(trackIndex => {
-			this.renderActivePianoKeys(activeNotesByTrackMap[trackIndex])
-
-			this.strokeActiveNotes(activeNotesByTrackMap[trackIndex])
-			this.createParticles(activeNotesByTrackMap[trackIndex])
+		Object.keys(renderInfoByTrackMap)
+		.filter(trackIndex => activeNotesByTrackMap[trackIndex])
+		.forEach(trackIndex => {
+				this.renderActivePianoKeys(activeNotesByTrackMap[trackIndex])
+	
+				this.strokeActiveNotes(activeNotesByTrackMap[trackIndex])
+				this.createParticles(activeNotesByTrackMap[trackIndex])
+			
 		})
 
 		for (let noteNumber in inputActiveNotes) {

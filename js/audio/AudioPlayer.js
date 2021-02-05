@@ -7,13 +7,12 @@ import {
 } from "./AudioNote.js"
 
 export class AudioPlayer {
-	constructor(tracks) {
+	constructor() {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext
 
 		this.context = new AudioContext()
 		this.buffers = {}
 		this.audioNotes = []
-		this.tracks = tracks
 		this.soundfontName = "MusyngKite"
 	}
 	getContextTime() {
