@@ -1,45 +1,44 @@
+import { getPlayer } from "./player/Player.js"
+
 export class InputListeners {
-	constructor(player, ui, render) {
+	constructor(ui, render) {
 		this.grabSpeed = []
 		this.delay = false
 
-		this.addMouseAndTouchListeners(render, player, ui)
+		this.addMouseAndTouchListeners(render, ui)
 
-		document.body.addEventListener("wheel", this.onWheel(player))
+		document.body.addEventListener("wheel", this.onWheel())
 
-		this.addProgressBarMouseListeners(render, player)
+		this.addProgressBarMouseListeners(render)
 
-		window.addEventListener("keydown", this.onKeyDown(player, ui))
+		window.addEventListener("keydown", this.onKeyDown(ui))
 
 		ui.setOnMenuHeightChange(val => render.onMenuHeightChanged(val))
 
 		ui.fireInitialListeners()
 
+		let player = getPlayer()
 		render.setPianoInputListeners(
 			player.addInputNoteOn.bind(player),
 			player.addInputNoteOff.bind(player)
 		)
 	}
 
-	addMouseAndTouchListeners(render, player, ui) {
-		window.addEventListener("mouseup", ev => this.onMouseUp(ev, render, player))
+	addMouseAndTouchListeners(render, ui) {
+		window.addEventListener("mouseup", ev => this.onMouseUp(ev, render))
 		document.body.addEventListener(
 			"mousedown",
-			ev => this.onMouseDown(ev, render, player),
+			ev => this.onMouseDown(ev, render),
 			{ passive: false }
 		)
 		document.body.addEventListener(
 			"mousemove",
-			ev => this.onMouseMove(ev, player, render, ui),
+			ev => this.onMouseMove(ev, render, ui),
 			{ passive: false }
 		)
-		window.addEventListener(
-			"touchend",
-			ev => this.onMouseUp(ev, render, player),
-			{
-				passive: false
-			}
-		)
+		window.addEventListener("touchend", ev => this.onMouseUp(ev, render), {
+			passive: false
+		})
 		document.body.addEventListener(
 			"touchstart",
 			ev => this.onMouseDown(ev, render),
@@ -47,27 +46,21 @@ export class InputListeners {
 		)
 		document.body.addEventListener(
 			"touchmove",
-			ev => this.onMouseMove(ev, player, render, ui),
+			ev => this.onMouseMove(ev, render, ui),
 			{ passive: false }
 		)
 	}
 
-	addProgressBarMouseListeners(render, player) {
+	addProgressBarMouseListeners(render) {
 		render
 			.getProgressBarCanvas()
-			.addEventListener(
-				"mousemove",
-				this.onMouseMoveProgressCanvas(render, player)
-			)
+			.addEventListener("mousemove", this.onMouseMoveProgressCanvas(render))
 		render
 			.getProgressBarCanvas()
-			.addEventListener(
-				"mousedown",
-				this.onMouseDownProgressCanvas(render, player)
-			)
+			.addEventListener("mousedown", this.onMouseDownProgressCanvas(render))
 	}
 
-	onWheel(player) {
+	onWheel() {
 		return event => {
 			if (event.target != document.body) {
 				return
@@ -77,7 +70,7 @@ export class InputListeners {
 			}
 			this.delay = true
 
-			let alreadyScrolling = player.scrolling != 0
+			let alreadyScrolling = getPlayer().scrolling != 0
 
 			//Because Firefox does not set .wheelDelta
 			let wheelDelta = event.wheelDelta ? event.wheelDelta : -1 * event.deltaY
@@ -88,84 +81,86 @@ export class InputListeners {
 
 			var wheel = (evDel / Math.abs(evDel)) * 500
 
-			player.scrolling -= 0.001 * wheel
+			getPlayer().scrolling -= 0.001 * wheel
 			if (!alreadyScrolling) {
-				player.handleScroll()
+				getPlayer().handleScroll()
 			}
 			this.delay = false
 		}
 	}
 
-	onKeyDown(player, ui) {
+	onKeyDown(ui) {
 		return e => {
-			if (!player.isFreeplay) {
+			if (!getPlayer().isFreeplay) {
 				if (e.code == "Space") {
 					e.preventDefault()
-					if (!player.paused) {
+					if (!getPlayer().paused) {
 						ui.clickPause(e)
 					} else {
 						ui.clickPlay(e)
 					}
 				} else if (e.code == "ArrowUp") {
-					player.increaseSpeed(0.05)
+					getPlayer().increaseSpeed(0.05)
 					ui.getSpeedDisplayField().value =
-						Math.floor(player.playbackSpeed * 100) + "%"
+						Math.floor(getPlayer().playbackSpeed * 100) + "%"
 				} else if (e.code == "ArrowDown") {
-					player.increaseSpeed(-0.05)
+					getPlayer().increaseSpeed(-0.05)
 					ui.getSpeedDisplayField().value =
-						Math.floor(player.playbackSpeed * 100) + "%"
+						Math.floor(getPlayer().playbackSpeed * 100) + "%"
 				} else if (e.code == "ArrowLeft") {
-					player.setTime(player.getTime() - 5)
+					getPlayer().setTime(getPlayer().getTime() - 5)
 				} else if (e.code == "ArrowRight") {
-					player.setTime(player.getTime() + 5)
+					getPlayer().setTime(getPlayer().getTime() + 5)
 				}
 			}
 		}
 	}
 
-	onMouseDownProgressCanvas(render, player) {
+	onMouseDownProgressCanvas(render) {
 		return ev => {
 			ev.preventDefault()
 			if (ev.target == render.getProgressBarCanvas()) {
 				this.grabbedProgressBar = true
-				player.wasPaused = player.paused
-				player.pause()
+				getPlayer().wasPaused = getPlayer().paused
+				getPlayer().pause()
 				let newTime =
 					(ev.clientX / render.renderDimensions.windowWidth) *
-					(player.song.getEnd() / 1000)
+					(getPlayer().song.getEnd() / 1000)
 
-				player.setTime(newTime)
+				getPlayer().setTime(newTime)
 			}
 		}
 	}
 
-	onMouseMoveProgressCanvas(render, player) {
+	onMouseMoveProgressCanvas(render) {
 		return ev => {
-			if (this.grabbedProgressBar && player.song) {
+			if (this.grabbedProgressBar && getPlayer().song) {
 				let newTime =
 					(ev.clientX / render.renderDimensions.windowWidth) *
-					(player.song.getEnd() / 1000)
-				player.setTime(newTime)
+					(getPlayer().song.getEnd() / 1000)
+				getPlayer().setTime(newTime)
 			}
 		}
 	}
 
-	onMouseMove(ev, player, render, ui) {
+	onMouseMove(ev, render, ui) {
 		let pos = this.getXYFromMouseEvent(ev)
-		if (this.grabbedProgressBar && player.song) {
+		if (this.grabbedProgressBar && getPlayer().song) {
 			let newTime =
 				(ev.clientX / render.renderDimensions.windowWidth) *
-				(player.song.getEnd() / 1000)
-			player.setTime(newTime)
+				(getPlayer().song.getEnd() / 1000)
+			getPlayer().setTime(newTime)
 			return
 		}
 
-		if (this.grabbedMainCanvas && player.song) {
+		if (this.grabbedMainCanvas && getPlayer().song) {
 			if (this.lastYGrabbed) {
-				let alreadyScrolling = player.scrolling != 0
+				let alreadyScrolling = getPlayer().scrolling != 0
 				let yChange = this.lastYGrabbed - pos.y
 				if (!alreadyScrolling) {
-					player.setTime(player.getTime() - render.getTimeFromHeight(yChange))
+					getPlayer().setTime(
+						getPlayer().getTime() - render.getTimeFromHeight(yChange)
+					)
 					this.grabSpeed.push(yChange)
 					if (this.grabSpeed.length > 3) {
 						this.grabSpeed.splice(0, 1)
@@ -180,33 +175,33 @@ export class InputListeners {
 		ui.mouseMoved()
 	}
 
-	onMouseDown(ev, render, player) {
+	onMouseDown(ev, render) {
 		let pos = this.getXYFromMouseEvent(ev)
 		if (
 			ev.target == document.body &&
 			render.isOnMainCanvas(pos) &&
 			!this.grabbedProgressBar
 		) {
-			player.wasPaused = player.paused
+			getPlayer().wasPaused = getPlayer().paused
 			ev.preventDefault()
 			this.grabbedMainCanvas = true
-			player.pause()
+			getPlayer().pause()
 		}
 	}
 
-	onMouseUp(ev, render, player) {
+	onMouseUp(ev, render) {
 		let pos = this.getXYFromMouseEvent(ev)
 		if (ev.target == document.body && render.isOnMainCanvas(pos)) {
 			ev.preventDefault()
 		}
 		if (this.grabSpeed.length) {
-			player.scrolling = this.grabSpeed[this.grabSpeed.length - 1] / 50
-			player.handleScroll()
+			getPlayer().scrolling = this.grabSpeed[this.grabSpeed.length - 1] / 50
+			getPlayer().handleScroll()
 			this.grabSpeed = []
 		}
 		if (this.grabbedProgressBar || this.grabbedMainCanvas) {
-			if (!player.wasPaused) {
-				player.resume()
+			if (!getPlayer().wasPaused) {
+				getPlayer().resume()
 			}
 		}
 		this.grabbedProgressBar = false

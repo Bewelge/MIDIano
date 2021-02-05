@@ -1,8 +1,9 @@
+import { getPlayer } from "../player/Player.js"
 import { DomHelper } from "./DomHelper.js"
 
 export class ZoomUI {
 	constructor() {}
-	getContentDiv(player, render) {
+	getContentDiv(render) {
 		let cont = DomHelper.createDivWithClass("zoomGroup btn-group")
 		//zoomIn
 		cont.appendChild(
@@ -33,7 +34,7 @@ export class ZoomUI {
 		const fitSongButton = DomHelper.createTextButton(
 			"fitSongButton",
 			"Fit Song",
-			() => render.renderDimensions.fitSong(player.song.getNoteRange())
+			() => render.renderDimensions.fitSong(getPlayer().song.getNoteRange())
 		)
 		fitSongButton.style.float = "none"
 		//FitSong

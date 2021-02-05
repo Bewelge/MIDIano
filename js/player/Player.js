@@ -12,7 +12,7 @@ import {
 } from "./Tracks.js"
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
-export class Player {
+class Player {
 	constructor() {
 		this.audioPlayer = new AudioPlayer()
 
@@ -37,6 +37,7 @@ export class Player {
 
 		this.playbackSpeed = 1
 
+		console.log("Player created.")
 		this.playTick()
 	}
 	getState() {
@@ -314,9 +315,6 @@ export class Player {
 		)
 	}
 
-	isPlaying() {
-		return this.playing
-	}
 	stop() {
 		this.progress = 0
 		this.scrollOffset = 0
@@ -393,4 +391,12 @@ export class Player {
 		)
 		delete this.inputActiveNotes[noteNumber]
 	}
+}
+const thePlayer = new Player()
+export const getPlayer = () => {
+	return thePlayer
+}
+
+export const getPlayerState = () => {
+	return thePlayer.getState()
 }

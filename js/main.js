@@ -1,8 +1,8 @@
 import { Render } from "./Rendering/Render.js"
-import { Player } from "./player/Player.js"
 import { UI } from "./ui/UI.js"
 import { InputListeners } from "./InputListeners.js"
 import { getLoader } from "./ui/Loader.js"
+import { getPlayer, getPlayerState } from "./player/Player.js"
 
 /**
  * DONES:
@@ -42,7 +42,6 @@ import { getLoader } from "./ui/Loader.js"
  * - Custom UI for Mobile
  * - fix piano key hightlighting
  */
-let player
 let ui
 let loading
 let listeners
@@ -55,12 +54,9 @@ window.onload = async function () {
 }
 
 async function init() {
-	player = new Player()
-	console.log("Player created.")
-
-	render = new Render(player)
-	ui = new UI(player, render)
-	listeners = new InputListeners(player, ui, render)
+	render = new Render()
+	ui = new UI(render)
+	listeners = new InputListeners(ui, render)
 	renderLoop()
 
 	loadStartingSong()
@@ -68,8 +64,7 @@ async function init() {
 
 let render
 function renderLoop() {
-	const playerState = player.getState()
-	render.render(playerState)
+	render.render(getPlayerState())
 	window.requestAnimationFrame(renderLoop)
 }
 async function loadStartingSong() {
@@ -90,7 +85,7 @@ async function loadSongFromURL(url, title) {
 		response.blob().then(blob => {
 			const reader = new FileReader()
 			reader.onload = function (theFile) {
-				player.loadSong(reader.result, filename, () => {})
+				getPlayer().loadSong(reader.result, filename, () => {})
 			}
 			reader.readAsDataURL(blob)
 		})

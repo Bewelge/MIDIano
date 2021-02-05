@@ -5,6 +5,8 @@ import {
 	getTracks,
 	setTrackColor
 } from "../player/Tracks.js"
+import { getPlayer } from "../player/Player.js"
+import { getSetting } from "../settings/Settings.js"
 
 /**
  *  Handles creation of the Track-Divs that give control over volume, diplay, color...
@@ -37,24 +39,21 @@ export const createTrackDiv = trackId => {
 	)
 	trackName.innerHTML = trackObj.name || "Track " + trackId
 
-	//TODO. Reimplement when player has been refactored to be accessed globally.
-	// //Instrument
-	// let currentInstrument = this.player.getCurrentTrackInstrument(
-	// 	trackObj.index
-	// )
-	// instrumentName = DomHelper.createDivWithIdAndClass(
-	// 	"instrumentName" + trackObj.index,
-	// 	"instrumentName"
-	// )
-	// instrumentName.innerHTML = currentInstrument
+	//Instrument
+	let currentInstrument = getPlayer().getCurrentTrackInstrument(trackObj.index)
+	instrumentName = DomHelper.createDivWithIdAndClass(
+		"instrumentName" + trackObj.index,
+		"instrumentName"
+	)
+	instrumentName.innerHTML = currentInstrument
 
-	// window.setInterval(
-	// 	() =>
-	// 		(instrumentName.innerHTML = this.player.getCurrentTrackInstrument(
-	// 			trackObj.index
-	// 		)),
-	// 	2000
-	// )
+	window.setInterval(
+		() =>
+			(instrumentName.innerHTML = getPlayer().getCurrentTrackInstrument(
+				trackObj.index
+			)),
+		2000
+	)
 
 	let btnGrp = DomHelper.createButtonGroup(false)
 
@@ -168,7 +167,7 @@ export const createTrackDiv = trackId => {
 
 	DomHelper.appendChildren(trackDiv, [
 		trackName,
-		// instrumentName,
+		instrumentName,
 		DomHelper.getDivider(),
 		volumeSlider.container,
 		btnGrp

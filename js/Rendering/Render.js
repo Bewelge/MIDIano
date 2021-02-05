@@ -11,6 +11,7 @@ import { ProgressBarRender } from "./ProgressBarRender.js"
 import { getSetting } from "../settings/Settings.js"
 import { isBlack } from "../Util.js"
 import { getTrackColor, isTrackDrawn } from "../player/Tracks.js"
+import { getPlayerState } from "../player/Player.js"
 
 const DEBUG = true
 
@@ -23,7 +24,7 @@ const PROGRESS_BAR_CANVAS_HEIGHT = 20
  * Class that handles all rendering
  */
 export class Render {
-	constructor(player) {
+	constructor() {
 		this.renderDimensions = new RenderDimensions()
 		this.renderDimensions.registerResizeCallback(this.setupCanvases.bind(this))
 		this.setupCanvases()
@@ -66,7 +67,7 @@ export class Render {
 		this.mouseX = 0
 		this.mouseY = 0
 
-		this.playerState = player.getState()
+		this.playerState = getPlayerState()
 
 		this.showKeyNamesOnPianoWhite = getSetting("showKeyNamesOnPianoWhite")
 		this.showKeyNamesOnPianoBlack = getSetting("showKeyNamesOnPianoBlack")

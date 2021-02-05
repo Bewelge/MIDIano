@@ -2,23 +2,22 @@ import { DomHelper } from "./DomHelper.js"
 import { replaceAllString } from "../Util.js"
 import { getSettingsDiv } from "../settings/Settings.js"
 import { ZoomUI } from "./ZoomUI.js"
-import { getTrackColor, setTrackColor } from "../player/Tracks.js"
 import { createTrackDivs } from "./TrackUI.js"
+import { getPlayer } from "../player/Player.js"
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
  * Callback-bindings for some events are created in  the constructor
  */
 export class UI {
-	constructor(player, render, isMobile) {
-		this.midiInputHandler = player.midiInputHandler
-		this.player = player
+	constructor(render, isMobile) {
+		this.midiInputHandler = getPlayer().midiInputHandler
 
 		this.isMobile = window.matchMedia(
 			"only screen and (max-width: 1600px)"
 		).matches
 
 		//add callbacks to the player
-		player.newSongCallbacks.push(this.newSongCallback.bind(this))
+		getPlayer().newSongCallbacks.push(this.newSongCallback.bind(this))
 
 		document.body.addEventListener("mousemove", this.mouseMoved.bind(this))
 
@@ -34,7 +33,7 @@ export class UI {
 						"calc(100% - " + (this.getNavBar().clientHeight + 24) + "px)")
 			)
 
-		document.body.appendChild(new ZoomUI().getContentDiv(player, render))
+		document.body.appendChild(new ZoomUI().getContentDiv(render))
 	}
 
 	fireInitialListeners() {
@@ -327,7 +326,7 @@ export class UI {
 			this.loadedSongsDiv = DomHelper.createDivWithClass("innerMenuDiv")
 			this.hideDiv(this.loadedSongsDiv)
 		}
-		this.player.loadedSongs.forEach(song => {
+		getPlayer().loadedSongs.forEach(song => {
 			if (!song.div) {
 				this.createSongDiv(song)
 			}
@@ -341,7 +340,7 @@ export class UI {
 		)
 		song.div = DomHelper.createButton(
 			"song" + replaceAllString(song.fileName, " ", "_"),
-			() => this.player.setSong(song)
+			() => getPlayer().setSong(song)
 		)
 		song.div.innerHTML = song.fileName
 		wrapper.appendChild(song.div)
@@ -436,7 +435,7 @@ export class UI {
 		let reader = new FileReader()
 		let fileName = file.name
 		reader.onload = function (theFile) {
-			this.player.loadSong(reader.result, fileName)
+			getPlayer().loadSong(reader.result, fileName)
 		}.bind(this)
 		reader.readAsDataURL(file)
 	}
@@ -458,7 +457,7 @@ export class UI {
 				"speedUp",
 				"triangle-top",
 				ev => {
-					this.player.increaseSpeed(0.05)
+					getPlayer().increaseSpeed(0.05)
 					this.updateSpeed()
 				}
 			)
@@ -468,7 +467,7 @@ export class UI {
 	}
 	updateSpeed() {
 		this.getSpeedDisplayField().value =
-			Math.round(this.player.playbackSpeed * 100) + "%"
+			Math.round(getPlayer().playbackSpeed * 100) + "%"
 	}
 	getSpeedDisplayField() {
 		if (!this.speedDisplay) {
@@ -477,7 +476,7 @@ export class UI {
 					let newVal = Math.max(1, Math.min(1000, parseInt(ev.target.value)))
 					if (!isNaN(newVal)) {
 						ev.target.value = newVal + "%"
-						this.player.playbackSpeed = newVal / 100
+						getPlayer().playbackSpeed = newVal / 100
 					}
 				},
 				{
@@ -485,7 +484,7 @@ export class UI {
 					textAlign: "center"
 				},
 				{
-					value: Math.floor(this.player.playbackSpeed * 100) + "%",
+					value: Math.floor(getPlayer().playbackSpeed * 100) + "%",
 					className: "forcedThinButton",
 					type: "text"
 				}
@@ -499,7 +498,7 @@ export class UI {
 				"speedUp",
 				"triangle-bottom",
 				ev => {
-					this.player.increaseSpeed(-0.05)
+					getPlayer().increaseSpeed(-0.05)
 					this.updateSpeed()
 				}
 			)
@@ -540,7 +539,7 @@ export class UI {
 			.querySelectorAll(".instrumentName")
 			.forEach(
 				el =>
-					(el.innerHTML = this.player.getCurrentTrackInstrument(
+					(el.innerHTML = getPlayer().getCurrentTrackInstrument(
 						el.id.split("instrumentName")[1]
 					))
 			)
@@ -637,12 +636,12 @@ export class UI {
 			this.mainVolumeSlider = DomHelper.createSliderWithLabel(
 				"volumeMain",
 				"Master Volume",
-				this.player.volume,
+				getPlayer().volume,
 				0,
 				100,
 				1,
 				ev => {
-					if (this.player.volume == 0 && parseInt(ev.target.value) != 0) {
+					if (getPlayer().volume == 0 && parseInt(ev.target.value) != 0) {
 						DomHelper.replaceGlyph(
 							this.getMuteButton(),
 							"volume-off",
@@ -650,8 +649,8 @@ export class UI {
 						)
 						//this.getMuteButton().firstChild.className = this.muteButton.firstChild.className.replace('volume-off', 'volume-up')
 					}
-					this.player.volume = parseInt(ev.target.value)
-					if (this.player.volume <= 0) {
+					getPlayer().volume = parseInt(ev.target.value)
+					if (getPlayer().volume <= 0) {
 						DomHelper.replaceGlyph(
 							this.getMuteButton(),
 							"volume-up",
@@ -675,20 +674,20 @@ export class UI {
 				"mute",
 				"volume-up",
 				ev => {
-					if (this.player.muted) {
-						this.player.muted = false
-						if (!isNaN(this.player.mutedAtVolume)) {
-							if (this.player.mutedAtVolume == 0) {
-								this.player.mutedAtVolume = 100
+					if (getPlayer().muted) {
+						getPlayer().muted = false
+						if (!isNaN(getPlayer().mutedAtVolume)) {
+							if (getPlayer().mutedAtVolume == 0) {
+								getPlayer().mutedAtVolume = 100
 							}
-							this.getMainVolumeSlider().slider.value = this.player.mutedAtVolume
-							this.player.volume = this.player.mutedAtVolume
+							this.getMainVolumeSlider().slider.value = getPlayer().mutedAtVolume
+							getPlayer().volume = getPlayer().mutedAtVolume
 						}
 						DomHelper.replaceGlyph(this.muteButton, "volume-off", "volume-up")
 					} else {
-						this.player.mutedAtVolume = this.player.volume
-						this.player.muted = true
-						this.player.volume = 0
+						getPlayer().mutedAtVolume = getPlayer().volume
+						getPlayer().muted = true
+						getPlayer().volume = 0
 						this.getMainVolumeSlider().slider.value = 0
 						DomHelper.replaceGlyph(this.muteButton, "volume-up", "volume-off")
 					}
@@ -709,9 +708,9 @@ export class UI {
 		return this.playButton
 	}
 	clickPlay(ev) {
-		if (this.player.song) {
+		if (getPlayer().song) {
 			DomHelper.removeClass("selected", this.getPauseButton())
-			this.player.startPlay()
+			getPlayer().startPlay()
 			DomHelper.addClassToElement("selected", this.playButton)
 		}
 	}
@@ -727,7 +726,7 @@ export class UI {
 		return this.pauseButton
 	}
 	clickPause(ev) {
-		this.player.pause()
+		getPlayer().pause()
 		DomHelper.removeClass("selected", this.getPlayButton())
 
 		DomHelper.addClassToElement("selected", this.pauseButton)
@@ -735,7 +734,7 @@ export class UI {
 	getStopButton() {
 		if (!this.stopButton) {
 			this.stopButton = DomHelper.createGlyphiconButton("stop", "stop", ev => {
-				this.player.stop()
+				getPlayer().stop()
 				DomHelper.removeClass("selected", this.getPlayButton())
 				DomHelper.removeClass("selected", this.getPauseButton())
 			})
@@ -752,8 +751,8 @@ export class UI {
 	newSongCallback() {
 		this.resetTrackMenuDiv()
 
-		if (!this.player.song.div) {
-			this.createSongDiv(this.player.song)
+		if (!getPlayer().song.div) {
+			this.createSongDiv(getPlayer().song)
 		}
 	}
 

@@ -1,5 +1,4 @@
 import { SoundfontLoader } from "../SoundfontLoader.js"
-import { CONST } from "../CONST.js"
 import { getLoader } from "../ui/Loader.js"
 import {
 	createContinuousAudioNote,
