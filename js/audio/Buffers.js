@@ -7,6 +7,9 @@ export const getBuffers = () => {
 export const getBufferForNote = (soundfontName, instrument, noteNumber) => {
 	let noteKey = CONST.MIDI_NOTE_TO_KEY[noteNumber + 21]
 	let buffer
+	if (instrument == "percussion") {
+		soundfontName = "FluidR3_GM"
+	}
 	try {
 		buffer = buffers[soundfontName][instrument][noteKey]
 	} catch (e) {

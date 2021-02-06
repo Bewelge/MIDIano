@@ -65,16 +65,10 @@ export const createTrackDiv = trackId => {
 		"Volume",
 		trackObj.volume,
 		0,
-		100,
+		200,
 		1,
 		ev => {
-			if (trackObj.volume == 0 && parseInt(ev.target.value) > 0) {
-				DomHelper.replaceGlyph(muteButton, "volume-off", "volume-up")
-			}
 			trackObj.volume = parseInt(ev.target.value)
-			if (trackObj.volume <= 0) {
-				DomHelper.replaceGlyph(muteButton, "volume-up", "volume-off")
-			}
 		}
 	)
 
@@ -91,12 +85,6 @@ export const createTrackDiv = trackId => {
 			}
 		}
 	})
-	// hideButton = DomHelper.createGlyphiconButton(
-	// 	"hide" + trackId,
-	// 	"eye-open",
-	// 	ev => {
-	// 	}
-	// )
 
 	//Mute Track
 	muteButton = SettingUI.createSettingDiv({
