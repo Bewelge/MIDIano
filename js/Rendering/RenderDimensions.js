@@ -17,6 +17,7 @@ export class RenderDimensions {
 		this.numberOfWhiteKeysShown = 52
 		this.minNoteNumber = MIN_NOTE_NUMBER
 		this.maxNoteNumber = MAX_NOTE_NUMBER
+		this.menuHeight = 200
 		this.resize()
 	}
 	/**
@@ -38,10 +39,12 @@ export class RenderDimensions {
 	 * Computes the key dimensions. Should be called on resize.
 	 */
 	computeKeyDimensions() {
+		this.pianoPositionY = getSetting("pianoPosition")
 		this.whiteKeyWidth = Math.max(
 			20,
 			this.windowWidth / this.numberOfWhiteKeysShown
 		)
+
 		this.whiteKeyHeight = Math.min(
 			Math.floor(this.windowHeight * 0.2),
 			this.whiteKeyWidth * 4.5
@@ -69,6 +72,16 @@ export class RenderDimensions {
 			}
 		}
 		return this.keyDimensions[noteNumber]
+	}
+	getAbsolutePianoPosition() {
+		return (
+			this.windowHeight -
+			this.whiteKeyHeight -
+			Math.ceil(
+				(parseInt(this.pianoPositionY) / 100) *
+					(this.windowHeight - this.whiteKeyHeight - this.menuHeight)
+			)
+		)
 	}
 
 	/**
@@ -107,7 +120,13 @@ export class RenderDimensions {
 	 */
 	getYForTime(time) {
 		const height = this.windowHeight - this.whiteKeyHeight
-		return height - (time / this.getNoteToHeightConst()) * height
+		return (
+			height -
+			(time / this.getNoteToHeightConst()) * height -
+			(this.windowHeight -
+				this.whiteKeyHeight -
+				this.getAbsolutePianoPosition())
+		)
 	}
 
 	/**
@@ -140,7 +159,13 @@ export class RenderDimensions {
 			hCorrection = minNoteHeight - h
 			h = minNoteHeight
 		}
-		const y = this.getYForTime(noteEndTime - currentTime)
+		let y = this.getYForTime(noteEndTime - currentTime)
+
+		if (noteEndTime < currentTime) {
+			y += this.whiteKeyHeight
+		} else if (noteEndTime > currentTime && noteStartTime < currentTime) {
+			h += this.whiteKeyHeight
+		}
 
 		let sustainY = 0
 		let sustainH = 0

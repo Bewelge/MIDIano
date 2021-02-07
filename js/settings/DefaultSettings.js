@@ -23,6 +23,16 @@ const defaultSettings = {
 				onChange: value => setSetting("renderOffset", value)
 			},
 			{
+				type: "slider",
+				id: "pianoPosition",
+				label: "Piano Position",
+				value: 0,
+				min: 0,
+				max: 100,
+				step: 1,
+				onChange: value => setSetting("pianoPosition", value)
+			},
+			{
 				type: "checkbox",
 				id: "clickablePiano",
 				label: "Clickable piano",

@@ -44,7 +44,7 @@ export class NoteRender {
 		})
 
 		for (let noteNumber in inputActiveNotes) {
-			this.pianoRender.drawActiveInputKey(noteNumber, isBlack(noteNumber))
+			this.pianoRender.drawActiveInputKey(parseInt(noteNumber))
 		}
 	}
 
@@ -233,10 +233,7 @@ export class NoteRender {
 			activeNotes.white.forEach(noteRenderInfo =>
 				this.particleRender.createParticles(
 					noteRenderInfo.x,
-					this.renderDimensions.windowHeight -
-						this.renderDimensions.whiteKeyHeight +
-						2 +
-						Math.random() * 2,
+					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
 					noteRenderInfo.w,
 					noteRenderInfo.h,
 					noteRenderInfo.fillStyle
@@ -245,10 +242,7 @@ export class NoteRender {
 			activeNotes.black.forEach(noteRenderInfo =>
 				this.particleRender.createParticles(
 					noteRenderInfo.x,
-					this.renderDimensions.windowHeight -
-						this.renderDimensions.whiteKeyHeight +
-						2 +
-						Math.random() * 2,
+					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
 					noteRenderInfo.w,
 					noteRenderInfo.h,
 					noteRenderInfo.fillStyle

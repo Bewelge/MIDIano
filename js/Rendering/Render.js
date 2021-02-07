@@ -99,9 +99,17 @@ export class Render {
 			this.pianoRender.resize()
 		}
 
+		if (
+			this.renderDimensions.pianoPositionY !=
+			parseInt(getSetting("pianoPosition"))
+		) {
+			this.renderDimensions.pianoPositionY = parseInt(
+				getSetting("pianoPosition")
+			)
+			this.pianoRender.repositionCanvases()
+		}
 		this.backgroundRender.renderIfColorsChanged()
 
-		let renderInfos = []
 		let renderInfosByTrackMap = this.getRenderInfoByTrackMap(playerState)
 		const time = this.getRenderTime(playerState)
 		const end = playerState.end
@@ -223,7 +231,7 @@ export class Render {
 		this.ctx.fillText(
 			Math.round(playerState.bpm) + " BPM",
 			20,
-			this.menuHeight + PROGRESS_BAR_CANVAS_HEIGHT + 12
+			this.renderDimensions.menuHeight + PROGRESS_BAR_CANVAS_HEIGHT + 12
 		)
 	}
 
@@ -312,7 +320,7 @@ export class Render {
 
 	isOnMainCanvas(position) {
 		return (
-			position.x > this.menuHeight &&
+			position.x > this.renderDimensions.menuHeight &&
 			position.y <
 				this.renderDimensions.windowHeight -
 					this.renderDimensions.whiteKeyHeight
@@ -331,7 +339,8 @@ export class Render {
 		)
 	}
 	onMenuHeightChanged(menuHeight) {
-		this.menuHeight = menuHeight
+		this.renderDimensions.menuHeight = menuHeight
+		this.pianoRender.repositionCanvases()
 		this.getProgressBarCanvas().style.top = menuHeight + "px"
 		this.noteRender.setMenuHeight(menuHeight)
 	}

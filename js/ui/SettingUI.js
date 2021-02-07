@@ -6,7 +6,7 @@ import { groupArrayBy } from "../Util.js"
 export class SettingUI {
 	constructor() {
 		this.tabs = {}
-		this.activeTab = "Video"
+		this.activeTab = "General"
 	}
 	/**
 	 * returns a div with the following structure:

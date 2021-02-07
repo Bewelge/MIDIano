@@ -8,10 +8,15 @@ import { isBlack, replaceAllString } from "../Util.js"
 export class PianoRender {
 	constructor(renderDimensions) {
 		this.renderDimensions = renderDimensions
-		this.resize()
 		this.renderDimensions.registerResizeCallback(this.resize.bind(this))
 		this.clickCallback = null
 		this.setClickCallback(num => console.log(num))
+		this.blackKeyImg = new Image()
+		this.blackKeyImg.src = "../../blackKey.svg"
+		this.blackKeyImg.onload
+		this.positionY = 50 //from bottom
+
+		this.resize()
 	}
 	/**
 	 * Resize canvases and redraw piano.
@@ -35,49 +40,33 @@ export class PianoRender {
 	setClickCallback(callback) {
 		this.clickCallback = callback
 	}
+	getAllCanvases() {
+		return [
+			this.getPianoCanvasWhite(),
+			this.getPlayedKeysWhite(),
+			this.getPianoCanvasBlack(),
+			this.getPlayedKeysBlack()
+		]
+	}
+
 	/**
 	 * Resizes all piano canvases.
 	 */
 	resizeCanvases() {
-		DomHelper.setCanvasSize(
-			this.getPianoCanvasWhite(),
-			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
-		)
-		this.getPianoCanvasWhite().style.top =
-			this.renderDimensions.windowHeight -
-			this.renderDimensions.whiteKeyHeight +
-			"px"
+		this.getAllCanvases().forEach(canvas => {
+			DomHelper.setCanvasSize(
+				canvas,
+				this.renderDimensions.windowWidth,
+				this.renderDimensions.whiteKeyHeight
+			)
+		})
+		this.repositionCanvases()
+	}
 
-		DomHelper.setCanvasSize(
-			this.getPlayedKeysWhite(),
-			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
-		)
-		this.getPlayedKeysWhite().style.top =
-			this.renderDimensions.windowHeight -
-			this.renderDimensions.whiteKeyHeight +
-			"px"
-
-		DomHelper.setCanvasSize(
-			this.getPianoCanvasBlack(),
-			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
-		)
-		this.getPianoCanvasBlack().style.top =
-			this.renderDimensions.windowHeight -
-			this.renderDimensions.whiteKeyHeight +
-			"px"
-
-		DomHelper.setCanvasSize(
-			this.getPlayedKeysBlack(),
-			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
-		)
-		this.getPlayedKeysBlack().style.top =
-			this.renderDimensions.windowHeight -
-			this.renderDimensions.whiteKeyHeight +
-			"px"
+	repositionCanvases() {
+		this.getAllCanvases().forEach(canvas => {
+			canvas.style.top = this.renderDimensions.getAbsolutePianoPosition() + "px"
+		})
 	}
 	/**
 	 *
@@ -149,10 +138,14 @@ export class PianoRender {
 		if (getSetting("showKeyNamesOnPianoWhite")) {
 			this.drawWhiteKeyNames(ctxWhite)
 		}
-		this.drawBlackKeys(ctxBlack)
-		if (getSetting("showKeyNamesOnPianoBlack")) {
-			this.drawBlackKeyNames(ctxBlack)
-		}
+		var img = new Image()
+		img.src = "../../blackKey.svg"
+		img.onload = function () {
+			this.drawBlackKeys(ctxBlack)
+			if (getSetting("showKeyNamesOnPianoBlack")) {
+				this.drawBlackKeyNames(ctxBlack)
+			}
+		}.bind(this)
 
 		//velvet
 		ctxWhite.strokeStyle = "rgba(155,50,50,1)"
@@ -245,14 +238,13 @@ export class PianoRender {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Dimensions} dims
 	 */
-	drawWhiteKey(ctx, dims, color, isActive) {
-		let radius = 4
-		let x = dims.x
-		let y = dims.y - 2 + isActive ? 6 : 0
-		let height = dims.h
-		let width = dims.w
-
+	drawWhiteKey(ctx, dims, color) {
 		let whiteKeyHeight = this.renderDimensions.whiteKeyHeight
+		let radius = Math.ceil(this.renderDimensions.whiteKeyWidth / 20)
+		let x = dims.x
+		let y = Math.floor(dims.y) + 6
+		let height = Math.floor(dims.h) - 8
+		let width = dims.w
 
 		ctx.beginPath()
 		ctx.moveTo(x + 1, y)
@@ -265,18 +257,6 @@ export class PianoRender {
 
 		ctx.fillStyle = color
 		ctx.fill()
-
-		// let rgr = ctx.createLinearGradient(
-		// 	x,
-		// 	whiteKeyHeight / 2,
-		// 	x + width,
-		// 	whiteKeyHeight / 2
-		// )
-		// rgr.addColorStop(0.9, "rgba(0,0,0,0.1)")
-		// rgr.addColorStop(0.5, "rgba(0,0,0,0)")
-		// rgr.addColorStop(0.1, "rgba(0,0,0,0.1)")
-		// ctx.fillStyle = rgr
-		// ctx.fill()
 
 		let rgr2 = ctx.createLinearGradient(
 			this.renderDimensions.windowWidth / 2,
@@ -291,28 +271,39 @@ export class PianoRender {
 
 		ctx.closePath()
 	}
+	drawBlackKeySvg(ctx, dims, color) {
+		let radiusTop = this.renderDimensions.blackKeyWidth / 15
+		let radiusBottom = this.renderDimensions.blackKeyWidth / 8
+		let x = dims.x
+		let y = dims.y + 5
+		let height = dims.h
+		let width = dims.w
+
+		ctx.drawImage(this.blackKeyImg, x, y, width, height)
+	}
 	/**
 	 *
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Dimensions} dims
 	 */
 	drawBlackKey(ctx, dims, color) {
-		let radius = 2
+		let radiusTop = this.renderDimensions.blackKeyWidth / 15
+		let radiusBottom = this.renderDimensions.blackKeyWidth / 8
 		let x = dims.x
-		let y = dims.y + 3.5
+		let y = dims.y + 5
 		let height = dims.h
 		let width = dims.w
 		color = color || "black"
 
 		ctx.beginPath()
-		ctx.moveTo(x + 1, y + radius)
-		ctx.lineTo(x + 1 + (width * 1) / 8, y)
-		ctx.lineTo(x - 1 + (width * 7) / 8, y)
-		ctx.lineTo(x - 1 + width, y + radius)
-		ctx.lineTo(x - 1 + width, y + height - radius)
-		ctx.lineTo(x - 1 + width - radius, y + height)
-		ctx.lineTo(x + 1 + radius, y + height)
-		ctx.lineTo(x + 1, y + height - radius)
+		ctx.moveTo(x + 1, y + radiusTop)
+		ctx.lineTo(x + 1 + radiusTop, y)
+		ctx.lineTo(x - 1 - radiusTop + width, y)
+		ctx.lineTo(x - 1 + width, y + radiusTop)
+		ctx.lineTo(x - 1 + width, y + height - radiusBottom)
+		ctx.lineTo(x - 1 + width - radiusBottom, y + height)
+		ctx.lineTo(x + 1 + radiusBottom, y + height)
+		ctx.lineTo(x + 1, y + height - radiusBottom)
 		ctx.lineTo(x + 1, y)
 
 		ctx.fillStyle = color
@@ -472,7 +463,10 @@ export class PianoRender {
 		let y =
 			ev.clientY -
 			(this.renderDimensions.windowHeight -
-				this.renderDimensions.whiteKeyHeight)
+				this.renderDimensions.whiteKeyHeight -
+				(this.renderDimensions.windowHeight -
+					this.renderDimensions.whiteKeyHeight -
+					this.renderDimensions.getAbsolutePianoPosition()))
 		return { x, y }
 	}
 }
