@@ -1,4 +1,4 @@
-import { CONST } from "../CONST.js"
+import { CONST } from "../data/CONST.js"
 import { DomHelper } from "../ui/DomHelper.js"
 import { getSetting } from "../settings/Settings.js"
 import { isBlack, replaceAllString } from "../Util.js"

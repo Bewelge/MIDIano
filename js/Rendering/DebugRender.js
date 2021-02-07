@@ -1,4 +1,4 @@
-import { CONST } from "../CONST.js"
+import { CONST } from "../data/CONST.js"
 import { getSetting } from "../settings/Settings.js"
 import { formatTime } from "../Util.js"
 
@@ -12,7 +12,7 @@ export class DebugRender {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
 
-		this.fpsFilterStrength = 20
+		this.fpsFilterStrength = 5
 		this.frameTime = 0
 		this.lastTimestamp = window.performance.now()
 	}

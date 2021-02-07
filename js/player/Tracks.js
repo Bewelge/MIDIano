@@ -1,4 +1,4 @@
-import { CONST } from "../CONST.js"
+import { CONST } from "../data/CONST.js"
 
 /**
  *
