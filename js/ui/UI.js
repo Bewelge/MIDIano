@@ -1,9 +1,9 @@
 import { DomHelper } from "./DomHelper.js"
-import { replaceAllString } from "../Util.js"
 import { getSettingsDiv } from "../settings/Settings.js"
 import { ZoomUI } from "./ZoomUI.js"
 import { createTrackDivs } from "./TrackUI.js"
-import { getPlayer } from "../player/Player.js"
+import { getCurrentSong, getPlayer } from "../player/Player.js"
+import { SongUI } from "./SongUI.js"
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
  * Callback-bindings for some events are created in  the constructor
@@ -14,6 +14,7 @@ export class UI {
 			"only screen and (max-width: 1600px)"
 		).matches
 
+		this.songUI = new SongUI()
 		//add callbacks to the player
 		getPlayer().newSongCallbacks.push(this.newSongCallback.bind(this))
 
@@ -32,6 +33,10 @@ export class UI {
 			)
 
 		document.body.appendChild(new ZoomUI().getContentDiv(render))
+	}
+
+	setExampleSongs(exampleSongsJson) {
+		this.songUI.setExampleSongs(exampleSongsJson)
 	}
 
 	fireInitialListeners() {
@@ -322,28 +327,12 @@ export class UI {
 	getLoadedSongsDiv() {
 		if (!this.loadedSongsDiv) {
 			this.loadedSongsDiv = DomHelper.createDivWithClass("innerMenuDiv")
+			this.loadedSongsDiv.appendChild(this.songUI.getDivContent())
 			this.hideDiv(this.loadedSongsDiv)
 		}
-		getPlayer().loadedSongs.forEach(song => {
-			if (!song.div) {
-				this.createSongDiv(song)
-			}
-		})
 		return this.loadedSongsDiv
 	}
-	createSongDiv(song) {
-		let wrapper = DomHelper.createDivWithIdAndClass(
-			"songWrap" + replaceAllString(song.fileName, " ", "_"),
-			"innerMenuContDiv"
-		)
-		song.div = DomHelper.createButton(
-			"song" + replaceAllString(song.fileName, " ", "_"),
-			() => getPlayer().setSong(song)
-		)
-		song.div.innerHTML = song.fileName
-		wrapper.appendChild(song.div)
-		this.getLoadedSongsDiv().appendChild(wrapper)
-	}
+
 	createFileDragArea() {
 		let dragArea = DomHelper.createElement(
 			"div",
@@ -729,17 +718,23 @@ export class UI {
 
 		DomHelper.addClassToElement("selected", this.pauseButton)
 	}
+
 	getStopButton() {
 		if (!this.stopButton) {
-			this.stopButton = DomHelper.createGlyphiconButton("stop", "stop", ev => {
-				getPlayer().stop()
-				DomHelper.removeClass("selected", this.getPlayButton())
-				DomHelper.removeClass("selected", this.getPauseButton())
-			})
+			this.stopButton = DomHelper.createGlyphiconButton(
+				"stop",
+				"stop",
+				this.clickStop.bind(this)
+			)
 
 			DomHelper.addClassToElement("btn-lg", this.stopButton)
 		}
 		return this.stopButton
+	}
+	clickStop(ev) {
+		getPlayer().stop()
+		DomHelper.removeClass("selected", this.getPlayButton())
+		DomHelper.removeClass("selected", this.getPauseButton())
 	}
 	resetTrackMenuDiv() {
 		let menuDiv = this.getTrackMenuDiv()
@@ -748,10 +743,8 @@ export class UI {
 	}
 	newSongCallback() {
 		this.resetTrackMenuDiv()
-
-		if (!getPlayer().song.div) {
-			this.createSongDiv(getPlayer().song)
-		}
+		this.clickStop()
+		this.songUI.newSongCallback(getCurrentSong())
 	}
 
 	getMidiInputDialog() {

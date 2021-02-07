@@ -1,8 +1,8 @@
-import { CONST } from "./CONST.js"
+import { CONST } from "./data/CONST.js"
 export class Song {
-	constructor(midiData, fileName) {
+	constructor(midiData, fileName, name) {
 		this.fileName = fileName
-		this.name = ""
+		this.name = name || fileName
 		this.text = []
 		this.timeSignature
 		this.keySignarture
@@ -21,6 +21,8 @@ export class Song {
 		this.channels = this.getDefaultChannels()
 
 		this.processEvents(midiData)
+
+		console.log(this)
 	}
 	getStart() {
 		return this.getNoteSequence()[0].timestamp
@@ -168,14 +170,14 @@ export class Song {
 	}
 	processEvents(midiData) {
 		this.setSustainPeriods()
-		midiData.tracks.forEach(track => {
+		midiData.tracks.forEach(midiTrack => {
 			let newTrack = {
 				notes: [],
 				meta: [],
 				tempoChanges: []
 			}
 
-			this.distributeEvents(track, newTrack)
+			this.distributeEvents(midiTrack, newTrack)
 
 			if (newTrack.notes.length) {
 				this.activeTracks.push(newTrack)

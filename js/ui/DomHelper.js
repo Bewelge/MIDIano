@@ -33,6 +33,13 @@ export class DomHelper {
 			element.classList.remove(className)
 		}
 	}
+	static removeClassFromElementsSelector(selector, className) {
+		document.querySelectorAll(selector).forEach(el => {
+			if (el.classList.contains(className)) {
+				el.classList.remove(className)
+			}
+		})
+	}
 	static createSliderWithLabel(id, label, val, min, max, step, onChange) {
 		let cont = DomHelper.createElement(
 			"div",

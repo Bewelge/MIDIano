@@ -60,16 +60,14 @@ class Player {
 		getLoader().startLoad()
 		let nowTime = window.performance.now()
 		this.soundfontName = soundfontName
-		this.audioPlayer
-			.switchSoundfont(soundfontName, this.currentSong)
-			.then(resolve => {
-				window.setTimeout(() => {
-					if (!this.wasPaused) {
-						this.resume()
-					}
-					getLoader().stopLoad()
-				}, Math.max(0, 500 - (window.performance.now() - nowTime)))
-			})
+		this.audioPlayer.switchSoundfont(soundfontName, this.song).then(resolve => {
+			window.setTimeout(() => {
+				if (!this.wasPaused) {
+					this.resume()
+				}
+				getLoader().stopLoad()
+			}, Math.max(0, 500 - (window.performance.now() - nowTime)))
+		})
 	}
 
 	getTimeWithScrollOffset(scrollOffset) {
@@ -92,9 +90,6 @@ class Player {
 			Math.round((this.playbackSpeed + val) * 100) / 100
 		)
 	}
-	getSong() {
-		return this.song
-	}
 	getChannel(track) {
 		if (this.song.activeTracks[track].notes.length) {
 			return this.channels[this.song.activeTracks[track].notes[0].channel]
@@ -102,7 +97,7 @@ class Player {
 	}
 	getCurrentTrackInstrument(trackIndex) {
 		let i = 0
-		let noteSeq = this.currentSong.getNoteSequence()
+		let noteSeq = this.song.getNoteSequence()
 		let nextNote = noteSeq[i]
 		while (nextNote.track != trackIndex && i < noteSeq.length - 1) {
 			i++
@@ -113,7 +108,7 @@ class Player {
 		}
 	}
 
-	async loadSong(theSong, fileName) {
+	async loadSong(theSong, fileName, name) {
 		this.audioPlayer.stopAllSources()
 		getLoader().startLoad()
 		getLoader().setLoadMessage("Loading " + fileName + ".")
@@ -125,16 +120,11 @@ class Player {
 
 		getLoader().setLoadMessage("Parsing Midi File.")
 		let midiFile = await MidiLoader.loadFile(theSong)
-		this.currentSong = new Song(midiFile, fileName)
+		this.setSong(new Song(midiFile, fileName, name))
 		getLoader().setLoadMessage("Loading Instruments")
 
-		this.setSong(this.currentSong)
-		this.loadedSongs.add(this.currentSong)
+		await this.audioPlayer.loadInstrumentsForSong(this.song)
 
-		await this.audioPlayer.loadInstrumentsForSong(this.currentSong)
-
-		setupTracks(this.currentSong.activeTracks)
-		this.newSongCallbacks.forEach(callback => callback())
 		getLoader().setLoadMessage("Creating Buffers")
 		return this.audioPlayer.loadBuffers().then(v => getLoader().stopLoad())
 	}
@@ -147,6 +137,11 @@ class Player {
 		this.progress = 0
 		this.scrollOffset = 0
 		this.song = song
+		if (this.loadedSongs.has(song)) {
+			this.loadedSongs.add(song)
+		}
+		setupTracks(song.activeTracks)
+		this.newSongCallbacks.forEach(callback => callback())
 	}
 	startPlay() {
 		console.log("Starting Song")
@@ -169,13 +164,11 @@ class Player {
 			let newTime = this.getTimeWithScrollOffset(newScrollOffset)
 
 			//limit scroll past end
-			if (this.getSong() && newTime > 1 + this.getSong().getEnd() / 1000) {
+			if (this.song && newTime > 1 + this.song.getEnd() / 1000) {
 				this.scrolling = 0
 				newScrollOffset =
-					this.getTimeWithoutScrollOffset() -
-					(1 + this.getSong().getEnd() / 1000)
-				this.scrollOffset +
-					(1 + this.getSong().getEnd() / 1000 - this.getTime()) ||
+					this.getTimeWithoutScrollOffset() - (1 + this.song.getEnd() / 1000)
+				this.scrollOffset + (1 + this.song.getEnd() / 1000 - this.getTime()) ||
 					this.scrollOffset
 			}
 
@@ -395,6 +388,10 @@ class Player {
 const thePlayer = new Player()
 export const getPlayer = () => {
 	return thePlayer
+}
+
+export const getCurrentSong = () => {
+	return thePlayer.song
 }
 
 export const getPlayerState = () => {
