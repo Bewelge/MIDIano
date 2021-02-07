@@ -3,6 +3,8 @@ import { UI } from "./ui/UI.js"
 import { InputListeners } from "./InputListeners.js"
 import { getLoader } from "./ui/Loader.js"
 import { getPlayer, getPlayerState } from "./player/Player.js"
+import { loadJson } from "./Util.js"
+import { FileLoader } from "./player/FileLoader.js"
 
 /**
  * DONES:
@@ -17,25 +19,25 @@ import { getPlayer, getPlayerState } from "./player/Player.js"
  * - channel menu
  * - accessability
  * - load from URL
- * - added song info to "loaded songs"
- * - add more starting colors
- * -
- *
- * - make instrument choosable for tracks
- * -
  * - implement control messages of the other two pedals
- * -
  * - settings for playalong:
  * 		- accuracy needed
  * 		- different modes
+ * -
  *
+ * - add starting songs from piano-midi
+ * - added song info to "loaded songs"
+ * - add more starting colors
+ * - make instrument choosable for tracks
  * - Metronome
- *
+ * -
  * - Update readme - new screenshot, install/ run instructions
  * - Choose License
+ * -
+ *
+ *
  *
  * bugs:
- * - fix track ui
  * - fix the minimize button
  * - Fix iOS
  * - Fix fullscreen on mobile
@@ -60,6 +62,10 @@ async function init() {
 	renderLoop()
 
 	loadStartingSong()
+
+	loadJson("./js/data/exampleSongs.json", json =>
+		ui.setExampleSongs(JSON.parse(json))
+	)
 }
 
 let render
@@ -74,20 +80,7 @@ async function loadStartingSong() {
 		url = "https://Bewelge.github.io/MIDIano/mz_331_3.mid?raw=true"
 	}
 
-	loadSongFromURL(url, "Mozart KV 331 3rd Movement") // Local: "../mz_331_3.mid")
-}
-async function loadSongFromURL(url, title) {
-	getLoader().setLoadMessage(`Loading Song from${url}`)
-	const response = fetch(url, {
-		method: "GET"
-	}).then(response => {
-		const filename = title || url
-		response.blob().then(blob => {
-			const reader = new FileReader()
-			reader.onload = function (theFile) {
-				getPlayer().loadSong(reader.result, filename, () => {})
-			}
-			reader.readAsDataURL(blob)
-		})
-	})
+	FileLoader.loadSongFromURL(url, (response, fileName) =>
+		getPlayer().loadSong(response, fileName, "Mozart KV 331 3rd Movement")
+	) // Local: "../mz_331_3.mid")
 }
