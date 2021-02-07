@@ -65,11 +65,11 @@ export class MidiInputHandler {
 			case 0x90:
 				if (event.data[2] != 0) {
 					// if velocity != 0 => note-on
-					this.noteOnCallback(event.data[1])
+					this.noteOnCallback(parseInt(event.data[1]) - 21)
 					return
 				}
 			case 0x80:
-				this.noteOffCallback(event.data[1])
+				this.noteOffCallback(parseInt(event.data[1]) - 21)
 				return
 		}
 	}
