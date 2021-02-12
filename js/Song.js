@@ -53,12 +53,16 @@ export class Song {
 		return this.measureLines
 	}
 	setMeasureLines() {
-		let timeSignature = this.timeSignature
+		let timeSignature = this.timeSignature || {
+			numerator: 4,
+			denominator: 4,
+			thirtySeconds: 8
+		}
 		let numerator = timeSignature.numerator || 4
 		let denominator = timeSignature.denominator || 4
-		let thirtySecond = timeSignature.thirtyseconds || 8
+		let thirtySeconds = timeSignature.thirtyseconds || 8
 
-		let beatsPerMeasure = numerator / (denominator * (thirtySecond / 32))
+		let beatsPerMeasure = numerator / (denominator * (thirtySeconds / 32))
 		let skippedBeats = beatsPerMeasure - 1
 		this.measureLines = {}
 		Object.keys(this.temporalData.beatsBySecond).forEach(second => {
@@ -287,6 +291,7 @@ export class Song {
 				onNote.noteNumber == notes[i].noteNumber
 			) {
 				onNote.offTime = notes[i].timestamp
+				onNote.offVelocity = notes[i].velocity
 				onNote.duration = onNote.offTime - onNote.timestamp
 
 				break
