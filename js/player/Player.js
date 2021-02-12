@@ -267,8 +267,9 @@ class Player {
 			}
 
 			if (
-				!isTrackRequiredToPlay(this.noteSequence[0].track) ||
-				this.isInputKeyPressed(this.noteSequence[0].noteNumber)
+				this.noteSequence[0] &&
+				(!isTrackRequiredToPlay(this.noteSequence[0].track) ||
+					this.isInputKeyPressed(this.noteSequence[0].noteNumber))
 			) {
 				this.playNote(this.noteSequence.shift())
 			} else {
@@ -341,13 +342,23 @@ class Player {
 		}
 		let currentTime = this.getTime()
 
-		this.audioPlayer.playCompleteNote(
-			currentTime,
-			note,
-			this.playbackSpeed,
-			this.getNoteVolume(note),
-			isAnyTrackPlayalong()
-		)
+		if (this.midiInputHandler.activeOutput) {
+			this.midiInputHandler.midiOutNoteOn(
+				note.noteNumber + 21,
+				note.velocity,
+				note.noteOffVelocity,
+				(note.timestamp - currentTime * 1000) / this.playbackSpeed,
+				(note.offTime - currentTime * 1000) / this.playbackSpeed
+			)
+		} else {
+			this.audioPlayer.playCompleteNote(
+				currentTime,
+				note,
+				this.playbackSpeed,
+				this.getNoteVolume(note),
+				isAnyTrackPlayalong()
+			)
+		}
 	}
 	getNoteVolume(note) {
 		return (
