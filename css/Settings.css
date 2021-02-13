@@ -39,13 +39,15 @@
 .settingsGroupContainer {
 	border-top: 2px solid var(--borderColor);
 }
+
 .settingsGroupContainer:first-of-type {
 	border-top: 0px solid black;
 }
 .settingsGroupLabel {
 	font-size: 1em;
-	margin-left: 0.5em;
-	margin-top: 0.5em;
+	padding-left: 0.5em;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 	color: var(--fontColor);
 }
 .settingContainer {
@@ -56,6 +58,7 @@
 	width: 100%;
 	box-sizing: border-box;
 	background-color: var(--innerMenuBgColor);
+	transition: 0.2s all ease-out;
 }
 .settingContainer:hover {
 	background-color: var(--lightInnerMenuHoverBgColor);

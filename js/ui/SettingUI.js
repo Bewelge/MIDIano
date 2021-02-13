@@ -85,14 +85,33 @@ export class SettingUI {
 			"settingsGroupContainer innerMenuContDiv"
 		)
 		if (categoryName != "default") {
+			cont.classList.add("collapsed")
 			let label = DomHelper.createElementWithClass(
-				"settingsGroupLabel",
-				"span",
+				"settingsGroupLabel clickableTitle",
+				"div",
 				{},
 				{ innerHTML: categoryName + ": " }
 			)
 			cont.appendChild(label)
+
+			let collapsed = true
+			let glyph = DomHelper.getGlyphicon("plus")
+			glyph.classList.add("collapserGlyphSpan")
+			label.appendChild(glyph)
+
+			label.onclick = () => {
+				if (collapsed == true) {
+					collapsed = false
+					cont.classList.remove("collapsed")
+					DomHelper.replaceGlyph(label, "plus", "minus")
+				} else {
+					collapsed = true
+					cont.classList.add("collapsed")
+					DomHelper.replaceGlyph(label, "minus", "plus")
+				}
+			}
 		}
+
 		settingsList.forEach(setting =>
 			cont.appendChild(SettingUI.createSettingDiv(setting))
 		)

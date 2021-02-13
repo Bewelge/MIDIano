@@ -2,6 +2,7 @@ import { FileLoader } from "../player/FileLoader.js"
 import { getCurrentSong, getPlayer } from "../player/Player.js"
 import { replaceAllString } from "../Util.js"
 import { DomHelper } from "./DomHelper.js"
+import { getLoader } from "./Loader.js"
 
 export class SongUI {
 	constructor() {
@@ -69,10 +70,12 @@ function createUnloadedSongButton(songJson) {
 	let but = DomHelper.createTextButton(
 		"song" + replaceAllString(songJson.fileName, " ", "_"),
 		songJson.name,
-		() =>
+		() => {
+			getLoader().setLoadMessage("Downloading Song")
 			FileLoader.loadSongFromURL(songJson.url, respone => {
 				getPlayer().loadSong(respone, songJson.fileName, songJson.name)
 			})
+		}
 	)
 	but.classList.add("songButton")
 	return but

@@ -27,12 +27,38 @@ export const createTrackDiv = trackId => {
 		hideButton,
 		trackName,
 		instrumentName,
-		requireToPlayAlongButton
+		requireToPlayAlongButton,
+		clickableTitleDiv
 
 	let trackDiv = DomHelper.createDivWithIdAndClass(
 		"trackDiv" + trackId,
-		"innerMenuContDiv settingGroupContainer"
+		"innerMenuContDiv settingGroupContainer",
+		{
+			borderLeft: "5px solid " + getTrackColor(trackId).white
+		}
 	)
+
+	clickableTitleDiv = DomHelper.createDivWithClass("clickableTitle")
+	let collapsed = instrumentName == "percussion" ? true : false
+
+	let glyph = DomHelper.getGlyphicon(collapsed ? "plus" : "minus")
+	glyph.classList.add("collapserGlyphSpan")
+	clickableTitleDiv.appendChild(glyph)
+
+	if (collapsed) {
+		trackDiv.classList.add("collapsed")
+	}
+	clickableTitleDiv.onclick = () => {
+		if (collapsed) {
+			collapsed = false
+			trackDiv.classList.remove("collapsed")
+			DomHelper.replaceGlyph(clickableTitleDiv, "plus", "minus")
+		} else {
+			collapsed = true
+			trackDiv.classList.add("collapsed")
+			DomHelper.replaceGlyph(clickableTitleDiv, "minus", "plus")
+		}
+	}
 
 	//Name
 	trackName = DomHelper.createDivWithIdAndClass(
@@ -60,17 +86,28 @@ export const createTrackDiv = trackId => {
 	let btnGrp = DomHelper.createButtonGroup(false)
 
 	//Track Volume
-	volumeSlider = DomHelper.createSliderWithLabel(
-		"volume" + trackId,
-		"Volume",
-		trackObj.volume,
-		0,
-		200,
-		1,
-		ev => {
+	volumeSlider = SettingUI.createSettingDiv({
+		type: "slider",
+		label: "Volume ",
+		value: trackObj.volume,
+		min: 0,
+		max: 200,
+		step: 1,
+		onChange: ev => {
 			trackObj.volume = parseInt(ev.target.value)
 		}
-	)
+	})
+	// DomHelper.createSliderWithLabel(
+	// 	"volume" + trackId,
+	// 	"Volume",
+	// 	trackObj.volume,
+	// 	0,
+	// 	200,
+	// 	1,
+	// 	ev => {
+	// 		trackObj.volume = parseInt(ev.target.value)
+	// 	}
+	// )
 
 	//Hide Track
 	hideButton = SettingUI.createSettingDiv({
@@ -153,11 +190,11 @@ export const createTrackDiv = trackId => {
 		colorPickerBlack
 	])
 
+	DomHelper.appendChildren(clickableTitleDiv, [trackName, instrumentName])
 	DomHelper.appendChildren(trackDiv, [
-		trackName,
-		instrumentName,
+		clickableTitleDiv,
 		DomHelper.getDivider(),
-		volumeSlider.container,
+		volumeSlider,
 		btnGrp
 	])
 
