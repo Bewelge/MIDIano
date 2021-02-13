@@ -15,7 +15,7 @@ import { getPlayerState } from "../player/Player.js"
 
 const DEBUG = true
 
-const LOOK_BACK_TIME = 4
+const DEFAULT_LOOK_BACK_TIME = 4
 const LOOK_AHEAD_TIME = 10
 
 const PROGRESS_BAR_CANVAS_HEIGHT = 20
@@ -38,16 +38,9 @@ export class Render {
 		this.noteRender = new NoteRender(
 			this.ctx,
 			this.renderDimensions,
-			this.pianoRender,
-			LOOK_BACK_TIME,
-			LOOK_AHEAD_TIME
+			this.pianoRender
 		)
-		this.sustainRender = new SustainRender(
-			this.ctx,
-			this.renderDimensions,
-			LOOK_BACK_TIME,
-			LOOK_AHEAD_TIME
-		)
+		this.sustainRender = new SustainRender(this.ctx, this.renderDimensions)
 
 		this.measureLinesRender = new MeasureLinesRender(
 			this.ctx,
@@ -157,12 +150,14 @@ export class Render {
 						renderInfoByTrackMap[trackIndex] = { black: [], white: [] }
 
 						let time = this.getRenderTime(playerState)
-						let lookBackTime = Math.floor(time - LOOK_BACK_TIME)
-						let lookAheadTime = Math.ceil(
-							time + this.renderDimensions.getSecondsDisplayed()
+						let firstSecondShown = Math.floor(
+							time - this.renderDimensions.getSecondsDisplayedAfter() - 4
+						)
+						let lastSecondShown = Math.ceil(
+							time + this.renderDimensions.getSecondsDisplayedBefore()
 						)
 
-						for (let i = lookBackTime; i < lookAheadTime; i++) {
+						for (let i = firstSecondShown; i < lastSecondShown; i++) {
 							if (track.notesBySeconds[i]) {
 								track.notesBySeconds[i]
 									// .filter(note => note.instrument != "percussion")

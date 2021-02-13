@@ -26,11 +26,21 @@ const defaultSettings = {
 				type: "slider",
 				id: "pianoPosition",
 				label: "Piano Position",
-				value: 0,
+				value: 20,
 				min: 0,
 				max: 100,
 				step: 1,
 				onChange: value => setSetting("pianoPosition", value)
+			},
+			{
+				type: "slider",
+				id: "playedNoteFalloffSpeed",
+				label: "Played Note Speed",
+				value: 2,
+				min: 0.1,
+				max: 10,
+				step: 0.1,
+				onChange: value => setSetting("playedNoteFalloffSpeed", value)
 			},
 			{
 				type: "checkbox",

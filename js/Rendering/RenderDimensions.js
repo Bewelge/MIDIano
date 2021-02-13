@@ -120,9 +120,13 @@ export class RenderDimensions {
 	 */
 	getYForTime(time) {
 		const height = this.windowHeight - this.whiteKeyHeight
+		let noteToHeightConst = this.getNoteToHeightConst()
+		if (time < 0) {
+			noteToHeightConst /= getSetting("playedNoteFalloffSpeed")
+		}
 		return (
 			height -
-			(time / this.getNoteToHeightConst()) * height -
+			(time / noteToHeightConst) * height -
 			(this.windowHeight -
 				this.whiteKeyHeight -
 				this.getAbsolutePianoPosition())
@@ -190,8 +194,18 @@ export class RenderDimensions {
 	getNoteToHeightConst() {
 		return getSetting("noteToHeightConst") * this.windowHeight
 	}
-	getSecondsDisplayed() {
-		return Math.ceil(this.getNoteToHeightConst() / 1000)
+
+	getSecondsDisplayedBefore() {
+		let pianoPos = getSetting("pianoPosition") / 100
+		return Math.ceil(((1 - pianoPos) * this.getNoteToHeightConst()) / 1000)
+	}
+	getSecondsDisplayedAfter() {
+		let pianoPos = getSetting("pianoPosition") / 100
+		return Math.floor(
+			(pianoPos *
+				(this.getNoteToHeightConst() / getSetting("playedNoteFalloffSpeed"))) /
+				1000
+		)
 	}
 
 	//ZOOM

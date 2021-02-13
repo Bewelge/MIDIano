@@ -7,8 +7,6 @@ export class SustainRender {
 	constructor(ctx, renderDimensions, lookBackTime, lookAheadTime) {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
-		this.lookBackTime = lookBackTime
-		this.lookAheadTime = lookAheadTime
 
 		this.sustainPeriodFillStyle = "rgba(0,0,0,0.4)"
 		this.sustainOnStrokeStyle = "rgba(55,155,55,0.6)"
@@ -30,8 +28,12 @@ export class SustainRender {
 	 * @param {Object} sustainsBySecond
 	 */
 	renderSustainOnOffs(time, sustainsBySecond) {
-		let lookBackTime = Math.floor(time - this.lookBackTime)
-		let lookAheadTime = Math.ceil(time + this.lookAheadTime)
+		let lookBackTime = Math.floor(
+			time - this.renderDimensions.getSecondsDisplayedAfter() - 4
+		)
+		let lookAheadTime = Math.ceil(
+			time + this.renderDimensions.getSecondsDisplayedBefore() + 1
+		)
 
 		for (
 			let lookUpTime = lookBackTime;
@@ -59,8 +61,9 @@ export class SustainRender {
 					this.ctx.closePath()
 					this.ctx.stroke()
 
+					this.ctx.fillStyle = "rgba(200,200,200,0.9)"
 					this.ctx.font = this.sustainOnOffFont
-					this.ctx.fillText(text, 10, y - 2)
+					this.ctx.fillText(text, 10, y - 12)
 				})
 			}
 		}
@@ -71,17 +74,21 @@ export class SustainRender {
 	 * @param {Array} sustainPeriods
 	 */
 	renderSustainPeriods(time, sustainPeriods) {
-		let lookBackTime = Math.floor(time - this.lookBackTime)
-		let lookAheadTime = Math.ceil(time + this.lookAheadTime)
+		let firstSecondShown = Math.floor(
+			time - this.renderDimensions.getSecondsDisplayedAfter() - 4
+		)
+		let lastSecondShown = Math.ceil(
+			time + this.renderDimensions.getSecondsDisplayedBefore() + 1
+		)
 		this.ctx.fillStyle = this.sustainPeriodFillStyle
 
 		sustainPeriods
 			.filter(
 				period =>
-					(period.start < lookAheadTime * 1000 &&
-						period.start > lookBackTime * 1000) ||
-					(period.start < lookBackTime * 1000 &&
-						period.end > lookBackTime * 1000)
+					(period.start < lastSecondShown * 1000 &&
+						period.start > firstSecondShown * 1000) ||
+					(period.start < firstSecondShown * 1000 &&
+						period.end > firstSecondShown * 1000)
 			)
 			.forEach(period => {
 				let yStart = this.renderDimensions.getYForTime(

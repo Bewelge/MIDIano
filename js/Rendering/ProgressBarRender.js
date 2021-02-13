@@ -25,7 +25,9 @@ export class ProgressBarRender {
 		ctx.fillStyle = "rgba(0,0,0,1)"
 		let showMilis = getSetting("showMiliseconds")
 		let text =
-			formatTime(time, showMilis) + " / " + formatTime(end / 1000, showMilis)
+			formatTime(Math.min(time, end), showMilis) +
+			" / " +
+			formatTime(end / 1000, showMilis)
 		let wd = ctx.measureText(text).width
 		ctx.font = "14px Arial black"
 		ctx.fillText(text, this.renderDimensions.windowWidth / 2 - wd / 2, 15)

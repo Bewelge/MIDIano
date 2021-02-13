@@ -189,7 +189,7 @@ export class PianoRender {
 	}
 	drawWhiteKeyNames(ctx) {
 		ctx.fillStyle = "black"
-		const fontSize = this.renderDimensions.whiteKeyWidth / 2
+		const fontSize = this.renderDimensions.whiteKeyWidth / 2.2
 		ctx.font = fontSize + "px Arial black"
 		for (
 			let i = this.renderDimensions.minNoteNumber;
@@ -287,10 +287,10 @@ export class PianoRender {
 	 * @param {Dimensions} dims
 	 */
 	drawBlackKey(ctx, dims, color) {
-		let radiusTop = this.renderDimensions.blackKeyWidth / 15
+		let radiusTop = 0 //this.renderDimensions.blackKeyWidth / 15
 		let radiusBottom = this.renderDimensions.blackKeyWidth / 8
 		let x = dims.x
-		let y = dims.y + 5
+		let y = dims.y + 6
 		let height = dims.h
 		let width = dims.w
 		color = color || "black"
@@ -354,7 +354,7 @@ export class PianoRender {
 					position: "absolute",
 					left: "0px",
 					zIndex: 99,
-					boxShadow: "0px -3px 15px 5px rgba(0,0,0,0.4)"
+					boxShadow: "0px 0px 15px 15px rgba(0,0,0,0.4)"
 				}
 			)
 			this.pianoCanvasBlack.className = "pianoCanvas"
