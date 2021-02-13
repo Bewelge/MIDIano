@@ -247,7 +247,7 @@ class Player {
 
 		let currentTime = this.getTime()
 
-		if (this.isSongEnded(currentTime - 0.5)) {
+		if (this.isSongEnded(currentTime - 5)) {
 			this.pause()
 			this.requestNextTick()
 			return
