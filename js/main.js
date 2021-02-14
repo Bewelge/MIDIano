@@ -7,32 +7,32 @@ import { loadJson } from "./Util.js"
 import { FileLoader } from "./player/FileLoader.js"
 
 /**
- * DONES:
- * - piano zoom - 29.1 Done - Implement fit to song on new song callback
- * - clean up getRenderInfos - DONE 29.01
  *
- * - click piano = hit key - DONE 04.02
- * - implement configurable ADSR - DONE 04.02
- * - render note keys on each note/ on piano - DONE 04.02
  *
  * TODOs:
+ *
+ * UI:
+ * - Accessability
+ * - Mobile
+ * - Load from URL / circumvent CORS.. Extension?
  * - channel menu
- * - accessability
- * - load from URL
+ * - added song info to "loaded songs"
+ *
+ * Audio
  * - implement control messages of the other two pedals
+ * - implement pitch shift
  * - settings for playalong:
  * 		- accuracy needed
  * 		- different modes
- * -
  *
+ * MISC
  * - add starting songs from piano-midi
- * - added song info to "loaded songs"
  * - add more starting colors
  * - make instrument choosable for tracks
  * - Metronome
- * -
  * - Update readme - new screenshot, install/ run instructions
  * - Choose License
+ * -
  * -
  *
  *
@@ -41,8 +41,6 @@ import { FileLoader } from "./player/FileLoader.js"
  * - fix the minimize button
  * - Fix iOS
  * - Fix fullscreen on mobile
- * - Custom UI for Mobile
- * - fix piano key hightlighting
  */
 let ui
 let loading
