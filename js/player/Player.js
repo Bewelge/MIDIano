@@ -1,9 +1,9 @@
 import { MidiLoader } from "../MidiLoader.js"
 import { Song } from "../Song.js"
-import { MidiInputHandler } from "../MidiInputHandler.js"
 import { AudioPlayer } from "../audio/AudioPlayer.js"
 import { getLoader } from "../ui/Loader.js"
 import { getSetting } from "../settings/Settings.js"
+import { getMidiHandler } from "../MidiInputHandler.js"
 import {
 	getTrackVolume,
 	isAnyTrackPlayalong,
@@ -16,9 +16,9 @@ class Player {
 	constructor() {
 		this.audioPlayer = new AudioPlayer()
 
-		this.midiInputHandler = new MidiInputHandler()
-		this.midiInputHandler.setNoteOnCallback(this.addInputNoteOn.bind(this))
-		this.midiInputHandler.setNoteOffCallback(this.addInputNoteOff.bind(this))
+		getMidiHandler().setNoteOnCallback(this.addInputNoteOn.bind(this))
+		getMidiHandler().setNoteOffCallback(this.addInputNoteOff.bind(this))
+
 		this.startDelay = -2
 		this.lastTime = this.audioPlayer.getContextTime()
 		this.progress = 0
@@ -342,8 +342,8 @@ class Player {
 		}
 		let currentTime = this.getTime()
 
-		if (this.midiInputHandler.activeOutput) {
-			this.midiInputHandler.midiOutNoteOn(
+		if (getMidiHandler().isOutputActive()) {
+			getMidiHandler().playNote(
 				note.noteNumber + 21,
 				note.velocity,
 				note.noteOffVelocity,

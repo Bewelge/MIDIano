@@ -4,6 +4,7 @@ import { ZoomUI } from "./ZoomUI.js"
 import { createTrackDivs } from "./TrackUI.js"
 import { getCurrentSong, getPlayer } from "../player/Player.js"
 import { SongUI } from "./SongUI.js"
+import { getMidiHandler } from "../MidiInputHandler.js"
 /**
  * Contains all initiation, appending and manipulation of DOM-elements.
  * Callback-bindings for some events are created in  the constructor
@@ -163,7 +164,7 @@ export class UI {
 		let trackGrp = DomHelper.createButtonGroup(true)
 		DomHelper.appendChildren(trackGrp, [
 			this.getTracksButton(),
-			this.getMidiInputButton()
+			this.getMidiSetupButton()
 			// this.getChannelsButton()
 		])
 		return trackGrp
@@ -533,36 +534,36 @@ export class UI {
 		this.showDiv(this.getTrackMenuDiv())
 	}
 
-	getMidiInputButton() {
-		if (!this.midiInputButton) {
-			this.midiInputButton = DomHelper.createGlyphiconTextButton(
-				"midiInput",
+	getMidiSetupButton() {
+		if (!this.midiSetupButton) {
+			this.midiSetupButton = DomHelper.createGlyphiconTextButton(
+				"midiSetup",
 				"tower",
-				"Midi-Input",
+				"Midi-Setup",
 				ev => {
-					if (this.midiInputDialogShown) {
-						this.hideMidiInputDialog()
+					if (this.midiSetupDialogShown) {
+						this.hideMidiSetupDialog()
 					} else {
-						this.showMidiInputDialog()
+						this.showMidiSetupDialog()
 					}
 				}
 			)
-			DomHelper.addClassToElement("floatSpanLeft", this.midiInputButton)
+			DomHelper.addClassToElement("floatSpanLeft", this.midiSetupButton)
 		}
-		return this.midiInputButton
+		return this.midiSetupButton
 	}
-	hideMidiInputDialog() {
-		DomHelper.removeClass("selected", this.midiInputButton)
-		this.midiInputDialogShown = false
-		this.hideDiv(this.getMidiInputDialog())
+	hideMidiSetupDialog() {
+		DomHelper.removeClass("selected", this.midiSetupButton)
+		this.midiSetupDialogShown = false
+		this.hideDiv(this.getMidiSetupDialog())
 	}
 
-	showMidiInputDialog() {
+	showMidiSetupDialog() {
 		this.hideAllDialogs()
-		DomHelper.addClassToElement("selected", this.midiInputButton)
-		this.midiInputDialogShown = true
+		DomHelper.addClassToElement("selected", this.midiSetupButton)
+		this.midiSetupDialogShown = true
 
-		this.showDiv(this.getMidiInputDialog())
+		this.showDiv(this.getMidiSetupDialog())
 	}
 	getChannelsButton() {
 		if (!this.channelsButton) {
@@ -611,7 +612,7 @@ export class UI {
 	}
 	hideAllDialogs() {
 		// this.hideChannels()
-		this.hideMidiInputDialog()
+		this.hideMidiSetupDialog()
 		this.hideSettings()
 		this.hideLoadedSongsDiv()
 		this.hideTracks()
@@ -747,56 +748,101 @@ export class UI {
 		this.songUI.newSongCallback(getCurrentSong())
 	}
 
-	getMidiInputDialog() {
-		if (!this.midiInputDialog) {
-			this.midiInputDialog = DomHelper.createDivWithIdAndClass(
-				"midiInputDialog",
+	getMidiSetupDialog() {
+		if (!this.midiSetupDialog) {
+			this.midiSetupDialog = DomHelper.createDivWithIdAndClass(
+				"midiSetupDialog",
 				"centeredMenuDiv"
 			)
-			this.hideDiv(this.midiInputDialog)
-			document.body.appendChild(this.midiInputDialog)
+			this.hideDiv(this.midiSetupDialog)
+			document.body.appendChild(this.midiSetupDialog)
 
 			let text = DomHelper.createDivWithClass(
 				"centeredBigText",
 				{ marginTop: "25px" },
 				{ innerHTML: "Choose Midi device:" }
 			)
-			this.midiInputDialog.appendChild(text)
+			this.midiSetupDialog.appendChild(text)
 
-			this.inputDevicesDiv = DomHelper.createDivWithClass("container")
-			this.midiInputDialog.appendChild(this.inputDevicesDiv)
+			this.inputDevicesDiv = DomHelper.createDivWithClass("halfContainer")
+			this.outputDevicesDiv = DomHelper.createDivWithClass("halfContainer")
+			this.midiSetupDialog.appendChild(this.inputDevicesDiv)
+			this.midiSetupDialog.appendChild(this.outputDevicesDiv)
 		}
-		let devices = getPlayer().midiInputHandler.getAvailableDevices()
-		if (devices.length == 0) {
-			this.inputDevicesDiv.innerHTML = "No MIDI-devices found."
+		let inputDevices = getMidiHandler().getAvailableInputDevices()
+		if (inputDevices.length == 0) {
+			this.inputDevicesDiv.innerHTML = "No MIDI input-devices found."
 		} else {
 			this.inputDevicesDiv.innerHTML = ""
-			devices.forEach(device => {
+			let inputTitle = DomHelper.createElementWithClass("row", "span")
+			inputTitle.innerHTML = "Input: "
+			this.inputDevicesDiv.appendChild(inputTitle)
+			inputDevices.forEach(device => {
 				this.inputDevicesDiv.appendChild(this.createDeviceDiv(device))
 			})
 		}
 
-		this.midiInputDialog.style.marginTop =
+		let outputDevices = getMidiHandler().getAvailableOutputDevices()
+		if (outputDevices.length == 0) {
+			this.outputDevicesDiv.innerHTML = "No MIDI output-devices found."
+		} else {
+			this.outputDevicesDiv.innerHTML = ""
+			let outputTitle = DomHelper.createDivWithClass("row")
+			outputTitle.innerHTML = "Output: "
+			this.outputDevicesDiv.appendChild(outputTitle)
+			outputDevices.forEach(device => {
+				this.outputDevicesDiv.appendChild(this.createOutputDeviceDiv(device))
+			})
+		}
+		this.midiSetupDialog.style.marginTop =
 			this.getNavBar().clientHeight + 25 + "px"
-		return this.midiInputDialog
+		return this.midiSetupDialog
 	}
 	createDeviceDiv(device) {
 		let deviceDiv = DomHelper.createTextButton(
-			"midiDeviceDiv" + device.id,
+			"midiInDeviceDiv" + device.id,
 			device.name,
 			() => {
 				if (deviceDiv.classList.contains("selected")) {
 					DomHelper.removeClass("selected", deviceDiv)
-					getPlayer().midiInputHandler.clearInput(device)
+					getMidiHandler().clearInput(device)
 				} else {
 					DomHelper.addClassToElement("selected", deviceDiv)
-					getPlayer().midiInputHandler.addInput(device)
+					getMidiHandler().addInput(device)
 				}
 			}
 		)
-		if (getPlayer().midiInputHandler.isInputActive(device)) {
+		if (getMidiHandler().isDeviceActive(device)) {
 			DomHelper.addClassToElement("selected", deviceDiv)
 		}
+
+		return deviceDiv
+	}
+	createOutputDeviceDiv(device) {
+		let deviceDiv = DomHelper.createTextButton(
+			"midiOutDeviceDiv" + device.id,
+			device.name,
+			() => {
+				if (deviceDiv.classList.contains("selected")) {
+					DomHelper.removeClass("selected", deviceDiv)
+					getMidiHandler().clearOutput(device)
+				} else {
+					DomHelper.addClassToElement("selected", deviceDiv)
+					getMidiHandler().addOutput(device)
+				}
+			}
+		)
+		if (getMidiHandler().isOutputDeviceActive(device)) {
+			document
+				.querySelectorAll(".midiOutDeviceDiv")
+				.forEach(el =>
+					el.classList.contains("selected")
+						? el.classList.remove("selected")
+						: null
+				)
+			DomHelper.addClassToElement("selected", deviceDiv)
+		}
+		deviceDiv.classList.add("midiOutDeviceDiv")
 
 		return deviceDiv
 	}

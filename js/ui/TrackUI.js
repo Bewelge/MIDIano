@@ -9,6 +9,7 @@ import { getPlayer } from "../player/Player.js"
 import { SettingUI } from "./SettingUI.js"
 import { ElementHighlight } from "./ElementHighlight.js"
 import { Notification } from "./Notification.js"
+import { getMidiHandler } from "../MidiInputHandler.js"
 
 /**
  *  Handles creation of the Track-Divs that give control over volume, diplay, color...
@@ -151,7 +152,7 @@ export const createTrackDiv = trackId => {
 		onChange: () => {
 			console.log(trackObj.requiredToPlay)
 			if (!trackObj.requiredToPlay) {
-				if (!getPlayer().midiInputHandler.isAnyInputSet()) {
+				if (!getMidiHandler().isInputActive()) {
 					Notification.create(
 						"You have to choose a Midi Input Device to play along.",
 						5000
@@ -171,7 +172,10 @@ export const createTrackDiv = trackId => {
 		type: "color",
 		label: "White note color",
 		value: getTrackColor(trackId).white,
-		onChange: colorString => setTrackColor(trackId, "white", colorString)
+		onChange: colorString => {
+			trackDiv.style.borderLeft = "5px solid " + colorString
+			setTrackColor(trackId, "white", colorString)
+		}
 	})
 	let colorPickerBlack = SettingUI.createColorSettingDiv({
 		type: "color",

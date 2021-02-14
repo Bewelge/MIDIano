@@ -33,7 +33,7 @@
 html,
 body {
 	font-family: "Source Sans Pro", sans-serif !important;
-
+	color: var(--fontColor);
 	width: 100%;
 	height: 100%;
 	min-width: 1040px;
@@ -221,6 +221,8 @@ canvas {
 .centeredBigText {
 	width: 100%;
 	text-align: center;
+	margin-top: 1em;
+	margin-bottom: 1em;
 }
 .trackName {
 	width: 100%;
@@ -243,6 +245,10 @@ canvas {
 .container {
 	width: 100% !important;
 	display: flex;
+}
+.halfContainer {
+	width: 50% !important;
+	float: left;
 }
 .row {
 	width: 100%;
