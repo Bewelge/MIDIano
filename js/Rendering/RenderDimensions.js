@@ -1,5 +1,5 @@
 import { isBlack } from "../Util.js"
-import { getSetting } from "../settings/Settings.js"
+import { getSetting, setSettingCallback } from "../settings/Settings.js"
 
 const MAX_NOTE_NUMBER = 87
 const MIN_NOTE_NUMBER = 0
@@ -18,6 +18,8 @@ export class RenderDimensions {
 		this.minNoteNumber = MIN_NOTE_NUMBER
 		this.maxNoteNumber = MAX_NOTE_NUMBER
 		this.menuHeight = 200
+		setSettingCallback("blackKeyHeight", this.resize.bind(this))
+		setSettingCallback("whiteKeyHeight", this.resize.bind(this))
 		this.resize()
 	}
 	/**
@@ -50,7 +52,13 @@ export class RenderDimensions {
 			this.whiteKeyWidth * 4.5
 		)
 		this.blackKeyWidth = Math.floor(this.whiteKeyWidth * 0.5829787234)
-		this.blackKeyHeight = Math.floor((this.whiteKeyHeight * 2) / 3)
+		this.blackKeyHeight =
+			Math.floor((this.whiteKeyHeight * 2) / 3) *
+			(getSetting("blackKeyHeight") / 100)
+
+		//Do this after computing blackKey, as its dependent on the white key size ( without adjusting for the setting )
+		this.whiteKeyHeight *= getSetting("whiteKeyHeight") / 100
+		console.log(this.whiteKeyHeight, this.blackKeyHeight)
 	}
 
 	/**
@@ -79,7 +87,7 @@ export class RenderDimensions {
 			this.whiteKeyHeight -
 			Math.ceil(
 				(parseInt(this.pianoPositionY) / 100) *
-					(this.windowHeight - this.whiteKeyHeight - this.menuHeight)
+					(this.windowHeight - this.whiteKeyHeight - this.menuHeight - 24)
 			)
 		)
 	}
@@ -312,7 +320,6 @@ export class RenderDimensions {
 		for (let i = minNoteNumber; i <= maxNoteNumber; i++) {
 			numOfWhiteKeysInRange += isBlack(i - MIN_NOTE_NUMBER) ? 0 : 1
 		}
-		console.log(minNoteNumber, maxNoteNumber)
 		this.minNoteNumber = minNoteNumber
 		this.maxNoteNumber = maxNoteNumber
 		this.numberOfWhiteKeysShown = numOfWhiteKeysInRange

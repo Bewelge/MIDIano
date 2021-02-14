@@ -24,16 +24,6 @@ const defaultSettings = {
 			},
 			{
 				type: "slider",
-				id: "pianoPosition",
-				label: "Piano Position",
-				value: 20,
-				min: 0,
-				max: 100,
-				step: 1,
-				onChange: value => setSetting("pianoPosition", value)
-			},
-			{
-				type: "slider",
 				id: "playedNoteFalloffSpeed",
 				label: "Played Note Speed",
 				value: 2,
@@ -42,13 +32,7 @@ const defaultSettings = {
 				step: 0.1,
 				onChange: value => setSetting("playedNoteFalloffSpeed", value)
 			},
-			{
-				type: "checkbox",
-				id: "clickablePiano",
-				label: "Clickable piano",
-				value: true,
-				onChange: ev => setSetting("clickablePiano", ev.target.checked)
-			},
+
 			{
 				type: "checkbox",
 				id: "showBPM",
@@ -77,44 +61,14 @@ const defaultSettings = {
 				value: true,
 				onChange: ev => setSetting("showFps", ev.target.checked)
 			}
-		]
-	},
-
-	Video: {
-		default: [
-			{
-				type: "slider",
-				id: "noteToHeightConst",
-				label: "Note Duration / Height",
-				value: 3,
-				min: 0.1,
-				max: 30,
-				step: 0.1,
-				onChange: value => setSetting("noteToHeightConst", value)
-			},
-			{
-				type: "slider",
-				id: "minNoteHeight",
-				label: "Minimum Note height (px)",
-				value: 10,
-				min: 1,
-				max: 50,
-				step: 1,
-				onChange: value => setSetting("minNoteHeight", value)
-			},
+		],
+		"On Screen Piano": [
 			{
 				type: "checkbox",
-				id: "showHitKeys",
-				label: "Show Hit Notes effect",
+				id: "clickablePiano",
+				label: "Clickable piano",
 				value: true,
-				onChange: ev => setSetting("showHitKeys", ev.target.checked)
-			},
-			{
-				type: "checkbox",
-				id: "highlightActivePianoKeys",
-				label: "Color active piano keys",
-				value: true,
-				onChange: ev => setSetting("showPianoKeys", ev.target.checked)
+				onChange: ev => setSetting("clickablePiano", ev.target.checked)
 			},
 			{
 				type: "checkbox",
@@ -134,6 +88,68 @@ const defaultSettings = {
 			},
 			{
 				type: "checkbox",
+				id: "highlightActivePianoKeys",
+				label: "Color active piano keys",
+				value: true,
+				onChange: ev => setSetting("showPianoKeys", ev.target.checked)
+			},
+			{
+				type: "slider",
+				id: "pianoPosition",
+				label: "Piano Position",
+				value: 20,
+				min: 0,
+				max: 100,
+				step: 1,
+				onChange: value => setSetting("pianoPosition", value)
+			},
+			{
+				type: "slider",
+				id: "whiteKeyHeight",
+				label: "Height (%) - White keys",
+				value: 100,
+				min: 0,
+				max: 200,
+				step: 1,
+				onChange: value => setSetting("whiteKeyHeight", value)
+			},
+			{
+				type: "slider",
+				id: "blackKeyHeight",
+				label: "Height (%) - Black keys",
+				value: 100,
+				min: 0,
+				max: 200,
+				step: 1,
+				onChange: value => setSetting("blackKeyHeight", value)
+			}
+		]
+	},
+
+	Video: {
+		default: [
+			{
+				type: "slider",
+				id: "noteToHeightConst",
+				label: "Seconds shown on screen",
+				value: 3,
+				min: 0.1,
+				max: 30,
+				step: 0.1,
+				onChange: value => setSetting("noteToHeightConst", value)
+			}
+		],
+		"Note Appearance": [
+			{
+				type: "checkbox",
+				id: "showHitKeys",
+				label: "Active Notes effect",
+				value: true,
+				onChange: ev => setSetting("showHitKeys", ev.target.checked)
+			},
+
+			{
+				type: "checkbox",
 				id: "strokeNotes",
 				label: "Stroke notes",
 				value: true,
@@ -147,6 +163,13 @@ const defaultSettings = {
 				onChange: ev => setSetting("roundedNotes", ev.target.checked)
 			},
 			{
+				type: "checkbox",
+				id: "fadeInNotes",
+				label: "Enable fade in effect",
+				value: true,
+				onChange: ev => setSetting("fadeInNotes", ev.target.checked)
+			},
+			{
 				type: "slider",
 				id: "noteBorderRadius",
 				label: "Note border radius (%)",
@@ -157,11 +180,14 @@ const defaultSettings = {
 				onChange: value => setSetting("noteBorderRadius", value)
 			},
 			{
-				type: "checkbox",
-				id: "fadeInNotes",
-				label: "Enable fade in effect",
-				value: true,
-				onChange: ev => setSetting("fadeInNotes", ev.target.checked)
+				type: "slider",
+				id: "minNoteHeight",
+				label: "Minimum Note height (px)",
+				value: 10,
+				min: 1,
+				max: 50,
+				step: 1,
+				onChange: value => setSetting("minNoteHeight", value)
 			}
 		],
 		Sustain: [

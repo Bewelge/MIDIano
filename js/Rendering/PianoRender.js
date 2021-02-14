@@ -57,7 +57,10 @@ export class PianoRender {
 			DomHelper.setCanvasSize(
 				canvas,
 				this.renderDimensions.windowWidth,
-				this.renderDimensions.whiteKeyHeight
+				Math.max(
+					this.renderDimensions.whiteKeyHeight,
+					this.renderDimensions.blackKeyHeight
+				)
 			)
 		})
 		this.repositionCanvases()
@@ -102,13 +105,19 @@ export class PianoRender {
 			0,
 			0,
 			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
+			Math.max(
+				this.renderDimensions.whiteKeyHeight,
+				this.renderDimensions.blackKeyHeight
+			)
 		)
 		this.playedKeysCtxBlack.clearRect(
 			0,
 			0,
 			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
+			Math.max(
+				this.renderDimensions.whiteKeyHeight,
+				this.renderDimensions.blackKeyHeight
+			)
 		)
 	}
 
@@ -117,13 +126,19 @@ export class PianoRender {
 			0,
 			0,
 			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
+			Math.max(
+				this.renderDimensions.whiteKeyHeight,
+				this.renderDimensions.blackKeyHeight
+			)
 		)
 		ctxBlack.clearRect(
 			0,
 			0,
 			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight
+			Math.max(
+				this.renderDimensions.whiteKeyHeight,
+				this.renderDimensions.blackKeyHeight
+			)
 		)
 		//Background
 		ctxWhite.fillStyle = "rgba(0,0,0,1)"
@@ -131,7 +146,7 @@ export class PianoRender {
 			0,
 			5,
 			this.renderDimensions.windowWidth,
-			this.renderDimensions.whiteKeyHeight + 10
+			this.renderDimensions.whiteKeyHeight
 		)
 
 		this.drawWhiteKeys(ctxWhite)
@@ -315,7 +330,10 @@ export class PianoRender {
 		if (!this.pianoCanvasWhite) {
 			this.pianoCanvasWhite = DomHelper.createCanvas(
 				this.renderDimensions.windowWidth,
-				this.renderDimensions.whiteKeyHeight,
+				Math.max(
+					this.renderDimensions.whiteKeyHeight,
+					this.renderDimensions.blackKeyHeight
+				),
 				{
 					position: "absolute",
 					left: "0px",
@@ -332,7 +350,10 @@ export class PianoRender {
 		if (!this.playedKeysCanvasWhite) {
 			this.playedKeysCanvasWhite = DomHelper.createCanvas(
 				this.renderDimensions.windowWidth,
-				this.renderDimensions.whiteKeyHeight,
+				Math.max(
+					this.renderDimensions.whiteKeyHeight,
+					this.renderDimensions.blackKeyHeight
+				),
 				{
 					position: "absolute",
 					left: "0px",
@@ -349,7 +370,10 @@ export class PianoRender {
 		if (!this.pianoCanvasBlack) {
 			this.pianoCanvasBlack = DomHelper.createCanvas(
 				this.renderDimensions.windowWidth,
-				this.renderDimensions.whiteKeyHeight,
+				Math.max(
+					this.renderDimensions.whiteKeyHeight,
+					this.renderDimensions.blackKeyHeight
+				),
 				{
 					position: "absolute",
 					left: "0px",
@@ -367,7 +391,10 @@ export class PianoRender {
 		if (!this.playedKeysCanvasBlack) {
 			this.playedKeysCanvasBlack = DomHelper.createCanvas(
 				this.renderDimensions.windowWidth,
-				this.renderDimensions.whiteKeyHeight,
+				Math.max(
+					this.renderDimensions.whiteKeyHeight,
+					this.renderDimensions.blackKeyHeight
+				),
 				{
 					position: "absolute",
 					left: "0px",
@@ -459,13 +486,17 @@ export class PianoRender {
 		return clickedKey
 	}
 	getCanvasPosFromMouseEvent(ev) {
+		let canvHt = Math.max(
+			this.renderDimensions.whiteKeyHeight,
+			this.renderDimensions.blackKeyHeight
+		)
 		let x = ev.clientX
 		let y =
 			ev.clientY -
 			(this.renderDimensions.windowHeight -
-				this.renderDimensions.whiteKeyHeight -
+				canvHt -
 				(this.renderDimensions.windowHeight -
-					this.renderDimensions.whiteKeyHeight -
+					canvHt -
 					this.renderDimensions.getAbsolutePianoPosition()))
 		return { x, y }
 	}

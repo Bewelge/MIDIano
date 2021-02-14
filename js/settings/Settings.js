@@ -28,7 +28,17 @@ export const getSetting = settingId => {
 }
 export const setSetting = (settingId, value) => {
 	globalSettings.settingsValues[settingId] = value
+	if (settingCallbacks.hasOwnProperty(settingId)) {
+		settingCallbacks[settingId].forEach(callback => callback())
+	}
 }
 export const getSettingsDiv = () => {
 	return globalSettings.settingsUi.getSettingsDiv(globalSettings.settings)
+}
+var settingCallbacks = {}
+export const setSettingCallback = (settingId, callback) => {
+	if (!settingCallbacks.hasOwnProperty(settingId)) {
+		settingCallbacks[settingId] = []
+	}
+	settingCallbacks[settingId].push(callback)
 }
