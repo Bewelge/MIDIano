@@ -22,16 +22,6 @@ const defaultSettings = {
 				step: 1,
 				onChange: value => setSetting("renderOffset", value)
 			},
-			{
-				type: "slider",
-				id: "playedNoteFalloffSpeed",
-				label: "Played Note Speed",
-				value: 2,
-				min: 0.1,
-				max: 10,
-				step: 0.1,
-				onChange: value => setSetting("playedNoteFalloffSpeed", value)
-			},
 
 			{
 				type: "checkbox",
@@ -188,6 +178,26 @@ const defaultSettings = {
 				max: 50,
 				step: 1,
 				onChange: value => setSetting("minNoteHeight", value)
+			},
+			{
+				type: "slider",
+				id: "noteEndedShrink",
+				label: "Played Notes shrink speed",
+				value: 1,
+				min: 0,
+				max: 5,
+				step: 0.1,
+				onChange: value => setSetting("noteEndedShrink", value)
+			},
+			{
+				type: "slider",
+				id: "playedNoteFalloffSpeed",
+				label: "Played Note Speed",
+				value: 1,
+				min: 0.1,
+				max: 10,
+				step: 0.1,
+				onChange: value => setSetting("playedNoteFalloffSpeed", value)
 			}
 		],
 		Sustain: [

@@ -14,7 +14,8 @@ export class BackgroundRender {
 		if (
 			this.col1 != getSetting("bgCol1") ||
 			this.col2 != getSetting("bgCol2") ||
-			this.col3 != getSetting("bgCol3")
+			this.col3 != getSetting("bgCol3") ||
+			this.pianoPosition != getSetting("pianoPosition")
 		) {
 			this.render()
 		}
@@ -27,6 +28,11 @@ export class BackgroundRender {
 			this.renderDimensions.windowWidth,
 			this.renderDimensions.windowHeight
 		)
+
+		let bgHeight =
+			this.renderDimensions.windowHeight -
+			(this.renderDimensions.windowHeight -
+				this.renderDimensions.getAbsolutePianoPosition())
 		const col1 = getSetting("bgCol1")
 		const col2 = getSetting("bgCol2")
 		const col3 = getSetting("bgCol3")
@@ -40,14 +46,14 @@ export class BackgroundRender {
 				c.lineWidth = 1
 
 				let dim = this.renderDimensions.getKeyDimensions(i)
-				c.fillRect(dim.x, dim.y, dim.w, this.renderDimensions.windowHeight)
-				c.strokeRect(dim.x, dim.y, dim.w, this.renderDimensions.windowHeight)
+				c.fillRect(dim.x, dim.y, dim.w, bgHeight)
+				c.strokeRect(dim.x, dim.y, dim.w, bgHeight)
 
 				if (1 + (whiteKey % 7) == 3) {
 					c.lineWidth = 2
 					c.beginPath()
 					c.moveTo(dim.x, 0)
-					c.lineTo(dim.x, this.renderDimensions.windowHeight)
+					c.lineTo(dim.x, bgHeight)
 					c.stroke()
 					c.closePath()
 				}
@@ -57,5 +63,6 @@ export class BackgroundRender {
 		this.col1 = col1
 		this.col2 = col2
 		this.col3 = col3
+		this.pianoPosition = getSetting("pianoPosition")
 	}
 }

@@ -171,6 +171,10 @@ export class NoteRender {
 		let w = renderInfos.w
 		let h = renderInfos.h
 
+		if (w <= 0 || h <= 0) {
+			return
+		}
+
 		let fadeInAlpha = 1
 		if (getSetting("fadeInNotes")) {
 			fadeInAlpha = this.getAlphaFromY(y + h)

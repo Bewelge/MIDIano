@@ -159,8 +159,8 @@ export class RenderDimensions {
 	) {
 		const dur = noteEndTime - noteStartTime
 		const keyBlack = isBlack(noteNumber)
-		const x = this.getKeyX(noteNumber)
-
+		let x = this.getKeyX(noteNumber)
+		let w = keyBlack ? this.blackKeyWidth : this.whiteKeyWidth
 		let h =
 			(dur / this.getNoteToHeightConst()) *
 			(this.windowHeight - this.whiteKeyHeight)
@@ -173,12 +173,6 @@ export class RenderDimensions {
 		}
 		let y = this.getYForTime(noteEndTime - currentTime)
 
-		if (noteEndTime < currentTime) {
-			y += this.whiteKeyHeight
-		} else if (noteEndTime > currentTime && noteStartTime < currentTime) {
-			h += this.whiteKeyHeight
-		}
-
 		let sustainY = 0
 		let sustainH = 0
 		if (sustainOffTime > noteEndTime) {
@@ -188,10 +182,23 @@ export class RenderDimensions {
 			sustainY = this.getYForTime(sustainOffTime - currentTime)
 		}
 
+		if (noteEndTime < currentTime) {
+			y += this.whiteKeyHeight
+			let endRatio =
+				(currentTime - noteEndTime) / this.getMilisecondsDisplayedAfter()
+
+			endRatio = Math.max(0, 1 - getSetting("noteEndedShrink") * endRatio)
+			x = x + (w - w * endRatio) / 2
+			w *= endRatio
+			h *= endRatio
+			console.log(endRatio)
+		} else if (noteEndTime > currentTime && noteStartTime < currentTime) {
+			h += this.whiteKeyHeight
+		}
 		return {
 			x: x,
 			y: y - hCorrection + 1,
-			w: keyBlack ? this.blackKeyWidth : this.whiteKeyWidth,
+			w: w,
 			h: h - 2,
 			sustainH: sustainH,
 			sustainY: sustainY,
@@ -209,10 +216,13 @@ export class RenderDimensions {
 	}
 	getSecondsDisplayedAfter() {
 		let pianoPos = getSetting("pianoPosition") / 100
-		return Math.floor(
-			(pianoPos *
-				(this.getNoteToHeightConst() / getSetting("playedNoteFalloffSpeed"))) /
-				1000
+		return Math.ceil(this.getMilisecondsDisplayedAfter() / 1000)
+	}
+	getMilisecondsDisplayedAfter() {
+		let pianoPos = getSetting("pianoPosition") / 100
+		return (
+			pianoPos *
+			(this.getNoteToHeightConst() / getSetting("playedNoteFalloffSpeed"))
 		)
 	}
 
