@@ -123,6 +123,6 @@ function getPlayalongDelayCorrection(delayUntilNote) {
 function getNoteGain(note, volume) {
 	let gain = 2 * (note.velocity / 127) * volume
 
-	let clampedGain = Math.min(2.0, Math.max(-1.0, gain))
+	let clampedGain = Math.min(10.0, Math.max(-1.0, gain))
 	return clampedGain
 }
