@@ -17,8 +17,11 @@ import { FileLoader } from "./player/FileLoader.js"
  * - Load from URL / circumvent CORS.. Extension?
  * - channel menu
  * - added song info to "loaded songs"
+ * - fix the minimize button
+ * - Fix fullscreen on mobile
  *
  * Audio
+ * - Figure out how to handle different ADSR envelopes / release times for instruments
  * - implement control messages of the other two pedals
  * - implement pitch shift
  * - settings for playalong:
@@ -27,7 +30,6 @@ import { FileLoader } from "./player/FileLoader.js"
  *
  * MISC
  * - add starting songs from piano-midi
- * - add more starting colors
  * - make instrument choosable for tracks
  * - Metronome
  * - Update readme - new screenshot, install/ run instructions
@@ -38,9 +40,7 @@ import { FileLoader } from "./player/FileLoader.js"
  *
  *
  * bugs:
- * - fix the minimize button
  * - Fix iOS
- * - Fix fullscreen on mobile
  */
 let ui
 let loading

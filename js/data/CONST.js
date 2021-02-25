@@ -1,10 +1,12 @@
 export var CONST = {
 	TRACK_COLORS: [
-		{ white: "#ffa000", black: "#ff8f00" },
-		{ white: "#1e88e5", black: "#1976d2" },
-		{ white: "#758e4f", black: "#758e4f" },
-		{ white: "#f6ae2d", black: "#f6ae2d" },
-		{ white: "#f26419", black: "#f26419" }
+		{ white: "#ffa000", black: "#ff8f00" }, //orange
+		{ white: "#1e88e5", black: "#1976d2" }, //blue
+		{ white: "#43a047", black: "#388e3c" }, //green
+		{ white: "#673ab7", black: "#5e35b1" }, //purple
+		{ white: "#9c27b0", black: "#8e24aa" }, //pink
+		{ white: "#ffeb3b", black: "#fdd835" }, //yellow
+		{ white: "#f44336", black: "#e53935" } //red
 
 		// { white: "rgb(40,50,90)", black: "Blue" },
 		// { white: "rgb(50,90,60)", black: "rgb(20,85,40)" },
