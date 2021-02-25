@@ -94,8 +94,13 @@ export const createTrackDiv = trackId => {
 		min: 0,
 		max: 200,
 		step: 1,
-		onChange: ev => {
-			trackObj.volume = parseInt(ev.target.value)
+		onChange: value => {
+			if (trackObj.volume == 0 && value != 0) {
+				muteButton.querySelector("input").checked = false
+			} else if (trackObj.volume != 0 && value == 0) {
+				muteButton.querySelector("input").checked = true
+			}
+			trackObj.volume = parseInt(value)
 		}
 	})
 	// DomHelper.createSliderWithLabel(
@@ -130,15 +135,19 @@ export const createTrackDiv = trackId => {
 		label: "Mute track",
 		value: trackObj.volume == 0,
 		onChange: () => {
+			let volumeSliderInput = volumeSlider.querySelector("input")
+			let volumeSliderLabel = volumeSlider.querySelector(".sliderVal")
 			if (trackObj.volume == 0) {
-				let volume = trackObj.volumeAtMute || 127
+				let volume = trackObj.volumeAtMute || 100
 				trackObj.volume = volume
-				volumeSlider.slider.value = volume
+				volumeSliderInput.value = volume
 				trackObj.volumeAtMute = 0
+				volumeSliderLabel.innerHTML = volume
 			} else {
 				trackObj.volumeAtMute = trackObj.volume
 				trackObj.volume = 0
-				volumeSlider.slider.value = 0
+				volumeSliderInput.value = 0
+				volumeSliderLabel.innerHTML = 0
 			}
 		}
 	})
