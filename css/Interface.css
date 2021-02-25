@@ -144,21 +144,21 @@ canvas {
 	transition: 0.3s all ease-out;
 }
 .innerMenuContDiv.collapsed {
-	max-height: 50px;
+	max-height: 2em;
 }
 .clickableTitle:not(.glyphicon) {
 	position: relative;
 	padding-left: 5px;
-	height: 50px;
+	height: 2em;
 	box-sizing: border-box;
 }
 .clickableTitle:hover {
 	background-color: var(--lightInnerMenuHoverBgColor);
 }
 .collapserGlyphSpan {
-	font-size: 14px;
+	font-size: 1em;
 	position: absolute !important;
-	top: calc(25px - 7px) !important;
+	top: 0.5em !important;
 	height: 14px;
 	right: 8px;
 }
@@ -226,12 +226,14 @@ canvas {
 }
 .trackName {
 	width: 100%;
-	text-align: l;
+	padding-top: 0.1em;
+	font-size: 0.8em;
 }
 .instrumentName {
 	width: 100%;
 	text-align: left;
 	font-size: 0.7em;
+	padding-left: 0.2em;
 }
 .divider {
 	border: 0;
