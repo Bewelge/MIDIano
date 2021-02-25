@@ -346,7 +346,7 @@ const defaultSettings = {
 				type: "slider",
 				id: "adsrAttack",
 				label: "Attack (Seconds)",
-				value: 0.01,
+				value: 0,
 				min: 0,
 				max: 2,
 				step: 0.01,

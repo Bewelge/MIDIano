@@ -366,7 +366,6 @@ export class UI {
 		dragArea.appendChild(dragAreaText)
 
 		dragArea.ondrop = ev => {
-			console.log(123)
 			dragArea.style.backgroundColor = "rgba(0,0,0,0)"
 			this.handleDragDropFileSelect(ev)
 		}
@@ -415,7 +414,6 @@ export class UI {
 	handleFileSelect(evt) {
 		var files = evt.target.files
 		for (var i = 0, f; (f = files[i]); i++) {
-			console.log(f)
 			this.readFile(f)
 		}
 	}

@@ -58,7 +58,6 @@ export class RenderDimensions {
 
 		//Do this after computing blackKey, as its dependent on the white key size ( without adjusting for the setting )
 		this.whiteKeyHeight *= getSetting("whiteKeyHeight") / 100
-		console.log(this.whiteKeyHeight, this.blackKeyHeight)
 	}
 
 	/**
@@ -191,7 +190,6 @@ export class RenderDimensions {
 			x = x + (w - w * endRatio) / 2
 			w *= endRatio
 			h *= endRatio
-			console.log(endRatio)
 		} else if (noteEndTime > currentTime && noteStartTime < currentTime) {
 			h += this.whiteKeyHeight
 		}

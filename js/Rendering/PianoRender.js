@@ -10,7 +10,6 @@ export class PianoRender {
 		this.renderDimensions = renderDimensions
 		this.renderDimensions.registerResizeCallback(this.resize.bind(this))
 		this.clickCallback = null
-		this.setClickCallback(num => console.log(num))
 		this.blackKeyImg = new Image()
 		this.blackKeyImg.src = "../../blackKey.svg"
 		this.blackKeyImg.onload
