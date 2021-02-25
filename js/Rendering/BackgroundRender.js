@@ -47,7 +47,6 @@ export class BackgroundRender {
 
 				let dim = this.renderDimensions.getKeyDimensions(i)
 				c.fillRect(dim.x, dim.y, dim.w, bgHeight)
-				c.strokeRect(dim.x, dim.y, dim.w, bgHeight)
 
 				if (1 + (whiteKey % 7) == 3) {
 					c.lineWidth = 2
