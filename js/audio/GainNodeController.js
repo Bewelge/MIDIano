@@ -40,7 +40,7 @@ class GainNodeController {
 			TIME_CONST
 		)
 		//Release
-		this.gainNode.gain.exponentialRampToValueAtTime(0.001, end + release)
+		this.gainNode.gain.linearRampToValueAtTime(0.001, end + release)
 		this.gainNode.gain.linearRampToValueAtTime(
 			0,
 			end + release + 0.001,
@@ -117,6 +117,5 @@ export const createCompleteGainNode = (
 		release = parseFloat(getSetting("adsrReleasePedal"))
 	}
 
-	// gainNodeGen.setReleaseGainNode(end, release)
 	return gainNodeGen
 }
