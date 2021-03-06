@@ -19,6 +19,7 @@ export class Song {
 		this.activeTracks = []
 		this.microSecondsPerBeat = 10
 		this.channels = this.getDefaultChannels()
+		this.idCounter = 0
 
 		this.processEvents(midiData)
 	}
@@ -199,6 +200,7 @@ export class Song {
 	}
 	distributeEvents(track, newTrack) {
 		track.forEach(event => {
+			event.id = this.idCounter++
 			if (event.type == "noteOn" || event.type == "noteOff") {
 				newTrack.notes.push(event)
 			} else if (event.type == "setTempo") {
