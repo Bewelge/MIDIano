@@ -31,7 +31,13 @@ export class AudioPlayer {
 		this.context.suspend()
 	}
 	stopAllSources() {
-		this.audioNotes.forEach(audioNote => audioNote.source.stop(0))
+		this.audioNotes.forEach(audioNote => {
+			try {
+				audioNote.source.stop(0)
+			} catch (error) {
+				//Lets ignore this. Happens when notes are created while jumping on timeline
+			}
+		})
 	}
 	createContinuousNote(noteNumber, volume, instrument) {
 		if (this.context.state === "suspended") {
