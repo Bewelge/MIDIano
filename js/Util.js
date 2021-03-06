@@ -44,6 +44,7 @@ function drawRoundRect(ctx, x, y, width, height, radius, isRounded) {
 	if (typeof radius === "undefined") {
 		radius = 0
 	}
+	radius = Math.min(radius, Math.min(width / 2, height / 2))
 	if (typeof radius === "number") {
 		radius = {
 			tl: radius,
