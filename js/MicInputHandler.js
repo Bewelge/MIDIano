@@ -197,7 +197,7 @@ class MicInputHandler {
 	}
 }
 
-var theMicInputHandler = new MicInputHandler()
+var theMicInputHandler = null // new MicInputHandler()
 
 export const getMicInputHandler = () => {
 	return theMicInputHandler
