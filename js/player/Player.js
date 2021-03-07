@@ -4,14 +4,17 @@ import { AudioPlayer } from "../audio/AudioPlayer.js"
 import { getLoader } from "../ui/Loader.js"
 import { getSetting } from "../settings/Settings.js"
 import { getMidiHandler } from "../MidiInputHandler.js"
+import { getCurrentMicNote } from "../MicInputHandler.js"
 import {
 	getTrackVolume,
 	isAnyTrackPlayalong,
 	isTrackRequiredToPlay,
 	setupTracks
 } from "./Tracks.js"
+
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
+
 class Player {
 	constructor() {
 		this.audioPlayer = new AudioPlayer()
@@ -31,9 +34,11 @@ class Player {
 		this.mutedAtVolume = 100
 		this.soundfontName = getSetting("soundfontName")
 		this.inputInstrument = "acoustic_grand_piano"
+		this.lastMicNote = -1
 
 		this.newSongCallbacks = []
 		this.inputActiveNotes = {}
+		this.inputPlayedNotes = []
 
 		this.playbackSpeed = 1
 
@@ -44,10 +49,12 @@ class Player {
 		let time = this.getTime()
 		return {
 			time: time,
+			ctxTime: this.audioPlayer.getContextTime(),
 			end: this.song ? this.song.getEnd() : 0,
 			loading: this.audioPlayer.loading,
 			song: this.song,
 			inputActiveNotes: this.inputActiveNotes,
+			inputPlayedNotes: this.inputPlayedNotes,
 			bpm: this.getBPM(time)
 		}
 	}
@@ -223,6 +230,11 @@ class Player {
 
 		let delta = (currentContextTime - this.lastTime) * this.playbackSpeed
 
+		//Setting doesnt exist yet. Pitch detection is too bad for a whole piano.
+		this.addMicInputNotes()
+
+		this.clearOldPlayedInputNotes()
+
 		//cap max updaterate.
 		if (delta < 0.0069) {
 			this.requestNextTick()
@@ -280,6 +292,28 @@ class Player {
 
 		this.requestNextTick()
 	}
+
+	clearOldPlayedInputNotes() {
+		//TODO - Clear those that arent displayed anymore.. And/Or save them somewhere for playback.
+	}
+
+	addMicInputNotes() {
+		if (getSetting("micInputEnabled")) {
+			let currentMicNote = getCurrentMicNote()
+
+			// console.log(currentMicFrequency)
+			if (this.lastMicNote != currentMicNote) {
+				if (this.lastMicNote > -1) {
+					this.addInputNoteOff(this.lastMicNote)
+				}
+				if (currentMicNote > -1) {
+					this.addInputNoteOn(currentMicNote)
+				}
+			}
+			this.lastMicNote = currentMicNote
+		}
+	}
+
 	requestNextTick() {
 		window.requestAnimationFrame(this.playTick.bind(this))
 	}
@@ -381,7 +415,12 @@ class Player {
 			this.volume,
 			this.inputInstrument
 		)
-		let activeNoteObj = { audioNote: audioNote, wasUsed: false }
+		let activeNoteObj = {
+			audioNote: audioNote,
+			wasUsed: false,
+			noteNumber: noteNumber,
+			timestamp: this.audioPlayer.getContextTime() * 1000
+		}
 
 		this.inputActiveNotes[noteNumber] = activeNoteObj
 	}
@@ -393,6 +432,10 @@ class Player {
 		this.audioPlayer.noteOffContinuous(
 			this.inputActiveNotes[noteNumber].audioNote
 		)
+		this.inputActiveNotes[noteNumber].offTime =
+			this.audioPlayer.getContextTime() * 1000
+		this.inputPlayedNotes.push(this.inputActiveNotes[noteNumber])
+
 		delete this.inputActiveNotes[noteNumber]
 	}
 }
