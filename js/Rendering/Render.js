@@ -193,7 +193,7 @@ export class Render {
 					{
 						timestamp: activeInputNote.timestamp,
 						noteNumber: activeInputNote.noteNumber,
-						offTime: playerState.ctxTime * 1000 + 100000,
+						offTime: playerState.ctxTime * 1000 + 0,
 						duration: playerState.ctxTime * 1000 - activeInputNote.timestamp
 					},
 					playerState.ctxTime
