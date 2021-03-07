@@ -74,15 +74,15 @@ export class PianoRender {
 	 *
 	 * @param {Integer} noteNumber
 	 */
-	drawActiveInputKey(noteNumber) {
+	drawActiveInputKey(noteNumber, color) {
 		let dim = this.renderDimensions.getKeyDimensions(noteNumber)
 		let keyBlack = isBlack(noteNumber)
 		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
-		const activeInputColor = "rgba(40,155,155,0.8)"
+
 		if (keyBlack) {
-			this.drawBlackKey(ctx, dim, activeInputColor, true)
+			this.drawBlackKey(ctx, dim, color, true)
 		} else {
-			this.drawWhiteKey(ctx, dim, activeInputColor, true)
+			this.drawWhiteKey(ctx, dim, color, true)
 		}
 	}
 
@@ -260,14 +260,7 @@ export class PianoRender {
 		let height = Math.floor(dims.h) - 8
 		let width = dims.w
 
-		ctx.beginPath()
-		ctx.moveTo(x + 1, y)
-		ctx.lineTo(x - 1 + width, y)
-		ctx.lineTo(x - 1 + width, y + height - radius)
-		ctx.lineTo(x - 1 + width - radius, y + height)
-		ctx.lineTo(x + 1 + radius, y + height)
-		ctx.lineTo(x + 1, y + height - radius)
-		ctx.lineTo(x + 1, y)
+		this.getWhiteKeyPath(ctx, x, y, width, height, radius)
 
 		ctx.fillStyle = color
 		ctx.fill()
@@ -283,6 +276,31 @@ export class PianoRender {
 		ctx.fillStyle = rgr2
 		ctx.fill()
 
+		ctx.closePath()
+	}
+	getWhiteKeyPath(ctx, x, y, width, height, radius) {
+		ctx.beginPath()
+		ctx.moveTo(x + 1, y)
+		ctx.lineTo(x - 1 + width, y)
+		ctx.lineTo(x - 1 + width, y + height - radius)
+		ctx.lineTo(x - 1 + width - radius, y + height)
+		ctx.lineTo(x + 1 + radius, y + height)
+		ctx.lineTo(x + 1, y + height - radius)
+		ctx.lineTo(x + 1, y)
+	}
+
+	strokeWhiteKey(dims, color) {
+		let radius = Math.ceil(this.renderDimensions.whiteKeyWidth / 20)
+		let x = dims.x
+		let y = Math.floor(dims.y) + 6
+		let height = Math.floor(dims.h) - 8
+		let width = dims.w
+		let ctx = this.playedKeysCtxWhite
+
+		this.getWhiteKeyPath(ctx, x, y, width, height, radius)
+		ctx.strokeStyle = "black"
+		ctx.lineWidth = 50
+		ctx.fill()
 		ctx.closePath()
 	}
 	drawBlackKeySvg(ctx, dims, color) {
@@ -309,6 +327,30 @@ export class PianoRender {
 		let width = dims.w
 		color = color || "black"
 
+		this.getBlackKeyPath(ctx, x, y, radiusTop, width, height, radiusBottom)
+
+		ctx.fillStyle = color
+		ctx.fill()
+		ctx.closePath()
+	}
+	strokeBlackKey(dims, color) {
+		let radiusTop = 0 //this.renderDimensions.blackKeyWidth / 15
+		let radiusBottom = this.renderDimensions.blackKeyWidth / 8
+		let x = dims.x
+		let y = dims.y + 6
+		let height = dims.h
+		let width = dims.w
+		let ctx = this.playedKeysCtxBlack
+		color = color || "white"
+
+		this.getBlackKeyPath(ctx, x, y, radiusTop, width, height, radiusBottom)
+
+		ctx.strokeStyle = color
+		ctx.stroke()
+		ctx.closePath()
+	}
+
+	getBlackKeyPath(ctx, x, y, radiusTop, width, height, radiusBottom) {
 		ctx.beginPath()
 		ctx.moveTo(x + 1, y + radiusTop)
 		ctx.lineTo(x + 1 + radiusTop, y)
@@ -319,10 +361,6 @@ export class PianoRender {
 		ctx.lineTo(x + 1 + radiusBottom, y + height)
 		ctx.lineTo(x + 1, y + height - radiusBottom)
 		ctx.lineTo(x + 1, y)
-
-		ctx.fillStyle = color
-		ctx.fill()
-		ctx.closePath()
 	}
 
 	getPianoCanvasWhite() {

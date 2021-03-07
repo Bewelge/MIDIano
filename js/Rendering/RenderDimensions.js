@@ -42,10 +42,11 @@ export class RenderDimensions {
 	 */
 	computeKeyDimensions() {
 		this.pianoPositionY = getSetting("pianoPosition")
-		this.whiteKeyWidth = Math.max(
-			20,
+		this.whiteKeyWidth =
+			// Math.max(
+			// 	20,
 			this.windowWidth / this.numberOfWhiteKeysShown
-		)
+		// )
 
 		this.whiteKeyHeight = Math.min(
 			Math.floor(this.windowHeight * 0.2),
@@ -170,6 +171,11 @@ export class RenderDimensions {
 			hCorrection = minNoteHeight - h
 			h = minNoteHeight
 		}
+
+		let rad = (getSetting("noteBorderRadius") / 100) * w
+		if (h < rad * 2) {
+			rad = h / 2
+		}
 		let y = this.getYForTime(noteEndTime - currentTime)
 
 		let sustainY = 0
@@ -181,23 +187,48 @@ export class RenderDimensions {
 			sustainY = this.getYForTime(sustainOffTime - currentTime)
 		}
 
-		if (noteEndTime < currentTime) {
-			y += this.whiteKeyHeight
+		//adjust height/y for notes that have passed the piano / have been played
+		let showSustainedNotes = getSetting("showSustainedNotes")
+		let endTime = showSustainedNotes
+			? Math.max(isNaN(sustainOffTime) ? 0 : sustainOffTime, noteEndTime)
+			: noteEndTime
+
+		if (showSustainedNotes) {
+			if (!isNaN(sustainOffTime) && sustainOffTime < currentTime) {
+				sustainY += this.whiteKeyHeight
+			}
+			if (
+				!isNaN(sustainOffTime) &&
+				sustainOffTime > currentTime &&
+				noteEndTime < currentTime
+			) {
+				sustainH += this.whiteKeyHeight
+			}
+		}
+
+		if (endTime < currentTime) {
 			let endRatio =
-				(currentTime - noteEndTime) / this.getMilisecondsDisplayedAfter()
+				(currentTime - endTime) / this.getMilisecondsDisplayedAfter()
 
 			endRatio = Math.max(0, 1 - getSetting("noteEndedShrink") * endRatio)
+
 			x = x + (w - w * endRatio) / 2
 			w *= endRatio
+
+			let tmpH = h
 			h *= endRatio
-		} else if (noteEndTime > currentTime && noteStartTime < currentTime) {
-			h += this.whiteKeyHeight
+			y += tmpH - h
+
+			let tmpSustainH = sustainH
+			sustainH *= endRatio
+			sustainY += tmpSustainH - sustainH + (tmpH - h)
 		}
 		return {
 			x: x,
 			y: y - hCorrection + 1,
 			w: w,
 			h: h - 2,
+			rad: rad,
 			sustainH: sustainH,
 			sustainY: sustainY,
 			black: keyBlack

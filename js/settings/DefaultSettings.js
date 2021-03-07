@@ -50,6 +50,13 @@ const defaultSettings = {
 				label: "Show FPS",
 				value: true,
 				onChange: ev => setSetting("showFps", ev.target.checked)
+			},
+			{
+				type: "color",
+				id: "inputNoteColor",
+				label: "Your note color",
+				value: "rgba(40,155,155,0.8)",
+				onChange: value => setSetting("inputNoteColor", value)
 			}
 		],
 		"On Screen Piano": [
@@ -140,10 +147,51 @@ const defaultSettings = {
 
 			{
 				type: "checkbox",
+				id: "strokeActiveNotes",
+				label: "Stroke active notes",
+				value: true,
+				onChange: ev => setSetting("strokeActiveNotes", ev.target.checked)
+			},
+			{
+				type: "color",
+				id: "strokeActiveNotesColor",
+				label: "Stroke color",
+				value: "rgba(240,240,240,0.5)",
+				onChange: value => setSetting("strokeActiveNotesColor", value)
+			},
+			{
+				type: "slider",
+				id: "strokeActiveNotesWidth",
+				label: "Stroke width",
+				value: "1",
+				min: 1,
+				max: 10,
+				step: 0.5,
+				onChange: value => setSetting("strokeActiveNotesWidth", value)
+			},
+			{
+				type: "checkbox",
 				id: "strokeNotes",
 				label: "Stroke notes",
 				value: true,
 				onChange: ev => setSetting("strokeNotes", ev.target.checked)
+			},
+			{
+				type: "color",
+				id: "strokeNotesColor",
+				label: "Stroke color",
+				value: "rgba(0,0,0,1)",
+				onChange: value => setSetting("strokeNotesColor", value)
+			},
+			{
+				type: "slider",
+				id: "strokeNotesWidth",
+				label: "Stroke width",
+				value: "1",
+				min: 1,
+				max: 10,
+				step: 0.5,
+				onChange: value => setSetting("strokeNotesWidth", value)
 			},
 			{
 				type: "checkbox",

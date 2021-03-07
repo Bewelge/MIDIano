@@ -32,11 +32,12 @@ export class Render {
 		this.pianoRender = new PianoRender(this.renderDimensions)
 
 		this.overlayRender = new OverlayRender(this.ctx, this.renderDimensions)
-		this.addStartingOverlayMessage()
+		// this.addStartingOverlayMessage()
 
 		this.debugRender = new DebugRender(DEBUG, this.ctx, this.renderDimensions)
 		this.noteRender = new NoteRender(
 			this.ctx,
+			this.ctxForeground,
 			this.renderDimensions,
 			this.pianoRender
 		)
@@ -81,6 +82,12 @@ export class Render {
 			this.renderDimensions.windowWidth,
 			this.renderDimensions.windowHeight
 		)
+		this.ctxForeground.clearRect(
+			0,
+			0,
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.windowHeight
+		)
 
 		this.pianoRender.clearPlayedKeysCanvases()
 		if (
@@ -104,6 +111,8 @@ export class Render {
 		this.backgroundRender.renderIfColorsChanged()
 
 		let renderInfosByTrackMap = this.getRenderInfoByTrackMap(playerState)
+		let inputActiveRenderInfos = this.getInputActiveRenderInfos(playerState)
+		let inputPlayedRenderInfos = this.getInputPlayedRenderInfos(playerState)
 		const time = this.getRenderTime(playerState)
 		const end = playerState.end
 		if (!playerState.loading && playerState.song) {
@@ -122,7 +131,8 @@ export class Render {
 			this.noteRender.render(
 				time,
 				renderInfosByTrackMap,
-				playerState.inputActiveNotes
+				inputActiveRenderInfos,
+				inputPlayedRenderInfos
 			)
 		}
 
@@ -174,6 +184,42 @@ export class Render {
 			}
 		return renderInfoByTrackMap
 	}
+	getInputActiveRenderInfos(playerState) {
+		let inputRenderInfos = []
+		for (let key in playerState.inputActiveNotes) {
+			let activeInputNote = playerState.inputActiveNotes[key]
+			inputRenderInfos.push(
+				this.getNoteRenderInfo(
+					{
+						timestamp: activeInputNote.timestamp,
+						noteNumber: activeInputNote.noteNumber,
+						offTime: playerState.ctxTime * 1000 + 100000,
+						duration: playerState.ctxTime * 1000 - activeInputNote.timestamp
+					},
+					playerState.ctxTime
+				)
+			)
+		}
+		return inputRenderInfos
+	}
+	getInputPlayedRenderInfos(playerState) {
+		let inputRenderInfos = []
+		for (let key in playerState.inputPlayedNotes) {
+			let playedInputNote = playerState.inputPlayedNotes[key]
+			inputRenderInfos.push(
+				this.getNoteRenderInfo(
+					{
+						timestamp: playedInputNote.timestamp,
+						noteNumber: playedInputNote.noteNumber,
+						offTime: playedInputNote.offTime,
+						duration: playerState.ctxTime * 1000 - playedInputNote.timestamp
+					},
+					playerState.ctxTime
+				)
+			)
+		}
+		return inputRenderInfos
+	}
 	getNoteRenderInfo(note, time) {
 		time *= 1000
 		let noteDims = this.renderDimensions.getNoteDimensions(
@@ -184,12 +230,9 @@ export class Render {
 			note.sustainOffTime
 		)
 		let isOn = note.timestamp < time && note.offTime > time ? 1 : 0
-		let noteDoneRatio = 1 - (note.offTime - time) / note.duration
-		noteDoneRatio *= isOn
-		let rad = (getSetting("noteBorderRadius") / 100) * noteDims.w
-		if (noteDims.h < rad * 2) {
-			rad = noteDims.h / 2
-		}
+		let elapsedTime = Math.max(0, time - note.timestamp)
+		let noteDoneRatio = elapsedTime / note.duration
+
 		let keyBlack = isBlack(note.noteNumber)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
 		return {
@@ -208,14 +251,15 @@ export class Render {
 			noteDims: noteDims,
 			isOn: isOn,
 			noteDoneRatio: noteDoneRatio,
-			rad: rad,
+			rad: noteDims.rad,
 			x: noteDims.x + 1,
 			y: noteDims.y,
 			w: noteDims.w - 2,
 			h: noteDims.h,
 			sustainH: noteDims.sustainH,
 			sustainY: noteDims.sustainY,
-			velocity: note.velocity
+			velocity: note.velocity,
+			noteId: note.id
 		}
 	}
 
@@ -260,6 +304,12 @@ export class Render {
 			this.renderDimensions.windowWidth,
 			20
 		)
+
+		DomHelper.setCanvasSize(
+			this.getForegroundCanvas(),
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.windowHeight
+		)
 	}
 	getBgCanvas() {
 		if (!this.cnvBG) {
@@ -294,6 +344,24 @@ export class Render {
 		}
 		return this.cnv
 	}
+	getForegroundCanvas() {
+		if (!this.cnvForeground) {
+			this.cnvForeground = DomHelper.createCanvas(
+				this.renderDimensions.windowWidth,
+				this.renderDimensions.windowHeight,
+				{
+					position: "absolute",
+					top: "0px",
+					left: "0px"
+				}
+			)
+			this.cnvForeground.style.pointerEvents = "none"
+			this.cnvForeground.style.zIndex = "101"
+			document.body.appendChild(this.cnvForeground)
+			this.ctxForeground = this.cnvForeground.getContext("2d")
+		}
+		return this.cnvForeground
+	}
 
 	getProgressBarCanvas() {
 		if (!this.progressBarCanvas) {
@@ -315,9 +383,10 @@ export class Render {
 
 	isOnMainCanvas(position) {
 		return (
-			position.x > this.renderDimensions.menuHeight &&
-			position.y <
-				this.renderDimensions.windowHeight -
+			(position.x > this.renderDimensions.menuHeight &&
+				position.y < this.renderDimensions.getAbsolutePianoPosition()) ||
+			position.y >
+				this.renderDimensions.getAbsolutePianoPosition() +
 					this.renderDimensions.whiteKeyHeight
 		)
 	}
