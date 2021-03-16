@@ -4,6 +4,7 @@ import { DebugRender } from "./DebugRender.js"
 import { OverlayRender } from "./OverlayRender.js"
 import { NoteRender } from "./NoteRender.js"
 import { SustainRender } from "./SustainRenderer.js"
+import { MarkerRenderer } from "./MarkerRenderer.js"
 import { RenderDimensions } from "./RenderDimensions.js"
 import { BackgroundRender } from "./BackgroundRender.js"
 import { MeasureLinesRender } from "./MeasureLinesRender.js"
@@ -42,6 +43,7 @@ export class Render {
 			this.pianoRender
 		)
 		this.sustainRender = new SustainRender(this.ctx, this.renderDimensions)
+		this.markerRender = new MarkerRenderer(this.ctx, this.renderDimensions)
 
 		this.measureLinesRender = new MeasureLinesRender(
 			this.ctx,
@@ -120,7 +122,7 @@ export class Render {
 				? playerState.song.getMeasureLines()
 				: []
 
-			this.progressBarRender.render(time, end)
+			this.progressBarRender.render(time, end, playerState.song.markers)
 			this.measureLinesRender.render(time, measureLines)
 			this.sustainRender.render(
 				time,
@@ -134,6 +136,7 @@ export class Render {
 				inputActiveRenderInfos,
 				inputPlayedRenderInfos
 			)
+			this.markerRender.render(time, playerState.song.markers)
 		}
 
 		this.overlayRender.render()

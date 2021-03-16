@@ -15,6 +15,7 @@ export class Song {
 
 		this.header = midiData.header
 		this.tracks = midiData.tracks
+		this.markers = []
 		this.otherTracks = []
 		this.activeTracks = []
 		this.microSecondsPerBeat = 10
@@ -22,6 +23,7 @@ export class Song {
 		this.idCounter = 0
 
 		this.processEvents(midiData)
+		console.log(this)
 	}
 	getStart() {
 		return this.getNoteSequence()[0].timestamp
@@ -212,9 +214,11 @@ export class Song {
 			} else if (event.type == "timeSignature") {
 				this.timeSignature = event
 			} else if (event.type == "keySignature") {
-				newTrack.keySignarture = event
+				newTrack.keySignature = event
 			} else if (event.type == "smpteOffset") {
 				this.smpteOffset = event
+			} else if (event.type == "marker") {
+				this.markers.push(event)
 			} else {
 				newTrack.meta.push(event)
 			}
