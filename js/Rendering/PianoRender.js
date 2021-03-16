@@ -178,7 +178,7 @@ export class PianoRender {
 
 	drawWhiteKeys(ctxWhite) {
 		for (
-			let i = this.renderDimensions.minNoteNumber;
+			let i = Math.max(0, this.renderDimensions.minNoteNumber);
 			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
@@ -191,7 +191,7 @@ export class PianoRender {
 
 	drawBlackKeys(ctxBlack) {
 		for (
-			let i = this.renderDimensions.minNoteNumber;
+			let i = Math.max(0, this.renderDimensions.minNoteNumber);
 			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
@@ -206,13 +206,13 @@ export class PianoRender {
 		const fontSize = this.renderDimensions.whiteKeyWidth / 2.2
 		ctx.font = fontSize + "px Arial black"
 		for (
-			let i = this.renderDimensions.minNoteNumber;
+			let i = Math.max(0, this.renderDimensions.minNoteNumber);
 			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (!isBlack(i)) {
-				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21])
+				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21] || "")
 				let txtWd = ctx.measureText(txt).width
 				ctx.fillText(
 					txt,
@@ -227,13 +227,13 @@ export class PianoRender {
 		const fontSize = this.renderDimensions.blackKeyWidth / 2.1
 		ctx.font = Math.ceil(fontSize) + "px Arial black"
 		for (
-			let i = this.renderDimensions.minNoteNumber;
+			let i = Math.max(0, this.renderDimensions.minNoteNumber);
 			i <= this.renderDimensions.maxNoteNumber;
 			i++
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (isBlack(i)) {
-				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21])
+				let txt = this.getDisplayKey(CONST.MIDI_NOTE_TO_KEY[i + 21] || "")
 				let txtWd = ctx.measureText(txt).width
 				ctx.fillText(
 					txt,

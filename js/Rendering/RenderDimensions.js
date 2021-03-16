@@ -244,7 +244,6 @@ export class RenderDimensions {
 		return Math.ceil(((1 - pianoPos) * this.getNoteToHeightConst()) / 1000)
 	}
 	getSecondsDisplayedAfter() {
-		let pianoPos = getSetting("pianoPosition") / 100
 		return Math.ceil(this.getMilisecondsDisplayedAfter() / 1000)
 	}
 	getMilisecondsDisplayedAfter() {
@@ -260,6 +259,8 @@ export class RenderDimensions {
 		this.setZoom(MIN_NOTE_NUMBER, MAX_NOTE_NUMBER)
 	}
 	fitSong(range) {
+		range.min = Math.max(range.min, MIN_NOTE_NUMBER)
+		range.max = Math.min(range.max, MAX_NOTE_NUMBER)
 		while (
 			isBlack(range.min - MIN_NOTE_NUMBER) &&
 			range.min > MIN_NOTE_NUMBER
