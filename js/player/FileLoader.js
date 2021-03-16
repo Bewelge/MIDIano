@@ -2,7 +2,7 @@ import { getLoader } from "../ui/Loader.js"
 
 export class FileLoader {
 	static async loadSongFromURL(url, callback) {
-		getLoader().setLoadMessage(`Loading Song from${url}`)
+		getLoader().setLoadMessage(`Loading Song from ${url}`)
 		const response = fetch(url, {
 			method: "GET"
 		}).then(response => {

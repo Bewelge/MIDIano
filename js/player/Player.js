@@ -22,7 +22,7 @@ class Player {
 		getMidiHandler().setNoteOnCallback(this.addInputNoteOn.bind(this))
 		getMidiHandler().setNoteOffCallback(this.addInputNoteOff.bind(this))
 
-		this.startDelay = -2
+		this.startDelay = -2.5
 		this.lastTime = this.audioPlayer.getContextTime()
 		this.progress = 0
 		this.paused = true
