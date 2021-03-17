@@ -1,77 +1,105 @@
 import { getSetting } from "../settings/Settings.js"
 
-const PARTICLE_LIFE_TIME = 10
-/**
- * Particles handler
- */
+const PARTICLE_LIFE_TIME = 6
+
 export class PianoParticleRender {
-	constructor(ctxForeground, renderDimensions) {
-		this.ctxForeground = ctxForeground
+	constructor(ctxWhite, ctxBlack, renderDimensions) {
+		this.ctxWhite = ctxWhite
+		this.ctxBlack = ctxBlack
 		this.renderDimensions = renderDimensions
-		this.particles = new Map()
+		this.particles = {
+			white: new Map(),
+			black: new Map()
+		}
 	}
-	add(noteRenderinfo) {
+	add(noteRenderinfo, isWhite) {
 		let keyDims = this.renderDimensions.getKeyDimensions(
 			noteRenderinfo.noteNumber
 		)
-		let y =
-			keyDims.y +
-			keyDims.h -
-			5 +
-			this.renderDimensions.getAbsolutePianoPosition()
+
 		let color = noteRenderinfo.fillStyle
 
-		if (!this.particles.has(color)) {
-			this.particles.set(color, [])
+		let keyColor = noteRenderinfo.isBlack ? "black" : "white"
+
+		if (!this.particles[keyColor].has(color)) {
+			this.particles[keyColor].set(color, [])
 		}
-		this.particles
+		this.particles[keyColor]
 			.get(color)
-			.push([keyDims.x, y, keyDims.w, 5, PARTICLE_LIFE_TIME])
+			.push([keyDims.x, 0, keyDims.w, keyDims.h, PARTICLE_LIFE_TIME])
 		return
 	}
 
 	updateParticles() {
-		this.particles.forEach(particleArray =>
+		this.particles.white.forEach(particleArray =>
+			particleArray.forEach(particle => this.updateParticle(particle))
+		)
+		this.particles.black.forEach(particleArray =>
 			particleArray.forEach(particle => this.updateParticle(particle))
 		)
 		this.clearDeadParticles()
 	}
 	clearDeadParticles() {
-		this.particles.forEach((particleArray, color) => {
+		this.particles.white.forEach((particleArray, color) => {
 			for (let i = particleArray.length - 1; i >= 0; i--) {
 				if (particleArray[i][4] < 0) {
 					particleArray.splice(i, 1)
 				}
 			}
 			if (particleArray.length == 0) {
-				this.particles.delete(color)
+				this.particles.white.delete(color)
+			}
+		})
+		this.particles.black.forEach((particleArray, color) => {
+			for (let i = particleArray.length - 1; i >= 0; i--) {
+				if (particleArray[i][4] < 0) {
+					particleArray.splice(i, 1)
+				}
+			}
+			if (particleArray.length == 0) {
+				this.particles.black.delete(color)
 			}
 		})
 	}
 
 	updateParticle(particle) {
 		particle[4]--
-		particle[0] -= 2
-		particle[2] += 4
-
-		// particle[1] += 2
-		particle[3] += 6
 	}
 	render() {
-		this.updateParticles()
-		this.particles.forEach((particleArray, color) => {
-			let c = this.ctxForeground
-			c.globalAlpha = 0.4
-			c.fillStyle = color
+		this.particles.white.forEach((particleArray, color) => {
+			let c = this.ctxWhite
+			c.strokeStyle = "rgba(255,255,255,0.4)"
 			c.lineWidth = 2
 			c.beginPath()
 			particleArray.forEach(particle => this.renderParticle(particle, c))
-			c.fill()
+			c.stroke()
 			c.closePath()
-			c.globalAlpha = 1
 		})
+		this.particles.black.forEach((particleArray, color) => {
+			let c = this.ctxBlack
+			c.strokeStyle = "rgba(255,255,255,0.4)"
+			c.lineWidth = 2
+			c.beginPath()
+			particleArray.forEach(particle => this.renderParticle(particle, c))
+			c.stroke()
+			c.closePath()
+		})
+		this.updateParticles()
 	}
 	renderParticle(particle, ctx) {
-		ctx.rect(particle[0], particle[1], particle[2], particle[3])
+		let doneRat = 1 - particle[4] / PARTICLE_LIFE_TIME
+		let wdRatio = (doneRat - 0.1) * particle[2] * 0.3
+		ctx.moveTo(particle[0] - wdRatio / 2, 5)
+		ctx.lineTo(particle[0] - wdRatio / 2, particle[3])
+
+		ctx.moveTo(particle[0] - wdRatio / 2 + particle[2] + wdRatio, 5)
+		ctx.lineTo(particle[0] - wdRatio / 2 + particle[2] + wdRatio, particle[3])
+
+		// ctx.rect(
+		// 	particle[0] + doneRat / 2,
+		// 	particle[1],
+		// 	particle[2] - doneRat,
+		// 	particle[3]
+		// )
 	}
 }

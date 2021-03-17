@@ -104,6 +104,13 @@ const defaultSettings = {
 				onChange: ev => setSetting("showPianoKeys", ev.target.checked)
 			},
 			{
+				type: "checkbox",
+				id: "drawPianoKeyHitEffect",
+				label: "Piano Hit key effect",
+				value: true,
+				onChange: ev => setSetting("drawPianoKeyHitEffect", ev.target.checked)
+			},
+			{
 				type: "slider",
 				id: "pianoPosition",
 				label: "Piano Position",
@@ -176,7 +183,7 @@ const defaultSettings = {
 				type: "slider",
 				id: "strokeActiveNotesWidth",
 				label: "Stroke width",
-				value: "1",
+				value: "4",
 				min: 1,
 				max: 10,
 				step: 0.5,

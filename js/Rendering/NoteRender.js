@@ -18,7 +18,8 @@ export class NoteRender {
 			this.renderDimensions
 		)
 		this.pianoParticleRender = new PianoParticleRender(
-			this.ctxForeground,
+			this.pianoRender.playedKeysCtxWhite,
+			this.pianoRender.playedKeysCtxBlack,
 			this.renderDimensions
 		)
 	}
@@ -55,7 +56,9 @@ export class NoteRender {
 
 			this.createNoteParticles(activeNotesByTrackMap[trackIndex])
 		})
-		this.pianoParticleRender.render(this.ctxForeground)
+		if (getSetting("drawPianoKeyHitEffect")) {
+			this.pianoParticleRender.render()
+		}
 
 		this.lastActiveNotes = currentActiveNotes
 
@@ -383,18 +386,20 @@ export class NoteRender {
 
 			//stroke newly hit ones
 			//TODO: Doesn't look very nice.
-			// activeNotes.white.forEach(noteRenderInfo => {
-			// 	currentActiveNotes[noteRenderInfo.noteId] = true
-			// 	if (!this.lastActiveNotes.hasOwnProperty(noteRenderInfo.noteId)) {
-			// 		this.pianoParticleRender.add(noteRenderInfo)
-			// 	}
-			// })
-			// activeNotes.black.forEach(noteRenderInfo => {
-			// 	currentActiveNotes[noteRenderInfo.noteId] = true
-			// 	if (!this.lastActiveNotes.hasOwnProperty(noteRenderInfo.noteId)) {
-			// 		this.pianoParticleRender.add(noteRenderInfo)
-			// 	}
-			// })
+			if (getSetting("drawPianoKeyHitEffect")) {
+				activeNotes.white.forEach(noteRenderInfo => {
+					currentActiveNotes[noteRenderInfo.noteId] = true
+					if (!this.lastActiveNotes.hasOwnProperty(noteRenderInfo.noteId)) {
+						this.pianoParticleRender.add(noteRenderInfo)
+					}
+				})
+				activeNotes.black.forEach(noteRenderInfo => {
+					currentActiveNotes[noteRenderInfo.noteId] = true
+					if (!this.lastActiveNotes.hasOwnProperty(noteRenderInfo.noteId)) {
+						this.pianoParticleRender.add(noteRenderInfo)
+					}
+				})
+			}
 		}
 	}
 
