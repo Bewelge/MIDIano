@@ -145,6 +145,11 @@ export class NoteRender {
 		this.doNotePath(renderInfos, {
 			x: renderInfos.x - wOffset / 2,
 			w: renderInfos.w + wOffset,
+			y:
+				renderInfos.y -
+				(getSetting("reverseNoteDirection")
+					? this.renderDimensions.whiteKeyHeight
+					: 0),
 			h: renderInfos.h + this.renderDimensions.whiteKeyHeight
 		})
 
@@ -172,9 +177,15 @@ export class NoteRender {
 		this.drawPlayedNotes(playedWhiteNotes, playedBlackNotes)
 	}
 
-	drawPlayedNotes(playedWhiteNotes, playedBlackNotes) {
-		this.ctx.save()
-		this.ctx.beginPath()
+	rectAbovePiano() {
+		this.ctx.rect(
+			0,
+			0,
+			this.renderDimensions.windowWidth,
+			this.renderDimensions.getAbsolutePianoPosition()
+		)
+	}
+	rectBelowPiano() {
 		this.ctx.rect(
 			0,
 			this.renderDimensions.getAbsolutePianoPosition() +
@@ -184,6 +195,14 @@ export class NoteRender {
 				(this.renderDimensions.getAbsolutePianoPosition() +
 					this.renderDimensions.whiteKeyHeight)
 		)
+	}
+	drawPlayedNotes(playedWhiteNotes, playedBlackNotes) {
+		this.ctx.save()
+		this.ctx.beginPath()
+		getSetting("reverseNoteDirection")
+			? this.rectAbovePiano()
+			: this.rectBelowPiano()
+
 		this.ctx.clip()
 		this.ctx.closePath()
 		this.ctx.fillStyle = playedWhiteNotes.length
@@ -223,12 +242,9 @@ export class NoteRender {
 	drawIncomingNotes(incomingWhiteNotes, incomingBlackNotes) {
 		this.ctx.save()
 		this.ctx.beginPath()
-		this.ctx.rect(
-			0,
-			0,
-			this.renderDimensions.windowWidth,
-			this.renderDimensions.getAbsolutePianoPosition()
-		)
+		getSetting("reverseNoteDirection")
+			? this.rectBelowPiano()
+			: this.rectAbovePiano()
 		this.ctx.clip()
 		this.ctx.closePath()
 		this.ctx.fillStyle = incomingWhiteNotes.length
@@ -337,7 +353,10 @@ export class NoteRender {
 		ctx.globalAlpha = 1
 	}
 	drawNoteAfter(renderInfos) {
-		let y = renderInfos.y + this.renderDimensions.whiteKeyHeight
+		let y =
+			renderInfos.y +
+			(getSetting("reverseNoteDirection") ? -1 : 1) *
+				this.renderDimensions.whiteKeyHeight
 
 		this.doNotePath(renderInfos, {
 			y
@@ -428,7 +447,8 @@ export class NoteRender {
 					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
 					noteRenderInfo.w,
 					noteRenderInfo.h,
-					noteRenderInfo.fillStyle
+					noteRenderInfo.fillStyle,
+					noteRenderInfo.velocity
 				)
 			)
 			activeNotes.black.forEach(noteRenderInfo =>
@@ -437,7 +457,8 @@ export class NoteRender {
 					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
 					noteRenderInfo.w,
 					noteRenderInfo.h,
-					noteRenderInfo.fillStyle
+					noteRenderInfo.fillStyle,
+					noteRenderInfo.velocity
 				)
 			)
 		}

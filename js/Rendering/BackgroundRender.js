@@ -29,10 +29,12 @@ export class BackgroundRender {
 			this.renderDimensions.windowHeight
 		)
 
-		let bgHeight =
-			this.renderDimensions.windowHeight -
-			(this.renderDimensions.windowHeight -
-				this.renderDimensions.getAbsolutePianoPosition())
+		let reversed = getSetting("reverseNoteDirection")
+		let bgHeight = reversed
+			? this.renderDimensions.windowHeight -
+			  this.renderDimensions.getAbsolutePianoPosition()
+			: this.renderDimensions.getAbsolutePianoPosition()
+		let bgY = reversed ? this.renderDimensions.getAbsolutePianoPosition() : 0
 		const col1 = getSetting("bgCol1")
 		const col2 = getSetting("bgCol2")
 		const col3 = getSetting("bgCol3")
@@ -46,13 +48,13 @@ export class BackgroundRender {
 				c.lineWidth = 1
 
 				let dim = this.renderDimensions.getKeyDimensions(i)
-				c.fillRect(dim.x, dim.y, dim.w, bgHeight)
+				c.fillRect(dim.x, bgY, dim.w, bgHeight)
 
 				if (1 + (whiteKey % 7) == 3) {
 					c.lineWidth = 2
 					c.beginPath()
-					c.moveTo(dim.x, 0)
-					c.lineTo(dim.x, bgHeight)
+					c.moveTo(dim.x, bgY)
+					c.lineTo(dim.x, bgY + bgHeight)
 					c.stroke()
 					c.closePath()
 				}

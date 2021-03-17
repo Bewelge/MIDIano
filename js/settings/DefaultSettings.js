@@ -1,4 +1,4 @@
-import { setSetting } from "./Settings.js"
+import { getSetting, setSetting } from "./Settings.js"
 
 export const getDefaultSettings = () => {
 	return defaultSettings
@@ -21,6 +21,19 @@ const defaultSettings = {
 				max: 250,
 				step: 1,
 				onChange: value => setSetting("renderOffset", value)
+			},
+			{
+				type: "checkbox",
+				id: "reverseNoteDirection",
+				label: "Reverse note direction",
+				value: false,
+				onChange: ev => {
+					setSetting("reverseNoteDirection", ev.target.checked)
+					setSetting(
+						"pianoPosition",
+						Math.abs(parseInt(getSetting("pianoPosition")) + 1)
+					)
+				}
 			},
 
 			{
@@ -269,7 +282,7 @@ const defaultSettings = {
 				type: "checkbox",
 				id: "showSustainedNotes",
 				label: "Draw Sustained Notes",
-				value: false,
+				value: true,
 				onChange: ev => setSetting("showSustainedNotes", ev.target.checked)
 			},
 			{
@@ -302,7 +315,7 @@ const defaultSettings = {
 				type: "slider",
 				id: "particleAmount",
 				label: "Particle Amount (per frame)",
-				value: 40,
+				value: 10,
 				min: 0,
 				max: 200,
 				step: 1,
@@ -312,7 +325,7 @@ const defaultSettings = {
 				type: "slider",
 				id: "particleSize",
 				label: "Particle Size",
-				value: 3,
+				value: 6,
 				min: 0,
 				max: 10,
 				step: 1,
@@ -324,7 +337,7 @@ const defaultSettings = {
 				label: "Particle Duration",
 				value: 20,
 				min: 1,
-				max: 30,
+				max: 50,
 				step: 1,
 				onChange: value => setSetting("particleLife", value)
 			},

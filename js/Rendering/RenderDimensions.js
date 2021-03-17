@@ -82,14 +82,18 @@ export class RenderDimensions {
 		return this.keyDimensions[noteNumber]
 	}
 	getAbsolutePianoPosition() {
-		return (
+		let pianoSettingsRatio = getSetting("reverseNoteDirection")
+			? 1 - parseInt(this.pianoPositionY) / 100
+			: parseInt(this.pianoPositionY) / 100
+		let y =
 			this.windowHeight -
 			this.whiteKeyHeight -
 			Math.ceil(
-				(parseInt(this.pianoPositionY) / 100) *
+				pianoSettingsRatio *
 					(this.windowHeight - this.whiteKeyHeight - this.menuHeight - 24)
 			)
-		)
+
+		return y
 	}
 
 	/**
@@ -132,13 +136,20 @@ export class RenderDimensions {
 		if (time < 0) {
 			noteToHeightConst /= getSetting("playedNoteFalloffSpeed")
 		}
-		return (
-			height -
-			(time / noteToHeightConst) * height -
-			(this.windowHeight -
-				this.whiteKeyHeight -
-				this.getAbsolutePianoPosition())
-		)
+
+		if (getSetting("reverseNoteDirection")) {
+			return (
+				(time / noteToHeightConst) * height +
+				this.getAbsolutePianoPosition() +
+				this.whiteKeyHeight
+			)
+		} else {
+			return (
+				height -
+				(time / noteToHeightConst) * height -
+				(height - this.getAbsolutePianoPosition())
+			)
+		}
 	}
 
 	/**
@@ -177,6 +188,10 @@ export class RenderDimensions {
 			rad = h / 2
 		}
 		let y = this.getYForTime(noteEndTime - currentTime)
+		let reversed = getSetting("reverseNoteDirection")
+		if (reversed) {
+			y -= h
+		}
 
 		let sustainY = 0
 		let sustainH = 0
@@ -185,6 +200,9 @@ export class RenderDimensions {
 				((sustainOffTime - noteEndTime) / this.getNoteToHeightConst()) *
 				(this.windowHeight - this.whiteKeyHeight)
 			sustainY = this.getYForTime(sustainOffTime - currentTime)
+			if (reversed) {
+				sustainY -= sustainH
+			}
 		}
 
 		//adjust height/y for notes that have passed the piano / have been played
@@ -195,7 +213,7 @@ export class RenderDimensions {
 
 		if (showSustainedNotes) {
 			if (!isNaN(sustainOffTime) && sustainOffTime < currentTime) {
-				sustainY += this.whiteKeyHeight
+				sustainY += (reversed ? -1 : 1) * this.whiteKeyHeight
 			}
 			if (
 				!isNaN(sustainOffTime) &&
@@ -203,6 +221,9 @@ export class RenderDimensions {
 				noteEndTime < currentTime
 			) {
 				sustainH += this.whiteKeyHeight
+				if (reversed) {
+					sustainY -= this.whiteKeyHeight
+				}
 			}
 		}
 
@@ -217,11 +238,13 @@ export class RenderDimensions {
 
 			let tmpH = h
 			h *= endRatio
-			y += tmpH - h
+			y += (reversed ? -1 : 1) * (tmpH - h)
 
 			let tmpSustainH = sustainH
 			sustainH *= endRatio
-			sustainY += tmpSustainH - sustainH + (tmpH - h)
+			sustainY +=
+				(reversed ? -1 : 1) * (tmpSustainH - sustainH) +
+				(reversed ? -1 : 1) * (tmpH - h)
 		}
 		return {
 			x: x,

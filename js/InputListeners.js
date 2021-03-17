@@ -1,4 +1,5 @@
 import { getPlayer } from "./player/Player.js"
+import { getSetting } from "./settings/Settings.js"
 
 export class InputListeners {
 	constructor(ui, render) {
@@ -156,7 +157,9 @@ export class InputListeners {
 		if (this.grabbedMainCanvas && getPlayer().song) {
 			if (this.lastYGrabbed) {
 				let alreadyScrolling = getPlayer().scrolling != 0
-				let yChange = this.lastYGrabbed - pos.y
+				let yChange =
+					(getSetting("reverseNoteDirection") ? -1 : 1) *
+					(this.lastYGrabbed - pos.y)
 				if (!alreadyScrolling) {
 					getPlayer().setTime(
 						getPlayer().getTime() - render.getTimeFromHeight(yChange)
