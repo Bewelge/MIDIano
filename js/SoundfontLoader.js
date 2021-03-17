@@ -1,4 +1,5 @@
 import { hasBuffer, setBuffer } from "./audio/Buffers.js"
+import { getLoader } from "./ui/Loader.js"
 import { replaceAllString } from "./Util.js"
 export class SoundfontLoader {
 	constructor(audioCtx) {
@@ -18,6 +19,9 @@ export class SoundfontLoader {
 		return fetch(baseUrl + soundfontName + "/" + instrument + "-ogg.js")
 			.then(response => {
 				if (response.ok) {
+					getLoader().setLoadMessage(
+						"Loaded " + instrument + " from " + soundfontName + " soundfont."
+					)
 					return response.text()
 				}
 				throw Error(response.statusText)

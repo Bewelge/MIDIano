@@ -1,7 +1,6 @@
 import { Render } from "./Rendering/Render.js"
 import { UI } from "./ui/UI.js"
 import { InputListeners } from "./InputListeners.js"
-import { getLoader } from "./ui/Loader.js"
 import { getPlayer, getPlayerState } from "./player/Player.js"
 import { loadJson } from "./Util.js"
 import { FileLoader } from "./player/FileLoader.js"
@@ -22,7 +21,11 @@ import { FileLoader } from "./player/FileLoader.js"
  *
  * Audio
  * - Figure out how to handle different ADSR envelopes / release times for instruments
- * - implement control messages of the other two pedals
+ * - implement control messages for
+ * 		- sostenuto pedal
+ * 			- only keys that are pressed while pedal is hit are sustained
+ * 		- soft pedal
+ * 			- how does that affect sound?
  * - implement pitch shift
  * - settings for playalong:
  * 		- accuracy needed
@@ -41,6 +44,7 @@ import { FileLoader } from "./player/FileLoader.js"
  *
  * bugs:
  * - Fix iOS
+ * - too long notes disappear too soon
  */
 let ui
 let loading

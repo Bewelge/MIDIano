@@ -76,10 +76,10 @@ export class PianoRender {
 	 */
 	drawActiveInputKey(noteNumber, color) {
 		let dim = this.renderDimensions.getKeyDimensions(noteNumber)
-		let keyBlack = isBlack(noteNumber)
-		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
+		let isKeyBlack = isBlack(noteNumber)
+		let ctx = isKeyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
 
-		if (keyBlack) {
+		if (isKeyBlack) {
 			this.drawBlackKey(ctx, dim, color, true)
 		} else {
 			this.drawWhiteKey(ctx, dim, color, true)
@@ -88,11 +88,11 @@ export class PianoRender {
 
 	drawActiveKey(renderInfo, color) {
 		let dim = this.renderDimensions.getKeyDimensions(renderInfo.noteNumber)
-		let keyBlack = renderInfo.keyBlack
-		let ctx = keyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
+		let isKeyBlack = renderInfo.isBlack
+		let ctx = isKeyBlack ? this.playedKeysCtxBlack : this.playedKeysCtxWhite
 
 		ctx.fillStyle = color
-		if (keyBlack) {
+		if (isKeyBlack) {
 			this.drawBlackKey(ctx, dim, color)
 		} else {
 			this.drawWhiteKey(ctx, dim, color)

@@ -176,7 +176,7 @@ export class Render {
 									// .filter(note => note.instrument != "percussion")
 									.map(note => this.getNoteRenderInfo(note, time))
 									.forEach(renderInfo =>
-										renderInfo.keyBlack
+										renderInfo.isBlack
 											? renderInfoByTrackMap[trackIndex].black.push(renderInfo)
 											: renderInfoByTrackMap[trackIndex].white.push(renderInfo)
 									)
@@ -236,7 +236,7 @@ export class Render {
 		let elapsedTime = Math.max(0, time - note.timestamp)
 		let noteDoneRatio = elapsedTime / note.duration
 
-		let keyBlack = isBlack(note.noteNumber)
+		let isKeyBlack = isBlack(note.noteNumber)
 		//TODO Clean up. Right now it returns more info than necessary to use in DebugRender..
 		return {
 			noteNumber: note.noteNumber,
@@ -246,11 +246,11 @@ export class Render {
 			instrument: note.instrument,
 			track: note.track,
 			channel: note.channel,
-			fillStyle: keyBlack
+			fillStyle: isKeyBlack
 				? getTrackColor(note.track).black
 				: getTrackColor(note.track).white,
 			currentTime: time,
-			keyBlack: keyBlack,
+			isBlack: isKeyBlack,
 			noteDims: noteDims,
 			isOn: isOn,
 			noteDoneRatio: noteDoneRatio,

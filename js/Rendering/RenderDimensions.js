@@ -169,9 +169,9 @@ export class RenderDimensions {
 		sustainOffTime
 	) {
 		const dur = noteEndTime - noteStartTime
-		const keyBlack = isBlack(noteNumber)
+		const isKeyBlack = isBlack(noteNumber)
 		let x = this.getKeyX(noteNumber)
-		let w = keyBlack ? this.blackKeyWidth : this.whiteKeyWidth
+		let w = isKeyBlack ? this.blackKeyWidth : this.whiteKeyWidth
 		let h =
 			(dur / this.getNoteToHeightConst()) *
 			(this.windowHeight - this.whiteKeyHeight)
@@ -254,7 +254,7 @@ export class RenderDimensions {
 			rad: rad,
 			sustainH: sustainH,
 			sustainY: sustainY,
-			black: keyBlack
+			isBlack: isKeyBlack
 		}
 	}
 
