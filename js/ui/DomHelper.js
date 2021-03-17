@@ -424,7 +424,6 @@ export class DomHelper {
 		colorButtonContainer.style.backgroundColor = startColor
 		cont.onclick = () => colorPicker.show()
 		colorPicker.on("init", () => {
-			console.log(startColor)
 			colorPicker.show()
 			colorPicker.setColor(startColor)
 			colorPicker.hide()
