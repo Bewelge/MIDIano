@@ -411,6 +411,7 @@ export class DomHelper {
 		let colorPicker = Pickr.create({
 			el: colorButton,
 			theme: "nano",
+			defaultRepresentation: "RGBA",
 			components: {
 				hue: true,
 				preview: true,
@@ -420,9 +421,14 @@ export class DomHelper {
 				}
 			}
 		})
-		cont.onclick = () => colorPicker.show()
 		colorButtonContainer.style.backgroundColor = startColor
-		colorPicker.on("init", () => colorPicker.setColor(startColor))
+		cont.onclick = () => colorPicker.show()
+		colorPicker.on("init", () => {
+			console.log(startColor)
+			colorPicker.show()
+			colorPicker.setColor(startColor)
+			colorPicker.hide()
+		})
 		colorPicker.on("change", color => {
 			colorButtonContainer.style.backgroundColor = colorPicker
 				.getColor()
