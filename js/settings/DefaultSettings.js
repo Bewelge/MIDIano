@@ -318,7 +318,7 @@ const defaultSettings = {
 				type: "checkbox",
 				id: "showSustainedNotes",
 				label: "Draw Sustained Notes",
-				value: true,
+				value: false,
 				onChange: ev => setSetting("showSustainedNotes", ev.target.checked)
 			},
 			{
