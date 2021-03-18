@@ -73,6 +73,20 @@ const defaultSettings = {
 			},
 			{
 				type: "checkbox",
+				id: "showMarkersSong",
+				label: "Show markers in the song",
+				value: false,
+				onChange: ev => setSetting("showMarkersSong", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showMarkersTimeline",
+				label: "Show markers on timeline",
+				value: false,
+				onChange: ev => setSetting("showMarkersTimeline", ev.target.checked)
+			},
+			{
+				type: "checkbox",
 				id: "showFps",
 				label: "Show FPS",
 				value: true,
@@ -234,13 +248,14 @@ const defaultSettings = {
 				value: true,
 				onChange: ev => setSetting("roundedNotes", ev.target.checked)
 			},
-			{
-				type: "checkbox",
-				id: "fadeInNotes",
-				label: "Enable fade in effect",
-				value: true,
-				onChange: ev => setSetting("fadeInNotes", ev.target.checked)
-			},
+			//TODO fix getAlphaFromY in Noterender.
+			// {
+			// 	type: "checkbox",
+			// 	id: "fadeInNotes",
+			// 	label: "Enable fade in effect",
+			// 	value: true,
+			// 	onChange: ev => setSetting("fadeInNotes", ev.target.checked)
+			// },
 			{
 				type: "slider",
 				id: "noteBorderRadius",
@@ -438,6 +453,25 @@ const defaultSettings = {
 				onChange: function (ev) {
 					setSetting("sustainEnabled", ev.target.checked)
 				}.bind(this)
+			},
+			{
+				type: "checkbox",
+				id: "enableMetronome",
+				label: "Enable Metronome",
+				value: true,
+				onChange: function (ev) {
+					setSetting("enableMetronome", ev.target.checked)
+				}.bind(this)
+			},
+			{
+				type: "slider",
+				id: "metronomeVolume",
+				label: "Metronome Volume",
+				value: 0.5,
+				min: 0,
+				max: 1,
+				step: 0.1,
+				onChange: value => setSetting("metronomeVolume", value)
 			}
 		],
 		"ADSR Envelope": [

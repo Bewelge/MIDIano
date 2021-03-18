@@ -36,34 +36,36 @@ export class ProgressBarRender {
 
 		let isShowingAMarker = false
 
-		markers.forEach(marker => {
-			let xPos = (marker.timestamp / end) * this.renderDimensions.windowWidth
-			if (Math.abs(xPos - this.mouseX) < 10) {
-				isShowingAMarker = true
-				let txtWd = ctx.measureText(marker.text).width
-				ctx.fillStyle = "black"
-				ctx.fillText(
-					marker.text,
-					Math.max(
-						5,
-						Math.min(
-							this.renderDimensions.windowWidth - txtWd - 5,
-							xPos - txtWd / 2
-						)
-					),
-					15
-				)
-			} else {
-				ctx.strokeStyle = "black"
-				ctx.lineWidth = 2
-				ctx.beginPath()
-				ctx.moveTo(xPos, 0)
-				ctx.lineTo(xPos, 25)
+		if (getSetting("showMarkersTimeline")) {
+			markers.forEach(marker => {
+				let xPos = (marker.timestamp / end) * this.renderDimensions.windowWidth
+				if (Math.abs(xPos - this.mouseX) < 10) {
+					isShowingAMarker = true
+					let txtWd = ctx.measureText(marker.text).width
+					ctx.fillStyle = "black"
+					ctx.fillText(
+						marker.text,
+						Math.max(
+							5,
+							Math.min(
+								this.renderDimensions.windowWidth - txtWd - 5,
+								xPos - txtWd / 2
+							)
+						),
+						15
+					)
+				} else {
+					ctx.strokeStyle = "black"
+					ctx.lineWidth = 2
+					ctx.beginPath()
+					ctx.moveTo(xPos, 0)
+					ctx.lineTo(xPos, 25)
 
-				ctx.closePath()
-				ctx.stroke()
-			}
-		})
+					ctx.closePath()
+					ctx.stroke()
+				}
+			})
+		}
 
 		if (!isShowingAMarker) {
 			ctx.fillStyle = "rgba(0,0,0,1)"
