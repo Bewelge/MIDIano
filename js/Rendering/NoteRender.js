@@ -11,8 +11,7 @@ export class NoteRender {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
 		this.ctxForeground = ctxForeground
-		setSettingCallback("particleBlur", this.setCtxBlur.bind(this))
-		this.setCtxBlur()
+
 		this.pianoRender = pianoRender
 		this.lastActiveNotes = {}
 		this.noteParticleRender = new NoteParticleRender(
@@ -24,14 +23,6 @@ export class NoteRender {
 			this.pianoRender.playedKeysCtxBlack,
 			this.renderDimensions
 		)
-	}
-	setCtxBlur() {
-		let blurPx = parseInt(getSetting("particleBlur"))
-		if (blurPx == 0) {
-			this.ctxForeground.filter = "none"
-		} else {
-			this.ctxForeground.filter = "blur(" + blurPx + "px)"
-		}
 	}
 	render(time, renderInfoByTrackMap, inputActiveNotes, inputPlayedNotes) {
 		this.noteParticleRender.render()
@@ -477,6 +468,7 @@ export class NoteRender {
 	}
 
 	getAlphaFromY(y) {
+		//TODO broken.
 		return Math.min(
 			1,
 			Math.max(
