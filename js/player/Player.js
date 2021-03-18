@@ -11,6 +11,7 @@ import {
 	isTrackRequiredToPlay,
 	setupTracks
 } from "./Tracks.js"
+import { Notification } from "../ui/Notification.js"
 
 const LOOK_AHEAD_TIME = 0.2
 const LOOK_AHEAD_TIME_WHEN_PLAYALONG = 0.02
@@ -126,14 +127,20 @@ class Player {
 		this.loading = true
 
 		getLoader().setLoadMessage("Parsing Midi File.")
-		let midiFile = await MidiLoader.loadFile(theSong)
-		this.setSong(new Song(midiFile, fileName, name))
-		getLoader().setLoadMessage("Loading Instruments")
+		try {
+			let midiFile = await MidiLoader.loadFile(theSong)
+			this.setSong(new Song(midiFile, fileName, name))
+			getLoader().setLoadMessage("Loading Instruments")
 
-		await this.audioPlayer.loadInstrumentsForSong(this.song)
+			await this.audioPlayer.loadInstrumentsForSong(this.song)
 
-		getLoader().setLoadMessage("Creating Buffers")
-		return this.audioPlayer.loadBuffers().then(v => getLoader().stopLoad())
+			getLoader().setLoadMessage("Creating Buffers")
+			return this.audioPlayer.loadBuffers().then(v => getLoader().stopLoad())
+		} catch (error) {
+			console.log(error)
+			Notification.create("Couldn't read Midi-File - " + error, 2000)
+			getLoader().stopLoad()
+		}
 	}
 
 	setSong(song) {
