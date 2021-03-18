@@ -177,10 +177,10 @@ export class RenderDimensions {
 			(this.windowHeight - this.whiteKeyHeight)
 
 		let hCorrection = 0
-		let minNoteHeight = getSetting("minNoteHeight")
-		if (h < minNoteHeight) {
-			hCorrection = minNoteHeight - h
-			h = minNoteHeight
+		let minNoteHeight = parseFloat(getSetting("minNoteHeight"))
+		if (h < minNoteHeight + 2) {
+			hCorrection = minNoteHeight + 2 - h
+			h = minNoteHeight + 2
 		}
 
 		let rad = (getSetting("noteBorderRadius") / 100) * w
@@ -247,9 +247,9 @@ export class RenderDimensions {
 				(reversed ? -1 : 1) * (tmpH - h)
 		}
 		return {
-			x: x,
-			y: y - hCorrection + 1,
-			w: w,
+			x: x + 1,
+			y: y + 1 - hCorrection,
+			w: w - 2,
 			h: h - 2,
 			rad: rad,
 			sustainH: sustainH,
