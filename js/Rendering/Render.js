@@ -158,7 +158,12 @@ export class Render {
 
 		this.overlayRender.render()
 
-		this.debugRender.render(renderInfosByTrackMap, this.mouseX, this.mouseY)
+		this.debugRender.render(
+			renderInfosByTrackMap,
+			this.mouseX,
+			this.mouseY,
+			this.renderDimensions.menuHeight
+		)
 
 		if (getSetting("showBPM")) {
 			this.drawBPM(playerState)
