@@ -1,11 +1,7 @@
 import { hasBuffer, setBuffer } from "./audio/Buffers.js"
 import { getLoader } from "./ui/Loader.js"
-import { replaceAllString } from "./Util.js"
+import { replaceAllString, iOS } from "./Util.js"
 export class SoundfontLoader {
-	constructor(audioCtx) {
-		this.ctx = audioCtx
-	}
-
 	/**
 	 *
 	 * @param {String} instrument
@@ -16,7 +12,10 @@ export class SoundfontLoader {
 			soundfontName = "FluidR3_GM"
 			baseUrl = ""
 		}
-		return fetch(baseUrl + soundfontName + "/" + instrument + "-ogg.js")
+		let fileType = iOS ? "mp3" : "ogg"
+		return fetch(
+			baseUrl + soundfontName + "/" + instrument + "-" + fileType + ".js"
+		)
 			.then(response => {
 				if (response.ok) {
 					getLoader().setLoadMessage(
@@ -39,7 +38,6 @@ export class SoundfontLoader {
 			})
 	}
 	static async loadInstruments(instruments) {
-		console.log(instruments)
 		return await Promise.all(
 			instruments
 				.slice(0)
@@ -48,16 +46,19 @@ export class SoundfontLoader {
 	}
 	static async getBuffers(ctx) {
 		let sortedBuffers = null
-		await SoundfontLoader.createBuffers(ctx).then(unsortedBuffers => {
-			unsortedBuffers.forEach(noteBuffer =>
-				setBuffer(
-					noteBuffer.soundfontName,
-					noteBuffer.instrument,
-					noteBuffer.noteKey,
-					noteBuffer.buffer
-				)
-			)
-		})
+		await SoundfontLoader.createBuffers(ctx).then(
+			unsortedBuffers => {
+				unsortedBuffers.forEach(noteBuffer => {
+					setBuffer(
+						noteBuffer.soundfontName,
+						noteBuffer.instrument,
+						noteBuffer.noteKey,
+						noteBuffer.buffer
+					)
+				})
+			},
+			error => console.error(error)
+		)
 		return sortedBuffers
 	}
 	static async createBuffers(ctx) {
@@ -94,19 +95,40 @@ export class SoundfontLoader {
 		noteKey,
 		instrument
 	) {
-		let audioBuffer
-		return await ctx
-			.decodeAudioData(base64Buffer, function (decodedBuffer) {
-				audioBuffer = decodedBuffer
-			})
-			.then(() => {
-				return {
-					buffer: audioBuffer,
-					noteKey: noteKey,
-					instrument: instrument,
-					soundfontName: soundfontName
-				}
-			})
+		let promise = new Promise((resolve, reject) => {
+			ctx.decodeAudioData(
+				base64Buffer,
+				decodedBuffer => {
+					resolve({
+						buffer: decodedBuffer,
+						noteKey: noteKey,
+						instrument: instrument,
+						soundfontName: soundfontName
+					})
+				},
+				error => reject(error)
+			)
+		})
+		return await promise
+
+		//ios can't handle the promise based decodeAudioData
+		// return await ctx
+		// 	.decodeAudioData(base64Buffer, function (decodedBuffer) {
+		// 		audioBuffer = decodedBuffer
+		// 	})
+		// 	.then(
+		// 		() => {
+		// 			return {
+		// 				buffer: audioBuffer,
+		// 				noteKey: noteKey,
+		// 				instrument: instrument,
+		// 				soundfontName: soundfontName
+		// 			}
+		// 		},
+		// 		e => {
+		// 			console.log(e)
+		// 		}
+		// 	)
 	}
 	static getBase64Buffer(str) {
 		let base64 = str.split(",")[1]
