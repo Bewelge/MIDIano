@@ -1,4 +1,4 @@
-import { getSetting } from "../settings/Settings.js"
+import { getSetting, setSettingCallback } from "../settings/Settings.js"
 import { drawRoundRect } from "../Util.js"
 import { NoteParticleRender } from "./NoteParticleRender.js"
 import { PianoParticleRender } from "./PianoParticleRender.js"
@@ -11,10 +11,12 @@ export class NoteRender {
 		this.ctx = ctx
 		this.renderDimensions = renderDimensions
 		this.ctxForeground = ctxForeground
+		setSettingCallback("particleBlur", this.setCtxBlur.bind(this))
+		this.setCtxBlur()
 		this.pianoRender = pianoRender
 		this.lastActiveNotes = {}
 		this.noteParticleRender = new NoteParticleRender(
-			this.ctx,
+			this.ctxForeground,
 			this.renderDimensions
 		)
 		this.pianoParticleRender = new PianoParticleRender(
@@ -22,6 +24,14 @@ export class NoteRender {
 			this.pianoRender.playedKeysCtxBlack,
 			this.renderDimensions
 		)
+	}
+	setCtxBlur() {
+		let blurPx = parseInt(getSetting("particleBlur"))
+		if (blurPx == 0) {
+			this.ctxForeground.filter = "none"
+		} else {
+			this.ctxForeground.filter = "blur(" + blurPx + "px)"
+		}
 	}
 	render(time, renderInfoByTrackMap, inputActiveNotes, inputPlayedNotes) {
 		this.noteParticleRender.render()
@@ -310,6 +320,7 @@ export class NoteRender {
 		this.ctx.fillStyle = getSetting("inputNoteColor")
 		let whiteActive = inputActiveNotes.filter(noteInfo => !noteInfo.isBlack)
 		inputActiveNotes.forEach(noteInfo => {
+			this.createNoteParticle(noteInfo)
 			this.pianoRender.drawActiveInputKey(
 				parseInt(noteInfo.noteNumber),
 				this.ctx.fillStyle
@@ -445,28 +456,24 @@ export class NoteRender {
 	}
 
 	createNoteParticles(activeNotes, colWhite, colBlack) {
-		if (getSetting("showParticles")) {
+		if (getSetting("showParticlesTop") || getSetting("showParticlesBottom")) {
 			activeNotes.white.forEach(noteRenderInfo =>
-				this.noteParticleRender.createParticles(
-					noteRenderInfo.x,
-					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
-					noteRenderInfo.w,
-					noteRenderInfo.h,
-					noteRenderInfo.fillStyle,
-					noteRenderInfo.velocity
-				)
+				this.createNoteParticle(noteRenderInfo)
 			)
 			activeNotes.black.forEach(noteRenderInfo =>
-				this.noteParticleRender.createParticles(
-					noteRenderInfo.x,
-					this.renderDimensions.getAbsolutePianoPosition() + 2 * Math.random(),
-					noteRenderInfo.w,
-					noteRenderInfo.h,
-					noteRenderInfo.fillStyle,
-					noteRenderInfo.velocity
-				)
+				this.createNoteParticle(noteRenderInfo)
 			)
 		}
+	}
+	createNoteParticle(noteRenderInfo) {
+		this.noteParticleRender.createParticles(
+			noteRenderInfo.x,
+			this.renderDimensions.getAbsolutePianoPosition(),
+			noteRenderInfo.w,
+			this.renderDimensions.whiteKeyHeight,
+			noteRenderInfo.fillStyle,
+			noteRenderInfo.velocity
+		)
 	}
 
 	getAlphaFromY(y) {

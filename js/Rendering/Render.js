@@ -197,7 +197,9 @@ export class Render {
 						timestamp: activeInputNote.timestamp,
 						noteNumber: activeInputNote.noteNumber,
 						offTime: playerState.ctxTime * 1000 + 0,
-						duration: playerState.ctxTime * 1000 - activeInputNote.timestamp
+						duration: playerState.ctxTime * 1000 - activeInputNote.timestamp,
+						velocity: 127,
+						fillStyle: getSetting("inputNoteColor")
 					},
 					playerState.ctxTime
 				)
@@ -215,7 +217,9 @@ export class Render {
 						timestamp: playedInputNote.timestamp,
 						noteNumber: playedInputNote.noteNumber,
 						offTime: playedInputNote.offTime,
-						duration: playerState.ctxTime * 1000 - playedInputNote.timestamp
+						duration: playerState.ctxTime * 1000 - playedInputNote.timestamp,
+						velocity: 127,
+						fillStyle: getSetting("inputNoteColor")
 					},
 					playerState.ctxTime
 				)
@@ -246,7 +250,9 @@ export class Render {
 			instrument: note.instrument,
 			track: note.track,
 			channel: note.channel,
-			fillStyle: isKeyBlack
+			fillStyle: note.fillStyle
+				? note.fillStyle
+				: isKeyBlack
 				? getTrackColor(note.track).black
 				: getTrackColor(note.track).white,
 			currentTime: time,
