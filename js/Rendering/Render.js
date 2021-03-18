@@ -9,10 +9,11 @@ import { RenderDimensions } from "./RenderDimensions.js"
 import { BackgroundRender } from "./BackgroundRender.js"
 import { MeasureLinesRender } from "./MeasureLinesRender.js"
 import { ProgressBarRender } from "./ProgressBarRender.js"
-import { getSetting } from "../settings/Settings.js"
+import { getSetting, setSettingCallback } from "../settings/Settings.js"
 import { isBlack } from "../Util.js"
 import { getTrackColor, isTrackDrawn } from "../player/Tracks.js"
 import { getPlayerState } from "../player/Player.js"
+import { InSongTextRenderer } from "./InSongTextRenderer.js"
 
 const DEBUG = true
 
@@ -28,6 +29,9 @@ export class Render {
 	constructor() {
 		this.renderDimensions = new RenderDimensions()
 		this.renderDimensions.registerResizeCallback(this.setupCanvases.bind(this))
+
+		setSettingCallback("particleBlur", this.setCtxBlur.bind(this))
+
 		this.setupCanvases()
 
 		this.pianoRender = new PianoRender(this.renderDimensions)
@@ -44,6 +48,10 @@ export class Render {
 		)
 		this.sustainRender = new SustainRender(this.ctx, this.renderDimensions)
 		this.markerRender = new MarkerRenderer(this.ctx, this.renderDimensions)
+		this.inSongTextRender = new InSongTextRenderer(
+			this.ctx,
+			this.renderDimensions
+		)
 
 		this.measureLinesRender = new MeasureLinesRender(
 			this.ctx,
@@ -69,6 +77,14 @@ export class Render {
 		this.showKeyNamesOnPianoBlack = getSetting("showKeyNamesOnPianoBlack")
 	}
 
+	setCtxBlur() {
+		let blurPx = parseInt(getSetting("particleBlur"))
+		if (blurPx == 0) {
+			this.ctxForeground.filter = "none"
+		} else {
+			this.ctxForeground.filter = "blur(" + blurPx + "px)"
+		}
+	}
 	setPianoInputListeners(onNoteOn, onNoteOff) {
 		this.pianoRender.setPianoInputListeners(onNoteOn, onNoteOff)
 	}
@@ -137,6 +153,7 @@ export class Render {
 				inputPlayedRenderInfos
 			)
 			this.markerRender.render(time, playerState.song.markers)
+			this.inSongTextRender.render(time, playerState.song.markers)
 		}
 
 		this.overlayRender.render()
@@ -319,6 +336,7 @@ export class Render {
 			this.renderDimensions.windowWidth,
 			this.renderDimensions.windowHeight
 		)
+		this.setCtxBlur()
 	}
 	getBgCanvas() {
 		if (!this.cnvBG) {
