@@ -19,14 +19,18 @@ export class DebugRender {
 	addNote(note) {
 		this.noteInfoBoxesToDraw.push(note)
 	}
-	render(renderInfos, mouseX, mouseY) {
+	render(renderInfos, mouseX, mouseY, menuHeight) {
 		this.thisTimestamp = window.performance.now()
 		if (getSetting("showFps")) {
 			let timePassed = this.thisTimestamp - this.lastTimestamp
 			this.frameTime += (timePassed - this.frameTime) / this.fpsFilterStrength
 			this.ctx.font = "20px Arial black"
 			this.ctx.fillStyle = "rgba(255,255,255,0.8)"
-			this.ctx.fillText((1000 / this.frameTime).toFixed(0) + " FPS", 20, 200)
+			this.ctx.fillText(
+				(1000 / this.frameTime).toFixed(0) + " FPS",
+				20,
+				menuHeight + 60
+			)
 		}
 
 		this.lastTimestamp = this.thisTimestamp
