@@ -83,6 +83,6 @@ async function loadStartingSong() {
 	}
 
 	FileLoader.loadSongFromURL(url, (response, fileName) =>
-		getPlayer().loadSong(response, fileName, "Mozart KV 331 3rd Movement")
+		getPlayer().loadSong(response, fileName, "Mozart - Turkish March")
 	) // Local: "../mz_331_3.mid")
 }
