@@ -271,7 +271,9 @@ class Player {
 			this.requestNextTick()
 			return
 		}
-
+		if (getSetting("enableMetronome")) {
+			this.playMetronomeBeats(currentTime)
+		}
 		while (this.isNextNoteReached(currentTime)) {
 			let toRemove = 0
 			forLoop: for (let i = 0; i < this.noteSequence.length; i++) {
@@ -298,6 +300,33 @@ class Player {
 		}
 
 		this.requestNextTick()
+	}
+
+	playMetronomeBeats(currentTime) {
+		this.playedBeats = this.playedBeats || {}
+		let beatsBySecond = getCurrentSong().temporalData.beatsBySecond
+		let secondsToCheck = [Math.floor(currentTime), Math.floor(currentTime) + 1]
+		secondsToCheck.forEach(second => {
+			if (beatsBySecond[second]) {
+				beatsBySecond[second].forEach(beatTimestamp => {
+					if (
+						!this.playedBeats.hasOwnProperty(beatTimestamp) &&
+						beatTimestamp / 1000 < currentTime + 0.5
+					) {
+						let newMeasure =
+							getCurrentSong().measureLines[Math.floor(beatTimestamp / 1000)] &&
+							getCurrentSong().measureLines[
+								Math.floor(beatTimestamp / 1000)
+							].includes(beatTimestamp)
+						this.playedBeats[beatTimestamp] = true
+						this.audioPlayer.playBeat(
+							beatTimestamp / 1000 - currentTime,
+							newMeasure
+						)
+					}
+				})
+			}
+		})
 	}
 
 	clearOldPlayedInputNotes() {
@@ -369,6 +398,7 @@ class Player {
 			note => note.timestamp > this.getTime()
 		)
 		this.inputActiveNotes = {}
+		this.playedBeats = {}
 	}
 
 	pause() {

@@ -1,3 +1,4 @@
+import { getSetting } from "../settings/Settings.js"
 import { SoundfontLoader } from "../SoundfontLoader.js"
 import { getLoader } from "../ui/Loader.js"
 import {
@@ -14,7 +15,10 @@ export class AudioPlayer {
 		this.buffers = {}
 		this.audioNotes = []
 		this.soundfontName = "MusyngKite"
+
+		this.loadMetronomeSounds()
 	}
+
 	getContextTime() {
 		return this.context.currentTime
 	}
@@ -75,6 +79,21 @@ export class AudioPlayer {
 		this.audioNotes.push(audioNote)
 	}
 
+	playBeat(time, newMeasure) {
+		if (time < 0) return
+		this.context.resume()
+		let ctxTime = this.context.currentTime
+
+		const source = this.context.createBufferSource()
+		const gainNode = this.context.createGain()
+		gainNode.gain.value = getSetting("metronomeVolume")
+		source.buffer = newMeasure ? this.metronomSound1 : this.metronomSound2
+		source.connect(gainNode)
+		gainNode.connect(this.context.destination)
+		source.start(ctxTime + time)
+		source.stop(ctxTime + time + 0.2)
+	}
+
 	async switchSoundfont(soundfontName, currentSong) {
 		this.soundfontName = soundfontName
 		getLoader().setLoadMessage("Loading Instruments")
@@ -82,7 +101,33 @@ export class AudioPlayer {
 		getLoader().setLoadMessage("Loading Buffers")
 		return await this.loadBuffers()
 	}
+	loadMetronomeSounds() {
+		let audioPl = this
 
+		const request = new XMLHttpRequest()
+		request.open("GET", "../../metronome/1.wav")
+		request.responseType = "arraybuffer"
+		request.onload = function () {
+			let undecodedAudio = request.response
+			audioPl.context.decodeAudioData(
+				undecodedAudio,
+				data => (audioPl.metronomSound1 = data)
+			)
+		}
+		request.send()
+
+		const request2 = new XMLHttpRequest()
+		request2.open("GET", "../../metronome/2.wav")
+		request2.responseType = "arraybuffer"
+		request2.onload = function () {
+			let undecodedAudio = request2.response
+			audioPl.context.decodeAudioData(
+				undecodedAudio,
+				data => (audioPl.metronomSound2 = data)
+			)
+		}
+		request2.send()
+	}
 	async loadInstrumentsForSong(currentSong) {
 		if (!this.buffers.hasOwnProperty(this.soundfontName)) {
 			this.buffers[this.soundfontName] = {}
