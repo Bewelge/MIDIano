@@ -1,6 +1,6 @@
 import { getSetting } from "../settings/Settings.js"
 
-const PARTICLE_LIFE_TIME = 6
+const PARTICLE_LIFE_TIME = 22
 
 export class PianoParticleRender {
 	constructor(ctxWhite, ctxBlack, renderDimensions) {
@@ -26,7 +26,13 @@ export class PianoParticleRender {
 		}
 		this.particles[keyColor]
 			.get(color)
-			.push([keyDims.x, 0, keyDims.w, keyDims.h, PARTICLE_LIFE_TIME])
+			.push([
+				keyDims.x,
+				0,
+				keyDims.w,
+				keyDims.h,
+				(PARTICLE_LIFE_TIME * noteRenderinfo.velocity) / 127
+			])
 		return
 	}
 
