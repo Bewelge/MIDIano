@@ -155,7 +155,7 @@ export class DomHelper {
 		)
 	}
 	static createSlider(id, val, min, max, step, onChange) {
-		return DomHelper.createElement(
+		let el = DomHelper.createElement(
 			"input",
 			{},
 			{
@@ -168,6 +168,8 @@ export class DomHelper {
 				step: step
 			}
 		)
+		el.value = val
+		return el
 	}
 	static createTextInput(onChange, styles, attributes) {
 		attributes = attributes || {}

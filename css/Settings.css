@@ -36,6 +36,9 @@
 	display: none;
 	height: calc(100% - 2em);
 }
+.settingsTabContentContainer button {
+	margin: 1.5em;
+}
 .settingsGroupContainer {
 	border-top: 2px solid var(--borderColor);
 }

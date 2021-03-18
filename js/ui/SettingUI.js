@@ -1,3 +1,4 @@
+import { resetSettingsToDefault } from "../settings/Settings.js"
 import { DomHelper } from "../ui/DomHelper.js"
 import { groupArrayBy } from "../Util.js"
 /**
@@ -7,6 +8,7 @@ export class SettingUI {
 	constructor() {
 		this.tabs = {}
 		this.activeTab = "General"
+		this.mainDiv = null
 	}
 	/**
 	 * returns a div with the following structure:
@@ -22,18 +24,19 @@ export class SettingUI {
 	 * @param {Object} settings  as defined in DefaultSettings.js
 	 */
 	getSettingsDiv(settings) {
-		//	this.tabsToSettingsMap = groupArrayBy(settings, setting => setting.tab)
+		if (this.mainDiv == null) {
+			this.mainDiv = DomHelper.createDivWithClass("settingsContainer")
+			this.mainDiv.appendChild(this.getTabDiv(Object.keys(settings)))
+			this.mainDiv.appendChild(this.getContentDiv(settings))
 
-		let cont = DomHelper.createDivWithClass("settingsContainer")
-		cont.appendChild(this.getTabDiv(Object.keys(settings)))
-		cont.appendChild(this.getContentDiv(settings))
-
-		cont
-			.querySelectorAll(".settingsTabContent" + this.activeTab)
-			.forEach(el => (el.style.display = "block"))
-		cont.querySelector("#" + this.activeTab + "Tab").classList.add("selected")
-
-		return cont
+			this.mainDiv
+				.querySelectorAll(".settingsTabContent" + this.activeTab)
+				.forEach(el => (el.style.display = "block"))
+			this.mainDiv
+				.querySelector("#" + this.activeTab + "Tab")
+				.classList.add("selected")
+		}
+		return this.mainDiv
 	}
 	getTabDiv(tabIds) {
 		let cont = DomHelper.createDivWithClass("settingsTabButtonContainer")
@@ -78,7 +81,20 @@ export class SettingUI {
 				this.createSettingGroupDiv(groupId, settingGroups[groupId])
 			)
 		})
+		if (tabName == "General") {
+			cont.appendChild(this.getResetButton())
+		}
 		return cont
+	}
+	getResetButton() {
+		let but = DomHelper.createTextButton(
+			"settingsResetButton",
+			"Reset to defaults",
+			() => {
+				resetSettingsToDefault()
+			}
+		)
+		return but
 	}
 	createSettingGroupDiv(categoryName, settingsList) {
 		let cont = DomHelper.createDivWithClass(
@@ -152,7 +168,7 @@ export class SettingUI {
 		let el = DomHelper.createSliderWithLabelAndField(
 			setting.id + "Slider",
 			setting.label,
-			setting.value,
+			parseFloat(setting.value),
 			setting.min,
 			setting.max,
 			setting.step,

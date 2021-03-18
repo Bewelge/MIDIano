@@ -1,7 +1,21 @@
 import { getSetting, setSetting } from "./Settings.js"
 
 export const getDefaultSettings = () => {
-	return defaultSettings
+	let copy = {}
+	for (let tab in defaultSettings) {
+		copy[tab] = {}
+		for (let category in defaultSettings[tab]) {
+			copy[tab][category] = []
+			defaultSettings[tab][category].forEach(setting => {
+				let settingCopy = {}
+				for (let attribute in setting) {
+					settingCopy[attribute] = setting[attribute]
+				}
+				copy[tab][category].push(settingCopy)
+			})
+		}
+	}
+	return copy
 }
 const TAB_GENERAL = "General"
 const TAB_AUDIO = "Audio"
@@ -306,10 +320,17 @@ const defaultSettings = {
 		Particles: [
 			{
 				type: "checkbox",
-				id: "showParticles",
-				label: "Enable Particles",
+				id: "showParticlesTop",
+				label: "Enable top particles",
 				value: true,
-				onChange: ev => setSetting("showParticles", ev.target.checked)
+				onChange: ev => setSetting("showParticlesTop", ev.target.checked)
+			},
+			{
+				type: "checkbox",
+				id: "showParticlesBottom",
+				label: "Enable bottom particles ",
+				value: true,
+				onChange: ev => setSetting("showParticlesBottom", ev.target.checked)
 			},
 			{
 				type: "checkbox",
@@ -320,11 +341,21 @@ const defaultSettings = {
 			},
 			{
 				type: "slider",
+				id: "particleBlur",
+				label: "Particle blur amount (px)",
+				value: 3,
+				min: 0,
+				max: 10,
+				step: 1,
+				onChange: value => setSetting("particleBlur", value)
+			},
+			{
+				type: "slider",
 				id: "particleAmount",
 				label: "Particle Amount (per frame)",
-				value: 10,
+				value: 3,
 				min: 0,
-				max: 200,
+				max: 15,
 				step: 1,
 				onChange: value => setSetting("particleAmount", value)
 			},
@@ -344,7 +375,7 @@ const defaultSettings = {
 				label: "Particle Duration",
 				value: 20,
 				min: 1,
-				max: 50,
+				max: 150,
 				step: 1,
 				onChange: value => setSetting("particleLife", value)
 			},
