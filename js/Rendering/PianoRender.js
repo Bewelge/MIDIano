@@ -152,14 +152,14 @@ export class PianoRender {
 		if (getSetting("showKeyNamesOnPianoWhite")) {
 			this.drawWhiteKeyNames(ctxWhite)
 		}
-		var img = new Image()
-		img.src = "../../blackKey.svg"
-		img.onload = function () {
-			this.drawBlackKeys(ctxBlack)
-			if (getSetting("showKeyNamesOnPianoBlack")) {
-				this.drawBlackKeyNames(ctxBlack)
-			}
-		}.bind(this)
+		// var img = new Image()
+		// img.src = "../../blackKey.svg"
+		// img.onload = function () {
+		this.drawBlackKeys(ctxBlack)
+		if (getSetting("showKeyNamesOnPianoBlack")) {
+			this.drawBlackKeyNames(ctxBlack)
+		}
+		// }.bind(this)
 
 		//velvet
 		ctxWhite.strokeStyle = "rgba(155,50,50,1)"
@@ -197,7 +197,7 @@ export class PianoRender {
 		) {
 			let dims = this.renderDimensions.getKeyDimensions(i)
 			if (isBlack(i)) {
-				this.drawBlackKey(ctxBlack, dims)
+				this.drawBlackKey(ctxBlack, dims, "black", true)
 			}
 		}
 	}
@@ -253,7 +253,6 @@ export class PianoRender {
 	 * @param {Dimensions} dims
 	 */
 	drawWhiteKey(ctx, dims, color) {
-		let whiteKeyHeight = this.renderDimensions.whiteKeyHeight
 		let radius = Math.ceil(this.renderDimensions.whiteKeyWidth / 20)
 		let x = dims.x
 		let y = Math.floor(dims.y) + 6
@@ -265,18 +264,23 @@ export class PianoRender {
 		ctx.fillStyle = color
 		ctx.fill()
 
-		let rgr2 = ctx.createLinearGradient(
-			this.renderDimensions.windowWidth / 2,
-			0,
-			this.renderDimensions.windowWidth / 2,
-			whiteKeyHeight
-		)
-		rgr2.addColorStop(0, "rgba(0,0,0,0.9)")
-		rgr2.addColorStop(1, "rgba(255,255,255,0.5)")
-		ctx.fillStyle = rgr2
+		ctx.fillStyle = this.getKeyGradient(ctx)
 		ctx.fill()
 
 		ctx.closePath()
+	}
+	getKeyGradient(ctx) {
+		if (this.keyGradient == null) {
+			this.keyGradient = ctx.createLinearGradient(
+				this.renderDimensions.windowWidth / 2,
+				0,
+				this.renderDimensions.windowWidth / 2,
+				this.renderDimensions.whiteKeyHeight
+			)
+			this.keyGradient.addColorStop(0, "rgba(0,0,0,1)")
+			this.keyGradient.addColorStop(1, "rgba(255,255,255,0.5)")
+		}
+		return this.keyGradient
 	}
 	getWhiteKeyPath(ctx, x, y, width, height, radius) {
 		ctx.beginPath()
@@ -318,7 +322,7 @@ export class PianoRender {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Dimensions} dims
 	 */
-	drawBlackKey(ctx, dims, color) {
+	drawBlackKey(ctx, dims, color, noShadow) {
 		let radiusTop = 0 //this.renderDimensions.blackKeyWidth / 15
 		let radiusBottom = this.renderDimensions.blackKeyWidth / 8
 		let x = dims.x
@@ -331,6 +335,10 @@ export class PianoRender {
 
 		ctx.fillStyle = color
 		ctx.fill()
+		if (!noShadow) {
+			ctx.fillStyle = this.getKeyGradient()
+			ctx.fill()
+		}
 		ctx.closePath()
 	}
 	strokeBlackKey(dims, color) {
