@@ -2,7 +2,7 @@
 
 ## A JavaScript MIDI-Player similar to Synthesia
 
-### [Try out here](https://bewelge.github.io/MIDIano/)
+### [Try out here](https://midiano.com/)
 
 ![Screenshot](/Screenshot.png)
 
