@@ -4,7 +4,7 @@
 
 ### [Try out here](https://midiano.com/)
 
-![Screenshot](/Screenshot.png)
+![Screenshot](/ScreenShotNew.png)
 
 
 I have continued development of Midiano in a private repository. This repository serves as a place for bug reports or feature requests.
